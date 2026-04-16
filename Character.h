@@ -14,8 +14,7 @@ private:
 protected:
     int getAttackPower() const;
     int getHealth() const;
-    int getGridX() const;
-    int getGridY() const;
+    
 public:
     Character(const string& n, int HP, int aP);
     string getName() const;
@@ -26,6 +25,8 @@ public:
     static int getCharacterCount();
     virtual ~Character();
     int getCurrentHealth() const;
+    int getGridX() const;
+    int getGridY() const;
     void move(int x, int y) const;
     void SetPosition(int x, int y) const;
 };
