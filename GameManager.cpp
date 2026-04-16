@@ -1,5 +1,5 @@
 #include "GameManager.h"
-#include "../characters/Character.h"
+#include "Character.h"
 
 GameManager::GameManager(QObject* parent)
     : QObject(parent),

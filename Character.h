@@ -27,8 +27,8 @@ public:
     int getCurrentHealth() const;
     int getGridX() const;
     int getGridY() const;
-    void move(int x, int y) const;
-    void SetPosition(int x, int y) const;
+    void move(int x, int y);
+    void SetPosition(int x, int y);
 };
 
 #endif

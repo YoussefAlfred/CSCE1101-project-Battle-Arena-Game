@@ -5,11 +5,13 @@
 #include <QStackedWidget>
 #include <QPushButton>
 #include <QLabel>
+#include <QGraphicsScene>
 
 #include "GameManager.h"
-#include "../characters/Warrior.h"
-#include "../characters/Mage.h"
-#include "../characters/Archer.h"
+#include "Warrior.h"
+#include "Mage.h"
+#include "Archer.h"
+#include "Character.h"
 
 class MainWindow : public QMainWindow {
     Q_OBJECT
@@ -24,6 +26,9 @@ private:
     // windows
     QWidget* characterPage;
     QWidget* gamePage;
+
+    // the graphics scene
+    QGraphicsScene* scene;
 
     // buttons
     QPushButton* warriorButton;
@@ -41,6 +46,7 @@ private:
 
     void setupCharacterPage();
     void setupGamePage();
+    void drawGrid();
 };
 
 #endif

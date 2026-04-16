@@ -30,7 +30,7 @@ bool BattleGrid::moveCharacter(Character* character, int newRow, int newCol) {
 
     // Place in new cell
     grid[newRow][newCol].setOccupant(character);
-    character->setGridPos(newRow, newCol);
+    character->SetPosition(newRow, newCol);
     return true;
 }
 
