@@ -381,6 +381,27 @@ CMakeFiles/game.dir/game_autogen/mocs_compilation.cpp.o: \
  /usr/include/x86_64-linux-gnu/qt6/QtWidgets/qprogressbar.h \
  /usr/include/x86_64-linux-gnu/qt6/QtWidgets/QFrame \
  /usr/include/x86_64-linux-gnu/qt6/QtWidgets/qframe.h \
+ /usr/include/x86_64-linux-gnu/qt6/QtGui/QKeyEvent \
+ /usr/include/x86_64-linux-gnu/qt6/QtGui/qevent.h \
+ /usr/include/x86_64-linux-gnu/qt6/QtCore/qcoreevent.h \
+ /usr/include/x86_64-linux-gnu/qt6/QtCore/qpointer.h \
+ /usr/include/x86_64-linux-gnu/qt6/QtGui/qeventpoint.h \
+ /usr/include/x86_64-linux-gnu/qt6/QtGui/qvector2d.h \
+ /usr/include/x86_64-linux-gnu/qt6/QtGui/qvectornd.h \
+ /usr/include/x86_64-linux-gnu/qt6/QtGui/qpointingdevice.h \
+ /usr/include/x86_64-linux-gnu/qt6/QtGui/qinputdevice.h \
+ /usr/include/x86_64-linux-gnu/qt6/QtGui/qscreen.h \
+ /usr/include/x86_64-linux-gnu/qt6/QtCore/QList \
+ /usr/include/x86_64-linux-gnu/qt6/QtCore/qlist.h \
+ /usr/include/x86_64-linux-gnu/qt6/QtCore/QObject \
+ /usr/include/x86_64-linux-gnu/qt6/QtCore/QRect \
+ /usr/include/x86_64-linux-gnu/qt6/QtCore/qrect.h \
+ /usr/include/x86_64-linux-gnu/qt6/QtCore/QSize \
+ /usr/include/x86_64-linux-gnu/qt6/QtCore/qsize.h \
+ /usr/include/x86_64-linux-gnu/qt6/QtCore/QSizeF \
+ /usr/include/x86_64-linux-gnu/qt6/QtGui/QTransform \
+ /usr/include/x86_64-linux-gnu/qt6/QtGui/qtransform.h \
+ /usr/include/x86_64-linux-gnu/qt6/QtCore/qnativeinterface.h \
  /home/youssef_alfred/teamproject2026/war/CSCE1101-project-Battle-Arena-Game/build/game_autogen/EWIEGA46WW/../../../Warrior.h \
  /home/youssef_alfred/teamproject2026/war/CSCE1101-project-Battle-Arena-Game/build/game_autogen/EWIEGA46WW/../../../Character.h \
  /home/youssef_alfred/teamproject2026/war/CSCE1101-project-Battle-Arena-Game/build/game_autogen/EWIEGA46WW/../../../Mage.h \

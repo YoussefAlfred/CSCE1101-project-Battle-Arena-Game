@@ -11,6 +11,7 @@
 #include <QGraphicsEllipseItem>
 #include <QProgressBar>
 #include <QFrame>
+#include <QKeyEvent>
 
 #include "GameManager.h"
 #include "Warrior.h"
@@ -44,13 +45,19 @@ private:
     QWidget*        gamePage;
 
     // ── character select ────────────────────────────────────
-    QPushButton*    cardWarrior;
+    QPushButton*    cardWarrior;      // overlay buttons (kept for compat)
     QPushButton*    cardMage;
     QPushButton*    cardArcher;
+    QWidget*        cardWarriorWidget = nullptr; // actual card containers
+    QWidget*        cardMageWidget    = nullptr;
+    QWidget*        cardArcherWidget  = nullptr;
     QPushButton*    btnStart;
     QLabel*         selectionLabel;
 
     // ── game HUD ────────────────────────────────────────────
+    QLabel*         playerPortraitLabel = nullptr;
+    QLabel*         enemyPortraitLabel  = nullptr;
+
     QLabel*         lblPlayerName;
     QLabel*         lblPlayerClass;
     QProgressBar*   barPlayerHP;
@@ -81,10 +88,9 @@ private:
     void buildCharacterPage();
     void buildGamePage();
 
-    QWidget* buildHUDPanel(bool isPlayer);   // returns left/right panel
+    QWidget* buildHUDPanel(bool isPlayer);
 
     void applyGlobalStyle();
-    QString cardStyle(const QString& accent, bool selected) const;
 
     void drawGrid();
     void updateTokenPositions();
@@ -92,7 +98,7 @@ private:
     void showGameOver(bool playerWon);
 
     // grid drawing constants
-    static constexpr int CELL  = 56;   // pixels per cell
+    static constexpr int CELL  = 56;
     static constexpr int GCOLS = 8;
     static constexpr int GROWS = 8;
 };

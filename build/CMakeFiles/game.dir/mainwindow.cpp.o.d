@@ -367,11 +367,32 @@ CMakeFiles/game.dir/mainwindow.cpp.o: \
  /usr/include/x86_64-linux-gnu/qt6/QtWidgets/qprogressbar.h \
  /usr/include/x86_64-linux-gnu/qt6/QtWidgets/QFrame \
  /usr/include/x86_64-linux-gnu/qt6/QtWidgets/qframe.h \
+ /usr/include/x86_64-linux-gnu/qt6/QtGui/QKeyEvent \
+ /usr/include/x86_64-linux-gnu/qt6/QtGui/qevent.h \
+ /usr/include/x86_64-linux-gnu/qt6/QtCore/qcoreevent.h \
+ /usr/include/x86_64-linux-gnu/qt6/QtCore/qpointer.h \
+ /usr/include/x86_64-linux-gnu/qt6/QtGui/qeventpoint.h \
+ /usr/include/x86_64-linux-gnu/qt6/QtGui/qvector2d.h \
+ /usr/include/x86_64-linux-gnu/qt6/QtGui/qvectornd.h \
+ /usr/include/x86_64-linux-gnu/qt6/QtGui/qpointingdevice.h \
+ /usr/include/x86_64-linux-gnu/qt6/QtGui/qinputdevice.h \
+ /usr/include/x86_64-linux-gnu/qt6/QtGui/qscreen.h \
+ /usr/include/x86_64-linux-gnu/qt6/QtCore/QList \
+ /usr/include/x86_64-linux-gnu/qt6/QtCore/qlist.h \
+ /usr/include/x86_64-linux-gnu/qt6/QtCore/QObject \
+ /usr/include/x86_64-linux-gnu/qt6/QtCore/qobject.h \
+ /usr/include/x86_64-linux-gnu/qt6/QtCore/QRect \
+ /usr/include/x86_64-linux-gnu/qt6/QtCore/qrect.h \
+ /usr/include/x86_64-linux-gnu/qt6/QtCore/QSize \
+ /usr/include/x86_64-linux-gnu/qt6/QtCore/qsize.h \
+ /usr/include/x86_64-linux-gnu/qt6/QtCore/QSizeF \
+ /usr/include/x86_64-linux-gnu/qt6/QtGui/QTransform \
+ /usr/include/x86_64-linux-gnu/qt6/QtGui/qtransform.h \
+ /usr/include/x86_64-linux-gnu/qt6/QtCore/qnativeinterface.h \
  /home/youssef_alfred/teamproject2026/war/CSCE1101-project-Battle-Arena-Game/GameManager.h \
  /home/youssef_alfred/teamproject2026/war/CSCE1101-project-Battle-Arena-Game/BattleGrid.h \
  /home/youssef_alfred/teamproject2026/war/CSCE1101-project-Battle-Arena-Game/Cell.h \
  /usr/include/x86_64-linux-gnu/qt6/QtCore/QObject \
- /usr/include/x86_64-linux-gnu/qt6/QtCore/qobject.h \
  /usr/include/x86_64-linux-gnu/qt6/QtCore/QTimer \
  /usr/include/x86_64-linux-gnu/qt6/QtCore/qtimer.h \
  /usr/include/x86_64-linux-gnu/qt6/QtCore/qbasictimer.h \
@@ -389,6 +410,7 @@ CMakeFiles/game.dir/mainwindow.cpp.o: \
  /usr/include/x86_64-linux-gnu/qt6/QtWidgets/QGridLayout \
  /usr/include/x86_64-linux-gnu/qt6/QtWidgets/qgridlayout.h \
  /usr/include/x86_64-linux-gnu/qt6/QtWidgets/QGraphicsTextItem \
+ /usr/include/x86_64-linux-gnu/qt6/QtWidgets/QGraphicsPixmapItem \
  /usr/include/x86_64-linux-gnu/qt6/QtWidgets/QMessageBox \
  /usr/include/x86_64-linux-gnu/qt6/QtWidgets/qmessagebox.h \
  /usr/include/x86_64-linux-gnu/qt6/QtWidgets/qdialog.h \
@@ -403,4 +425,44 @@ CMakeFiles/game.dir/mainwindow.cpp.o: \
  /usr/include/x86_64-linux-gnu/qt6/QtWidgets/QSizePolicy \
  /usr/include/x86_64-linux-gnu/qt6/QtWidgets/qsizepolicy.h \
  /usr/include/x86_64-linux-gnu/qt6/QtWidgets/QSpacerItem \
- /usr/include/x86_64-linux-gnu/qt6/QtWidgets/qlayoutitem.h
+ /usr/include/x86_64-linux-gnu/qt6/QtWidgets/qlayoutitem.h \
+ /usr/include/x86_64-linux-gnu/qt6/QtGui/QPainter \
+ /usr/include/x86_64-linux-gnu/qt6/QtGui/qpainter.h \
+ /usr/include/x86_64-linux-gnu/qt6/QtGui/QLinearGradient \
+ /usr/include/x86_64-linux-gnu/qt6/QtGui/QRadialGradient \
+ /usr/include/x86_64-linux-gnu/qt6/QtWidgets/QGraphicsDropShadowEffect \
+ /usr/include/x86_64-linux-gnu/qt6/QtWidgets/qgraphicseffect.h \
+ /usr/include/x86_64-linux-gnu/qt6/QtCore/QPropertyAnimation \
+ /usr/include/x86_64-linux-gnu/qt6/QtCore/qpropertyanimation.h \
+ /usr/include/x86_64-linux-gnu/qt6/QtCore/qvariantanimation.h \
+ /usr/include/x86_64-linux-gnu/qt6/QtCore/qabstractanimation.h \
+ /usr/include/x86_64-linux-gnu/qt6/QtCore/qeasingcurve.h \
+ /usr/include/x86_64-linux-gnu/qt6/QtCore/QDir \
+ /usr/include/x86_64-linux-gnu/qt6/QtCore/qdir.h \
+ /usr/include/x86_64-linux-gnu/qt6/QtCore/qfile.h \
+ /usr/include/x86_64-linux-gnu/qt6/QtCore/qfiledevice.h \
+ /usr/include/c++/13/filesystem /usr/include/c++/13/bits/fs_fwd.h \
+ /usr/include/c++/13/bits/fs_path.h /usr/include/c++/13/locale \
+ /usr/include/c++/13/bits/locale_facets.h /usr/include/c++/13/cwctype \
+ /usr/include/wctype.h /usr/include/x86_64-linux-gnu/bits/wctype-wchar.h \
+ /usr/include/x86_64-linux-gnu/c++/13/bits/ctype_base.h \
+ /usr/include/x86_64-linux-gnu/c++/13/bits/ctype_inline.h \
+ /usr/include/c++/13/bits/locale_facets.tcc \
+ /usr/include/c++/13/bits/locale_facets_nonio.h \
+ /usr/include/x86_64-linux-gnu/c++/13/bits/time_members.h \
+ /usr/include/x86_64-linux-gnu/c++/13/bits/messages_members.h \
+ /usr/include/libintl.h /usr/include/c++/13/bits/codecvt.h \
+ /usr/include/c++/13/bits/locale_facets_nonio.tcc \
+ /usr/include/c++/13/bits/locale_conv.h /usr/include/c++/13/iomanip \
+ /usr/include/c++/13/bits/quoted_string.h /usr/include/c++/13/sstream \
+ /usr/include/c++/13/istream /usr/include/c++/13/ios \
+ /usr/include/c++/13/bits/basic_ios.h \
+ /usr/include/c++/13/bits/basic_ios.tcc /usr/include/c++/13/ostream \
+ /usr/include/c++/13/bits/ostream.tcc \
+ /usr/include/c++/13/bits/istream.tcc \
+ /usr/include/c++/13/bits/sstream.tcc /usr/include/c++/13/codecvt \
+ /usr/include/c++/13/bits/fs_dir.h /usr/include/c++/13/bits/fs_ops.h \
+ /usr/include/x86_64-linux-gnu/qt6/QtCore/qfileinfo.h \
+ /usr/include/x86_64-linux-gnu/qt6/QtCore/qdatetime.h \
+ /usr/include/x86_64-linux-gnu/qt6/QtCore/qcalendar.h \
+ /usr/include/x86_64-linux-gnu/qt6/QtCore/qlocale.h
