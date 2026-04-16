@@ -1,0 +1,49 @@
+#pragma once
+#include "BattleGrid.h"
+#include <QObject>
+#include <QTimer>
+
+class Character; // forward declaration
+
+enum class GameState {
+    MENU,
+    CHARACTER_SELECT,
+    PLAYING,
+    GAME_OVER
+};
+
+class GameManager : public QObject {
+    Q_OBJECT
+
+public:
+    explicit GameManager(QObject* parent = nullptr);
+    ~GameManager();
+
+    void startGame(Character* playerCharacter, Character* enemyCharacter);
+    void checkWinCondition();
+    void restartGame();
+
+    Character* getPlayer() const;
+    Character* getEnemy() const;
+    BattleGrid* getGrid();
+    GameState getState() const;
+    int getScore() const;
+
+signals:
+    void gameStateChanged(GameState newState);
+    void enemyTurnTriggered();
+    void scoreUpdated(int newScore);
+
+public slots:
+    void onTimerTick();
+
+private:
+    Character* player;
+    Character* enemy;
+    GameState state;
+    int score;
+    QTimer* timer;
+    BattleGrid battleGrid;
+
+    static const int TIMER_INTERVAL_MS = 800;
+};
