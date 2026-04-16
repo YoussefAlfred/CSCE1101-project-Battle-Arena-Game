@@ -44,7 +44,7 @@ int Character::getGridX() const {
 int Character::getGridY() const {
     return gridY;
 }
-void character::move(int x, int y) const{
+void Character::move(int x, int y) const{
     gridX += x;
     gridY += y;
 }
