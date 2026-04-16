@@ -9,9 +9,13 @@ private:
     int health;
     int attackPower;
     static int characterCount;
+    int gridX;
+    int gridY;
 protected:
     int getAttackPower() const;
     int getHealth() const;
+    int getGridX() const;
+    int getGridY() const;
 public:
     Character(const string& n, int HP, int aP);
     string getName() const;
@@ -22,6 +26,8 @@ public:
     static int getCharacterCount();
     virtual ~Character();
     int getCurrentHealth() const;
+    void move(int x, int y) const;
+    void SetPosition(int x, int y) const;
 };
 
 #endif

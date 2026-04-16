@@ -1,7 +1,7 @@
 #include "Warrior.h"
 #include <string>
 #include <iostream>
-Warrior::Warrior(const string& n) : Character(n, 300, 80) {
+Warrior::Warrior(const string& n) : Character(n, 200, 20) {
 }
 int Warrior::attack() const {
     return getAttackPower();

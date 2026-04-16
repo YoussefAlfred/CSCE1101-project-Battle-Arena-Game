@@ -38,3 +38,17 @@ int Character::getCharacterCount() {
 int Character::getCurrentHealth() const {
     return getHealth();
 }
+int Character::getGridX() const {
+    return gridX;
+}
+int Character::getGridY() const {
+    return gridY;
+}
+void character::move(int x, int y) const{
+    gridX += x;
+    gridY += y;
+}
+void Character::SetPosition(int x, int y) const {
+    gridX = x;
+    gridY = y;
+}
