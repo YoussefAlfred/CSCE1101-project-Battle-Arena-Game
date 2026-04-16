@@ -57,10 +57,10 @@ RM = /usr/bin/cmake -E rm -f
 EQUALS = =
 
 # The top-level source directory on which CMake was run.
-CMAKE_SOURCE_DIR = /home/ahmed7/CSCE1101-project-Battle-Arena-Game
+CMAKE_SOURCE_DIR = /home/youssef_alfred/teamproject2026/war/CSCE1101-project-Battle-Arena-Game
 
 # The top-level build directory on which CMake was run.
-CMAKE_BINARY_DIR = /home/ahmed7/CSCE1101-project-Battle-Arena-Game/build
+CMAKE_BINARY_DIR = /home/youssef_alfred/teamproject2026/war/CSCE1101-project-Battle-Arena-Game/build
 
 #=============================================================================
 # Targets provided globally by CMake.
@@ -87,9 +87,9 @@ rebuild_cache/fast: rebuild_cache
 
 # The main all target
 all: cmake_check_build_system
-	$(CMAKE_COMMAND) -E cmake_progress_start /home/ahmed7/CSCE1101-project-Battle-Arena-Game/build/CMakeFiles /home/ahmed7/CSCE1101-project-Battle-Arena-Game/build//CMakeFiles/progress.marks
+	$(CMAKE_COMMAND) -E cmake_progress_start /home/youssef_alfred/teamproject2026/war/CSCE1101-project-Battle-Arena-Game/build/CMakeFiles /home/youssef_alfred/teamproject2026/war/CSCE1101-project-Battle-Arena-Game/build//CMakeFiles/progress.marks
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 all
-	$(CMAKE_COMMAND) -E cmake_progress_start /home/ahmed7/CSCE1101-project-Battle-Arena-Game/build/CMakeFiles 0
+	$(CMAKE_COMMAND) -E cmake_progress_start /home/youssef_alfred/teamproject2026/war/CSCE1101-project-Battle-Arena-Game/build/CMakeFiles 0
 .PHONY : all
 
 # The main clean target
@@ -117,50 +117,50 @@ depend:
 .PHONY : depend
 
 #=============================================================================
-# Target rules for targets named GameProject
+# Target rules for targets named game
 
 # Build rule for target.
-GameProject: cmake_check_build_system
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 GameProject
-.PHONY : GameProject
+game: cmake_check_build_system
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 game
+.PHONY : game
 
 # fast build rule for target.
-GameProject/fast:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/GameProject.dir/build.make CMakeFiles/GameProject.dir/build
-.PHONY : GameProject/fast
+game/fast:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/game.dir/build.make CMakeFiles/game.dir/build
+.PHONY : game/fast
 
 #=============================================================================
-# Target rules for targets named GameProject_autogen_timestamp_deps
+# Target rules for targets named game_autogen_timestamp_deps
 
 # Build rule for target.
-GameProject_autogen_timestamp_deps: cmake_check_build_system
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 GameProject_autogen_timestamp_deps
-.PHONY : GameProject_autogen_timestamp_deps
+game_autogen_timestamp_deps: cmake_check_build_system
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 game_autogen_timestamp_deps
+.PHONY : game_autogen_timestamp_deps
 
 # fast build rule for target.
-GameProject_autogen_timestamp_deps/fast:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/GameProject_autogen_timestamp_deps.dir/build.make CMakeFiles/GameProject_autogen_timestamp_deps.dir/build
-.PHONY : GameProject_autogen_timestamp_deps/fast
+game_autogen_timestamp_deps/fast:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/game_autogen_timestamp_deps.dir/build.make CMakeFiles/game_autogen_timestamp_deps.dir/build
+.PHONY : game_autogen_timestamp_deps/fast
 
 #=============================================================================
-# Target rules for targets named GameProject_autogen
+# Target rules for targets named game_autogen
 
 # Build rule for target.
-GameProject_autogen: cmake_check_build_system
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 GameProject_autogen
-.PHONY : GameProject_autogen
+game_autogen: cmake_check_build_system
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 game_autogen
+.PHONY : game_autogen
 
 # fast build rule for target.
-GameProject_autogen/fast:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/GameProject_autogen.dir/build.make CMakeFiles/GameProject_autogen.dir/build
-.PHONY : GameProject_autogen/fast
+game_autogen/fast:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/game_autogen.dir/build.make CMakeFiles/game_autogen.dir/build
+.PHONY : game_autogen/fast
 
 Archer.o: Archer.cpp.o
 .PHONY : Archer.o
 
 # target to build an object file
 Archer.cpp.o:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/GameProject.dir/build.make CMakeFiles/GameProject.dir/Archer.cpp.o
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/game.dir/build.make CMakeFiles/game.dir/Archer.cpp.o
 .PHONY : Archer.cpp.o
 
 Archer.i: Archer.cpp.i
@@ -168,7 +168,7 @@ Archer.i: Archer.cpp.i
 
 # target to preprocess a source file
 Archer.cpp.i:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/GameProject.dir/build.make CMakeFiles/GameProject.dir/Archer.cpp.i
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/game.dir/build.make CMakeFiles/game.dir/Archer.cpp.i
 .PHONY : Archer.cpp.i
 
 Archer.s: Archer.cpp.s
@@ -176,7 +176,7 @@ Archer.s: Archer.cpp.s
 
 # target to generate assembly for a file
 Archer.cpp.s:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/GameProject.dir/build.make CMakeFiles/GameProject.dir/Archer.cpp.s
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/game.dir/build.make CMakeFiles/game.dir/Archer.cpp.s
 .PHONY : Archer.cpp.s
 
 BattleGrid.o: BattleGrid.cpp.o
@@ -184,7 +184,7 @@ BattleGrid.o: BattleGrid.cpp.o
 
 # target to build an object file
 BattleGrid.cpp.o:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/GameProject.dir/build.make CMakeFiles/GameProject.dir/BattleGrid.cpp.o
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/game.dir/build.make CMakeFiles/game.dir/BattleGrid.cpp.o
 .PHONY : BattleGrid.cpp.o
 
 BattleGrid.i: BattleGrid.cpp.i
@@ -192,7 +192,7 @@ BattleGrid.i: BattleGrid.cpp.i
 
 # target to preprocess a source file
 BattleGrid.cpp.i:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/GameProject.dir/build.make CMakeFiles/GameProject.dir/BattleGrid.cpp.i
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/game.dir/build.make CMakeFiles/game.dir/BattleGrid.cpp.i
 .PHONY : BattleGrid.cpp.i
 
 BattleGrid.s: BattleGrid.cpp.s
@@ -200,7 +200,7 @@ BattleGrid.s: BattleGrid.cpp.s
 
 # target to generate assembly for a file
 BattleGrid.cpp.s:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/GameProject.dir/build.make CMakeFiles/GameProject.dir/BattleGrid.cpp.s
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/game.dir/build.make CMakeFiles/game.dir/BattleGrid.cpp.s
 .PHONY : BattleGrid.cpp.s
 
 Cell.o: Cell.cpp.o
@@ -208,7 +208,7 @@ Cell.o: Cell.cpp.o
 
 # target to build an object file
 Cell.cpp.o:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/GameProject.dir/build.make CMakeFiles/GameProject.dir/Cell.cpp.o
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/game.dir/build.make CMakeFiles/game.dir/Cell.cpp.o
 .PHONY : Cell.cpp.o
 
 Cell.i: Cell.cpp.i
@@ -216,7 +216,7 @@ Cell.i: Cell.cpp.i
 
 # target to preprocess a source file
 Cell.cpp.i:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/GameProject.dir/build.make CMakeFiles/GameProject.dir/Cell.cpp.i
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/game.dir/build.make CMakeFiles/game.dir/Cell.cpp.i
 .PHONY : Cell.cpp.i
 
 Cell.s: Cell.cpp.s
@@ -224,7 +224,7 @@ Cell.s: Cell.cpp.s
 
 # target to generate assembly for a file
 Cell.cpp.s:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/GameProject.dir/build.make CMakeFiles/GameProject.dir/Cell.cpp.s
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/game.dir/build.make CMakeFiles/game.dir/Cell.cpp.s
 .PHONY : Cell.cpp.s
 
 Character.o: Character.cpp.o
@@ -232,7 +232,7 @@ Character.o: Character.cpp.o
 
 # target to build an object file
 Character.cpp.o:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/GameProject.dir/build.make CMakeFiles/GameProject.dir/Character.cpp.o
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/game.dir/build.make CMakeFiles/game.dir/Character.cpp.o
 .PHONY : Character.cpp.o
 
 Character.i: Character.cpp.i
@@ -240,7 +240,7 @@ Character.i: Character.cpp.i
 
 # target to preprocess a source file
 Character.cpp.i:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/GameProject.dir/build.make CMakeFiles/GameProject.dir/Character.cpp.i
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/game.dir/build.make CMakeFiles/game.dir/Character.cpp.i
 .PHONY : Character.cpp.i
 
 Character.s: Character.cpp.s
@@ -248,7 +248,7 @@ Character.s: Character.cpp.s
 
 # target to generate assembly for a file
 Character.cpp.s:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/GameProject.dir/build.make CMakeFiles/GameProject.dir/Character.cpp.s
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/game.dir/build.make CMakeFiles/game.dir/Character.cpp.s
 .PHONY : Character.cpp.s
 
 GameManager.o: GameManager.cpp.o
@@ -256,7 +256,7 @@ GameManager.o: GameManager.cpp.o
 
 # target to build an object file
 GameManager.cpp.o:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/GameProject.dir/build.make CMakeFiles/GameProject.dir/GameManager.cpp.o
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/game.dir/build.make CMakeFiles/game.dir/GameManager.cpp.o
 .PHONY : GameManager.cpp.o
 
 GameManager.i: GameManager.cpp.i
@@ -264,7 +264,7 @@ GameManager.i: GameManager.cpp.i
 
 # target to preprocess a source file
 GameManager.cpp.i:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/GameProject.dir/build.make CMakeFiles/GameProject.dir/GameManager.cpp.i
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/game.dir/build.make CMakeFiles/game.dir/GameManager.cpp.i
 .PHONY : GameManager.cpp.i
 
 GameManager.s: GameManager.cpp.s
@@ -272,39 +272,15 @@ GameManager.s: GameManager.cpp.s
 
 # target to generate assembly for a file
 GameManager.cpp.s:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/GameProject.dir/build.make CMakeFiles/GameProject.dir/GameManager.cpp.s
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/game.dir/build.make CMakeFiles/game.dir/GameManager.cpp.s
 .PHONY : GameManager.cpp.s
-
-GameProject_autogen/mocs_compilation.o: GameProject_autogen/mocs_compilation.cpp.o
-.PHONY : GameProject_autogen/mocs_compilation.o
-
-# target to build an object file
-GameProject_autogen/mocs_compilation.cpp.o:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/GameProject.dir/build.make CMakeFiles/GameProject.dir/GameProject_autogen/mocs_compilation.cpp.o
-.PHONY : GameProject_autogen/mocs_compilation.cpp.o
-
-GameProject_autogen/mocs_compilation.i: GameProject_autogen/mocs_compilation.cpp.i
-.PHONY : GameProject_autogen/mocs_compilation.i
-
-# target to preprocess a source file
-GameProject_autogen/mocs_compilation.cpp.i:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/GameProject.dir/build.make CMakeFiles/GameProject.dir/GameProject_autogen/mocs_compilation.cpp.i
-.PHONY : GameProject_autogen/mocs_compilation.cpp.i
-
-GameProject_autogen/mocs_compilation.s: GameProject_autogen/mocs_compilation.cpp.s
-.PHONY : GameProject_autogen/mocs_compilation.s
-
-# target to generate assembly for a file
-GameProject_autogen/mocs_compilation.cpp.s:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/GameProject.dir/build.make CMakeFiles/GameProject.dir/GameProject_autogen/mocs_compilation.cpp.s
-.PHONY : GameProject_autogen/mocs_compilation.cpp.s
 
 Mage.o: Mage.cpp.o
 .PHONY : Mage.o
 
 # target to build an object file
 Mage.cpp.o:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/GameProject.dir/build.make CMakeFiles/GameProject.dir/Mage.cpp.o
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/game.dir/build.make CMakeFiles/game.dir/Mage.cpp.o
 .PHONY : Mage.cpp.o
 
 Mage.i: Mage.cpp.i
@@ -312,7 +288,7 @@ Mage.i: Mage.cpp.i
 
 # target to preprocess a source file
 Mage.cpp.i:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/GameProject.dir/build.make CMakeFiles/GameProject.dir/Mage.cpp.i
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/game.dir/build.make CMakeFiles/game.dir/Mage.cpp.i
 .PHONY : Mage.cpp.i
 
 Mage.s: Mage.cpp.s
@@ -320,7 +296,7 @@ Mage.s: Mage.cpp.s
 
 # target to generate assembly for a file
 Mage.cpp.s:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/GameProject.dir/build.make CMakeFiles/GameProject.dir/Mage.cpp.s
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/game.dir/build.make CMakeFiles/game.dir/Mage.cpp.s
 .PHONY : Mage.cpp.s
 
 Warrior.o: Warrior.cpp.o
@@ -328,7 +304,7 @@ Warrior.o: Warrior.cpp.o
 
 # target to build an object file
 Warrior.cpp.o:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/GameProject.dir/build.make CMakeFiles/GameProject.dir/Warrior.cpp.o
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/game.dir/build.make CMakeFiles/game.dir/Warrior.cpp.o
 .PHONY : Warrior.cpp.o
 
 Warrior.i: Warrior.cpp.i
@@ -336,7 +312,7 @@ Warrior.i: Warrior.cpp.i
 
 # target to preprocess a source file
 Warrior.cpp.i:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/GameProject.dir/build.make CMakeFiles/GameProject.dir/Warrior.cpp.i
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/game.dir/build.make CMakeFiles/game.dir/Warrior.cpp.i
 .PHONY : Warrior.cpp.i
 
 Warrior.s: Warrior.cpp.s
@@ -344,15 +320,39 @@ Warrior.s: Warrior.cpp.s
 
 # target to generate assembly for a file
 Warrior.cpp.s:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/GameProject.dir/build.make CMakeFiles/GameProject.dir/Warrior.cpp.s
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/game.dir/build.make CMakeFiles/game.dir/Warrior.cpp.s
 .PHONY : Warrior.cpp.s
+
+game_autogen/mocs_compilation.o: game_autogen/mocs_compilation.cpp.o
+.PHONY : game_autogen/mocs_compilation.o
+
+# target to build an object file
+game_autogen/mocs_compilation.cpp.o:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/game.dir/build.make CMakeFiles/game.dir/game_autogen/mocs_compilation.cpp.o
+.PHONY : game_autogen/mocs_compilation.cpp.o
+
+game_autogen/mocs_compilation.i: game_autogen/mocs_compilation.cpp.i
+.PHONY : game_autogen/mocs_compilation.i
+
+# target to preprocess a source file
+game_autogen/mocs_compilation.cpp.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/game.dir/build.make CMakeFiles/game.dir/game_autogen/mocs_compilation.cpp.i
+.PHONY : game_autogen/mocs_compilation.cpp.i
+
+game_autogen/mocs_compilation.s: game_autogen/mocs_compilation.cpp.s
+.PHONY : game_autogen/mocs_compilation.s
+
+# target to generate assembly for a file
+game_autogen/mocs_compilation.cpp.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/game.dir/build.make CMakeFiles/game.dir/game_autogen/mocs_compilation.cpp.s
+.PHONY : game_autogen/mocs_compilation.cpp.s
 
 main.o: main.cpp.o
 .PHONY : main.o
 
 # target to build an object file
 main.cpp.o:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/GameProject.dir/build.make CMakeFiles/GameProject.dir/main.cpp.o
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/game.dir/build.make CMakeFiles/game.dir/main.cpp.o
 .PHONY : main.cpp.o
 
 main.i: main.cpp.i
@@ -360,7 +360,7 @@ main.i: main.cpp.i
 
 # target to preprocess a source file
 main.cpp.i:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/GameProject.dir/build.make CMakeFiles/GameProject.dir/main.cpp.i
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/game.dir/build.make CMakeFiles/game.dir/main.cpp.i
 .PHONY : main.cpp.i
 
 main.s: main.cpp.s
@@ -368,7 +368,7 @@ main.s: main.cpp.s
 
 # target to generate assembly for a file
 main.cpp.s:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/GameProject.dir/build.make CMakeFiles/GameProject.dir/main.cpp.s
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/game.dir/build.make CMakeFiles/game.dir/main.cpp.s
 .PHONY : main.cpp.s
 
 mainwindow.o: mainwindow.cpp.o
@@ -376,7 +376,7 @@ mainwindow.o: mainwindow.cpp.o
 
 # target to build an object file
 mainwindow.cpp.o:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/GameProject.dir/build.make CMakeFiles/GameProject.dir/mainwindow.cpp.o
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/game.dir/build.make CMakeFiles/game.dir/mainwindow.cpp.o
 .PHONY : mainwindow.cpp.o
 
 mainwindow.i: mainwindow.cpp.i
@@ -384,7 +384,7 @@ mainwindow.i: mainwindow.cpp.i
 
 # target to preprocess a source file
 mainwindow.cpp.i:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/GameProject.dir/build.make CMakeFiles/GameProject.dir/mainwindow.cpp.i
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/game.dir/build.make CMakeFiles/game.dir/mainwindow.cpp.i
 .PHONY : mainwindow.cpp.i
 
 mainwindow.s: mainwindow.cpp.s
@@ -392,7 +392,7 @@ mainwindow.s: mainwindow.cpp.s
 
 # target to generate assembly for a file
 mainwindow.cpp.s:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/GameProject.dir/build.make CMakeFiles/GameProject.dir/mainwindow.cpp.s
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/game.dir/build.make CMakeFiles/game.dir/mainwindow.cpp.s
 .PHONY : mainwindow.cpp.s
 
 # Help Target
@@ -403,9 +403,9 @@ help:
 	@echo "... depend"
 	@echo "... edit_cache"
 	@echo "... rebuild_cache"
-	@echo "... GameProject_autogen"
-	@echo "... GameProject_autogen_timestamp_deps"
-	@echo "... GameProject"
+	@echo "... game_autogen"
+	@echo "... game_autogen_timestamp_deps"
+	@echo "... game"
 	@echo "... Archer.o"
 	@echo "... Archer.i"
 	@echo "... Archer.s"
@@ -421,15 +421,15 @@ help:
 	@echo "... GameManager.o"
 	@echo "... GameManager.i"
 	@echo "... GameManager.s"
-	@echo "... GameProject_autogen/mocs_compilation.o"
-	@echo "... GameProject_autogen/mocs_compilation.i"
-	@echo "... GameProject_autogen/mocs_compilation.s"
 	@echo "... Mage.o"
 	@echo "... Mage.i"
 	@echo "... Mage.s"
 	@echo "... Warrior.o"
 	@echo "... Warrior.i"
 	@echo "... Warrior.s"
+	@echo "... game_autogen/mocs_compilation.o"
+	@echo "... game_autogen/mocs_compilation.i"
+	@echo "... game_autogen/mocs_compilation.s"
 	@echo "... main.o"
 	@echo "... main.i"
 	@echo "... main.s"

@@ -3,32 +3,40 @@
 
 #include <string>
 using namespace std;
+
 class Character {
 private:
     string name;
     int health;
     int attackPower;
     static int characterCount;
-    int gridX;
-    int gridY;
+    int gridX = 0;
+    int gridY = 0;
+
 protected:
     int getAttackPower() const;
     int getHealth() const;
-    
+
 public:
     Character(const string& n, int HP, int aP);
+    virtual ~Character();
+
     string getName() const;
+
+    // Pure virtuals — every subclass must implement these
     virtual int attack() const = 0;
     virtual int specialAbility() const = 0;
+    virtual void move(int dx, int dy) = 0;   // << pure virtual >>
+
     void takeDamage(int damage);
     bool isAlive() const;
-    static int getCharacterCount();
-    virtual ~Character();
-    int getCurrentHealth() const;
+    int  getCurrentHealth() const;
+
     int getGridX() const;
     int getGridY() const;
-    void move(int x, int y);
     void SetPosition(int x, int y);
+
+    static int getCharacterCount();
 };
 
 #endif

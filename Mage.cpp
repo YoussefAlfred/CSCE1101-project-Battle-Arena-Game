@@ -1,12 +1,18 @@
 #include "Mage.h"
-#include <string>
 #include <iostream>
-Mage::Mage(const string& n) : Character(n, 150, 30) {
-}
+
+// Spec: 100 HP, 20 ATK
+Mage::Mage(const string& n) : Character(n, 100, 20) {}
+
 int Mage::attack() const {
-    return getAttackPower();
+    return getAttackPower(); // 20
 }
+
 int Mage::specialAbility() const {
-    cout << getName() << " uses Arcane Storm!" << endl;
+    // Arcane Storm: 3× ATK
     return getAttackPower() * 3;
+}
+
+void Mage::move(int dx, int dy) {
+    SetPosition(getGridX() + dx, getGridY() + dy);
 }

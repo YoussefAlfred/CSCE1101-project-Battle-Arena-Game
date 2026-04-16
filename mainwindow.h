@@ -6,47 +6,95 @@
 #include <QPushButton>
 #include <QLabel>
 #include <QGraphicsScene>
+#include <QGraphicsView>
+#include <QGraphicsRectItem>
+#include <QGraphicsEllipseItem>
+#include <QProgressBar>
+#include <QFrame>
 
 #include "GameManager.h"
 #include "Warrior.h"
 #include "Mage.h"
 #include "Archer.h"
-#include "Character.h"
+
+// ─────────────────────────────────────────────────────────────
+//  Pages
+//    0 – MenuPage        (title + Play button)
+//    1 – CharacterPage   (pick Warrior / Mage / Archer)
+//    2 – GamePage        (8×8 grid + HUD)
+// ─────────────────────────────────────────────────────────────
 
 class MainWindow : public QMainWindow {
     Q_OBJECT
 
 public:
-    MainWindow(QWidget *parent = nullptr);
-    ~MainWindow();
+    explicit MainWindow(QWidget* parent = nullptr);
+    ~MainWindow() override;
+
+private slots:
+    void onCharacterSelected(int type);   // 0=Warrior 1=Mage 2=Archer
+    void onStartClicked();
+    void onGameStateChanged(GameState state);
 
 private:
-    QStackedWidget* stackedWidget;
+    // ── pages ──────────────────────────────────────────────
+    QStackedWidget* stack;
+    QWidget*        menuPage;
+    QWidget*        characterPage;
+    QWidget*        gamePage;
 
-    // windows
-    QWidget* characterPage;
-    QWidget* gamePage;
+    // ── character select ────────────────────────────────────
+    QPushButton*    cardWarrior;
+    QPushButton*    cardMage;
+    QPushButton*    cardArcher;
+    QPushButton*    btnStart;
+    QLabel*         selectionLabel;
 
-    // the graphics scene
+    // ── game HUD ────────────────────────────────────────────
+    QLabel*         lblPlayerName;
+    QLabel*         lblPlayerClass;
+    QProgressBar*   barPlayerHP;
+    QLabel*         lblPlayerHPVal;
+
+    QLabel*         lblEnemyName;
+    QLabel*         lblEnemyClass;
+    QProgressBar*   barEnemyHP;
+    QLabel*         lblEnemyHPVal;
+
+    QLabel*         lblTurnInfo;
+    QLabel*         lblScore;
+
+    // ── grid ────────────────────────────────────────────────
     QGraphicsScene* scene;
+    QGraphicsView*  gridView;
 
-    // buttons
-    QPushButton* warriorButton;
-    QPushButton* mageButton;
-    QPushButton* archerButton;
-    QPushButton* startButton;
+    QGraphicsEllipseItem* playerToken;
+    QGraphicsEllipseItem* enemyToken;
 
-    // labels
-    QLabel* playerInfo;
-    QLabel* enemyInfo;
+    // ── logic ───────────────────────────────────────────────
+    GameManager*    gameManager;
+    Character*      selectedCharacter;
+    int             selectedType;   // 0/1/2
 
-    GameManager* gameManager;
+    // ── helpers ─────────────────────────────────────────────
+    void buildMenuPage();
+    void buildCharacterPage();
+    void buildGamePage();
 
-    Character* selectedCharacter;
+    QWidget* buildHUDPanel(bool isPlayer);   // returns left/right panel
 
-    void setupCharacterPage();
-    void setupGamePage();
+    void applyGlobalStyle();
+    QString cardStyle(const QString& accent, bool selected) const;
+
     void drawGrid();
+    void updateTokenPositions();
+    void updateHUD();
+    void showGameOver(bool playerWon);
+
+    // grid drawing constants
+    static constexpr int CELL  = 56;   // pixels per cell
+    static constexpr int GCOLS = 8;
+    static constexpr int GROWS = 8;
 };
 
-#endif
+#endif // MAINWINDOW_H
