@@ -659,31 +659,48 @@ void MainWindow::onCharacterSelected(int type) {
     btnStart->setEnabled(true);
 }
 
-void MainWindow::onStartClicked() {
+void MainWindow::onStartClicked()
+{
     delete selectedCharacter;
     selectedCharacter = nullptr;
-
+ 
     if      (selectedType == 0) selectedCharacter = new Warrior("Player");
     else if (selectedType == 1) selectedCharacter = new Mage("Player");
     else if (selectedType == 2) selectedCharacter = new Archer("Player");
     else return;
-
+ 
     Character* enemy = new Warrior("Enemy");
-
+ 
+    // startGame() places both characters on the grid (player at 0,0 enemy at 7,7)
     gameManager->startGame(selectedCharacter, enemy);
-
+ 
+    // Update HUD labels
     static const QStringList classNames = {"Warrior", "Mage", "Archer"};
     lblPlayerClass->setText(classNames[selectedType]);
     lblEnemyClass->setText("Warrior");
-
-    // Update player portrait in HUD
+ 
+    // Update HUD portraits
     QPixmap pm = makeCharacterPixmap(selectedType, 64);
     if (playerPortraitLabel) playerPortraitLabel->setPixmap(pm);
-    QPixmap enemyPm = makeCharacterPixmap(0, 64); // enemy is always Warrior for now
+    QPixmap enemyPm = makeCharacterPixmap(0, CELL - 8);
     if (enemyPortraitLabel) enemyPortraitLabel->setPixmap(enemyPm);
-
-    updateHUD();
+ 
+    // Redraw grid cells cleanly (no tokens yet)
+    drawGrid();
+ 
+    // NOW create tokens — characters are on the grid so positions are valid
+    QPixmap playerPm = makeCharacterPixmap(selectedType, CELL - 8);
+    playerToken = scene->addPixmap(playerPm);
+    playerToken->setZValue(2);
+ 
+    QPixmap enemyPixmap = makeCharacterPixmap(0, CELL - 8);   // Warrior
+    enemyToken = scene->addPixmap(enemyPixmap);
+    enemyToken->setZValue(2);
+ 
+    // Sync token positions to where startGame() placed the characters
     updateTokenPositions();
+ 
+    updateHUD();
     stack->setCurrentWidget(gamePage);
     gamePage->setFocus();
 }
@@ -842,17 +859,18 @@ void MainWindow::buildGamePage() {
     gamePage->setFocusPolicy(Qt::StrongFocus);
 }
 
-void MainWindow::drawGrid() {
+void MainWindow::drawGrid()
+{
     scene->clear();
     playerToken = nullptr;
     enemyToken  = nullptr;
-
+ 
     for (int r = 0; r < GROWS; r++) {
         for (int c = 0; c < GCOLS; c++) {
             bool dark = (r + c) % 2 == 0;
             QColor fill(dark ? Pal::GRID_DARK : Pal::GRID_LITE);
             QColor border(Pal::CELL_BORD);
-
+ 
             QGraphicsRectItem* cell = scene->addRect(
                 c * CELL, r * CELL, CELL, CELL,
                 QPen(border, 0.8),
@@ -861,57 +879,27 @@ void MainWindow::drawGrid() {
             cell->setZValue(0);
         }
     }
-
-    // ── Player token: purple circle with mini portrait ─
-    QPixmap playerPm = makeCharacterPixmap(selectedType >= 0 ? selectedType : 0, CELL - 8);
-    QGraphicsPixmapItem* pImg = scene->addPixmap(playerPm);
-    pImg->setPos(4, 4);
-    pImg->setZValue(2);
-
-    playerToken = scene->addEllipse(
-        4, 4, CELL - 8, CELL - 8,
-        QPen(QColor("#9b6dff"), 2),
-        QBrush(QColor(100, 60, 200, 60))
-    );
-    playerToken->setZValue(3);
-
-    QGraphicsTextItem* pTxt = scene->addText("P");
-    pTxt->setDefaultTextColor(Qt::white);
-    pTxt->setFont(QFont("Arial", 9, QFont::Bold));
-    pTxt->setPos(CELL/2 - 5, CELL/2 - 8);
-    pTxt->setZValue(4);
-
-    // ── Enemy token: red circle with mini portrait ────
-    QPixmap enemyPm = makeCharacterPixmap(0, CELL - 8); // Warrior
-    QGraphicsPixmapItem* eImg = scene->addPixmap(enemyPm);
-    eImg->setPos(7 * CELL + 4, 7 * CELL + 4);
-    eImg->setZValue(2);
-
-    enemyToken = scene->addEllipse(
-        7 * CELL + 4, 7 * CELL + 4, CELL - 8, CELL - 8,
-        QPen(QColor("#ff5555"), 2),
-        QBrush(QColor(180, 30, 30, 60))
-    );
-    enemyToken->setZValue(3);
-
-    QGraphicsTextItem* eTxt = scene->addText("E");
-    eTxt->setDefaultTextColor(Qt::white);
-    eTxt->setFont(QFont("Arial", 9, QFont::Bold));
-    eTxt->setPos(7 * CELL + CELL/2 - 5, 7 * CELL + CELL/2 - 8);
-    eTxt->setZValue(4);
+    // Tokens are NOT created here — they are created in onStartClicked()
+    // after startGame() has placed characters on the grid.
 }
 
-void MainWindow::updateTokenPositions() {
-    if (!gameManager || !gameManager->getPlayer() || !gameManager->getEnemy()) return;
 
+void MainWindow::updateTokenPositions()
+{
+    if (!gameManager || !gameManager->getPlayer() || !gameManager->getEnemy()) return;
+ 
     Character* p = gameManager->getPlayer();
     Character* e = gameManager->getEnemy();
-
+ 
+    // getGridX() == row,  getGridY() == col
+    // +4 offset keeps the portrait centered with a small margin inside the cell
     if (playerToken)
-        playerToken->setPos(p->getGridY() * CELL, p->getGridX() * CELL);
+        playerToken->setPos(p->getGridY() * CELL + 4, p->getGridX() * CELL + 4);
+ 
     if (enemyToken)
-        enemyToken->setPos(e->getGridY() * CELL, e->getGridX() * CELL);
+        enemyToken->setPos(e->getGridY() * CELL + 4, e->getGridX() * CELL + 4);
 }
+
 
 void MainWindow::updateHUD() {
     if (!gameManager || !gameManager->getPlayer() || !gameManager->getEnemy()) return;
@@ -1006,5 +994,50 @@ void MainWindow::showGameOver(bool playerWon) {
     } else {
         gameManager->restartGame();
         stack->setCurrentWidget(menuPage);
+    }
+}
+
+// ═══════════════════════════════════════════════════════════════
+//  keyPressEvent — Member 2 (movement only)
+//  Arrow keys / WASD move the player one cell per press.
+//  Only runs while the game is in PLAYING state.
+// ═══════════════════════════════════════════════════════════════
+
+ 
+void MainWindow::keyPressEvent(QKeyEvent* event)
+{
+    // Only accept input during an active game
+    if (!gameManager || gameManager->getState() != GameState::PLAYING) {
+        QMainWindow::keyPressEvent(event);
+        return;
+    }
+ 
+    Character* player = gameManager->getPlayer();
+    if (!player) {
+        QMainWindow::keyPressEvent(event);
+        return;
+    }
+ 
+    int row = player->getGridX();   // X == row
+    int col = player->getGridY();   // Y == col
+ 
+    int newRow = row;
+    int newCol = col;
+ 
+    switch (event->key()) {
+        case Qt::Key_Up:    case Qt::Key_W:  newRow--; break;
+        case Qt::Key_Down:  case Qt::Key_S:  newRow++; break;
+        case Qt::Key_Left:  case Qt::Key_A:  newCol--; break;
+        case Qt::Key_Right: case Qt::Key_D:  newCol++; break;
+        default:
+            QMainWindow::keyPressEvent(event);
+            return;
+    }
+ 
+    // moveCharacter validates bounds + occupancy; returns false if invalid — just ignore
+    bool moved = gameManager->getGrid()->moveCharacter(player, newRow, newCol);
+    if (moved) {
+        updateTokenPositions();
+        updateHUD();
     }
 }

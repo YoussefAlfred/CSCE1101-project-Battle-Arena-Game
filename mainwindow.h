@@ -9,6 +9,7 @@
 #include <QGraphicsView>
 #include <QGraphicsRectItem>
 #include <QGraphicsEllipseItem>
+#include <QGraphicsPixmapItem>
 #include <QProgressBar>
 #include <QFrame>
 #include <QKeyEvent>
@@ -32,6 +33,9 @@ public:
     explicit MainWindow(QWidget* parent = nullptr);
     ~MainWindow() override;
 
+protected:
+    void keyPressEvent(QKeyEvent* event) override;   // Member 2: movement
+
 private slots:
     void onCharacterSelected(int type);   // 0=Warrior 1=Mage 2=Archer
     void onStartClicked();
@@ -45,10 +49,10 @@ private:
     QWidget*        gamePage;
 
     // ── character select ────────────────────────────────────
-    QPushButton*    cardWarrior;      // overlay buttons (kept for compat)
+    QPushButton*    cardWarrior;
     QPushButton*    cardMage;
     QPushButton*    cardArcher;
-    QWidget*        cardWarriorWidget = nullptr; // actual card containers
+    QWidget*        cardWarriorWidget = nullptr;
     QWidget*        cardMageWidget    = nullptr;
     QWidget*        cardArcherWidget  = nullptr;
     QPushButton*    btnStart;
@@ -75,8 +79,9 @@ private:
     QGraphicsScene* scene;
     QGraphicsView*  gridView;
 
-    QGraphicsEllipseItem* playerToken;
-    QGraphicsEllipseItem* enemyToken;
+    // Tokens are pixmap items (pixel-art portrait) — replaces the old ellipses
+    QGraphicsPixmapItem* playerToken = nullptr;
+    QGraphicsPixmapItem* enemyToken  = nullptr;
 
     // ── logic ───────────────────────────────────────────────
     GameManager*    gameManager;
