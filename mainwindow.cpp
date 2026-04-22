@@ -812,7 +812,8 @@ QWidget* MainWindow::buildHUDPanel(bool isPlayer) {
 void MainWindow::buildGamePage() {
     ArcadeBgWidget* bg = new ArcadeBgWidget();
     gamePage = bg;
-
+    connect(gameManager, &GameManager::enemyTurnTriggered,
+        this, &MainWindow::onEnemyTurn);
     QVBoxLayout* root = new QVBoxLayout(gamePage);
     root->setContentsMargins(16, 12, 16, 12);
     root->setSpacing(10);
@@ -858,7 +859,45 @@ void MainWindow::buildGamePage() {
     stack->addWidget(gamePage);
     gamePage->setFocusPolicy(Qt::StrongFocus);
 }
+void MainWindow::onEnemyTurn() {
+    Character* enemy  = gameManager->getEnemy();
+    Character* player = gameManager->getPlayer();
+    BattleGrid* grid  = gameManager->getGrid();
 
+    if (!enemy || !player) return;
+    if (!enemy->isAlive() || !player->isAlive()) return;
+
+    int enemyRow  = enemy->getGridX();
+    int enemyCol  = enemy->getGridY();
+    int playerRow = player->getGridX();
+    int playerCol = player->getGridY();
+
+    // Step 1: try to move one step toward player
+    int dr = playerRow - enemyRow;
+    int dc = playerCol - enemyCol;
+
+    int newRow = enemyRow;
+    int newCol = enemyCol;
+
+    if (std::abs(dr) >= std::abs(dc)) {
+        // Move in row direction
+        newRow += (dr > 0 ? 1 : -1);
+    } else {
+        // Move in col direction
+        newCol += (dc > 0 ? 1 : -1);
+    }
+
+    grid->moveCharacter(enemy, newRow, newCol);
+
+    // Step 2: attack if adjacent after moving
+    if (grid->isAdjacent(enemy->getGridX(), enemy->getGridY(), playerRow, playerCol)) {
+        player->takeDamage(enemy->attack());
+    }
+
+    // Step 3: update UI and check win condition
+    updateHUD();
+    gameManager->checkWinCondition();
+}
 void MainWindow::drawGrid()
 {
     scene->clear();

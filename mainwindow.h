@@ -40,6 +40,8 @@ private slots:
     void onCharacterSelected(int type);   // 0=Warrior 1=Mage 2=Archer
     void onStartClicked();
     void onGameStateChanged(GameState state);
+    void onEnemyTurn();
+    
 
 private:
     // ── pages ──────────────────────────────────────────────
