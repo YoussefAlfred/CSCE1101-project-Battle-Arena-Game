@@ -349,6 +349,8 @@ CMakeFiles/game.dir/main.cpp.o: \
  /usr/include/x86_64-linux-gnu/qt6/QtCore/qiodevice.h \
  /usr/include/x86_64-linux-gnu/qt6/QtGui/qtextdocument.h \
  /usr/include/x86_64-linux-gnu/qt6/QtCore/qurl.h \
+ /usr/include/x86_64-linux-gnu/qt6/QtWidgets/QProgressBar \
+ /usr/include/x86_64-linux-gnu/qt6/QtWidgets/qprogressbar.h \
  /usr/include/x86_64-linux-gnu/qt6/QtWidgets/QGraphicsScene \
  /usr/include/x86_64-linux-gnu/qt6/QtWidgets/qgraphicsscene.h \
  /usr/include/x86_64-linux-gnu/qt6/QtGui/qpen.h \
@@ -359,15 +361,9 @@ CMakeFiles/game.dir/main.cpp.o: \
  /usr/include/x86_64-linux-gnu/qt6/QtWidgets/qscrollarea.h \
  /usr/include/x86_64-linux-gnu/qt6/QtWidgets/qabstractscrollarea.h \
  /usr/include/x86_64-linux-gnu/qt6/QtWidgets/qgraphicsscene.h \
- /usr/include/x86_64-linux-gnu/qt6/QtWidgets/QGraphicsRectItem \
+ /usr/include/x86_64-linux-gnu/qt6/QtWidgets/QGraphicsPixmapItem \
  /usr/include/x86_64-linux-gnu/qt6/QtWidgets/qgraphicsitem.h \
  /usr/include/x86_64-linux-gnu/qt6/QtGui/qpainterpath.h \
- /usr/include/x86_64-linux-gnu/qt6/QtWidgets/QGraphicsEllipseItem \
- /usr/include/x86_64-linux-gnu/qt6/QtWidgets/QGraphicsPixmapItem \
- /usr/include/x86_64-linux-gnu/qt6/QtWidgets/QProgressBar \
- /usr/include/x86_64-linux-gnu/qt6/QtWidgets/qprogressbar.h \
- /usr/include/x86_64-linux-gnu/qt6/QtWidgets/QFrame \
- /usr/include/x86_64-linux-gnu/qt6/QtWidgets/qframe.h \
  /usr/include/x86_64-linux-gnu/qt6/QtGui/QKeyEvent \
  /usr/include/x86_64-linux-gnu/qt6/QtGui/qevent.h \
  /usr/include/x86_64-linux-gnu/qt6/QtCore/qcoreevent.h \

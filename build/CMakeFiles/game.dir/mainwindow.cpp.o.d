@@ -349,6 +349,8 @@ CMakeFiles/game.dir/mainwindow.cpp.o: \
  /usr/include/x86_64-linux-gnu/qt6/QtCore/qiodevice.h \
  /usr/include/x86_64-linux-gnu/qt6/QtGui/qtextdocument.h \
  /usr/include/x86_64-linux-gnu/qt6/QtCore/qurl.h \
+ /usr/include/x86_64-linux-gnu/qt6/QtWidgets/QProgressBar \
+ /usr/include/x86_64-linux-gnu/qt6/QtWidgets/qprogressbar.h \
  /usr/include/x86_64-linux-gnu/qt6/QtWidgets/QGraphicsScene \
  /usr/include/x86_64-linux-gnu/qt6/QtWidgets/qgraphicsscene.h \
  /usr/include/x86_64-linux-gnu/qt6/QtGui/qpen.h \
@@ -359,15 +361,9 @@ CMakeFiles/game.dir/mainwindow.cpp.o: \
  /usr/include/x86_64-linux-gnu/qt6/QtWidgets/qscrollarea.h \
  /usr/include/x86_64-linux-gnu/qt6/QtWidgets/qabstractscrollarea.h \
  /usr/include/x86_64-linux-gnu/qt6/QtWidgets/qgraphicsscene.h \
- /usr/include/x86_64-linux-gnu/qt6/QtWidgets/QGraphicsRectItem \
+ /usr/include/x86_64-linux-gnu/qt6/QtWidgets/QGraphicsPixmapItem \
  /usr/include/x86_64-linux-gnu/qt6/QtWidgets/qgraphicsitem.h \
  /usr/include/x86_64-linux-gnu/qt6/QtGui/qpainterpath.h \
- /usr/include/x86_64-linux-gnu/qt6/QtWidgets/QGraphicsEllipseItem \
- /usr/include/x86_64-linux-gnu/qt6/QtWidgets/QGraphicsPixmapItem \
- /usr/include/x86_64-linux-gnu/qt6/QtWidgets/QProgressBar \
- /usr/include/x86_64-linux-gnu/qt6/QtWidgets/qprogressbar.h \
- /usr/include/x86_64-linux-gnu/qt6/QtWidgets/QFrame \
- /usr/include/x86_64-linux-gnu/qt6/QtWidgets/qframe.h \
  /usr/include/x86_64-linux-gnu/qt6/QtGui/QKeyEvent \
  /usr/include/x86_64-linux-gnu/qt6/QtGui/qevent.h \
  /usr/include/x86_64-linux-gnu/qt6/QtCore/qcoreevent.h \
@@ -410,6 +406,7 @@ CMakeFiles/game.dir/mainwindow.cpp.o: \
  /usr/include/x86_64-linux-gnu/qt6/QtWidgets/QHBoxLayout \
  /usr/include/x86_64-linux-gnu/qt6/QtWidgets/QGridLayout \
  /usr/include/x86_64-linux-gnu/qt6/QtWidgets/qgridlayout.h \
+ /usr/include/x86_64-linux-gnu/qt6/QtWidgets/QGraphicsRectItem \
  /usr/include/x86_64-linux-gnu/qt6/QtWidgets/QGraphicsTextItem \
  /usr/include/x86_64-linux-gnu/qt6/QtWidgets/QMessageBox \
  /usr/include/x86_64-linux-gnu/qt6/QtWidgets/qmessagebox.h \
@@ -426,6 +423,8 @@ CMakeFiles/game.dir/mainwindow.cpp.o: \
  /usr/include/x86_64-linux-gnu/qt6/QtWidgets/qsizepolicy.h \
  /usr/include/x86_64-linux-gnu/qt6/QtWidgets/QSpacerItem \
  /usr/include/x86_64-linux-gnu/qt6/QtWidgets/qlayoutitem.h \
+ /usr/include/x86_64-linux-gnu/qt6/QtWidgets/QFrame \
+ /usr/include/x86_64-linux-gnu/qt6/QtWidgets/qframe.h \
  /usr/include/x86_64-linux-gnu/qt6/QtGui/QPainter \
  /usr/include/x86_64-linux-gnu/qt6/QtGui/qpainter.h \
  /usr/include/x86_64-linux-gnu/qt6/QtGui/QLinearGradient \
@@ -465,4 +464,6 @@ CMakeFiles/game.dir/mainwindow.cpp.o: \
  /usr/include/x86_64-linux-gnu/qt6/QtCore/qfileinfo.h \
  /usr/include/x86_64-linux-gnu/qt6/QtCore/qdatetime.h \
  /usr/include/x86_64-linux-gnu/qt6/QtCore/qcalendar.h \
- /usr/include/x86_64-linux-gnu/qt6/QtCore/qlocale.h
+ /usr/include/x86_64-linux-gnu/qt6/QtCore/qlocale.h \
+ /usr/include/x86_64-linux-gnu/qt6/QtGui/QPolygon \
+ /usr/include/x86_64-linux-gnu/qt6/QtGui/qpolygon.h

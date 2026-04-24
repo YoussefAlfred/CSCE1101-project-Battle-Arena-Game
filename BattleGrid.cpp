@@ -15,7 +15,7 @@ bool BattleGrid::placeCharacter(Character* character, int row, int col) {
     if (grid[row][col].isOccupied()) return false;
 
     grid[row][col].setOccupant(character);
-    character->SetPosition(row, col); 
+    character->SetPosition(row, col);  
     return true;
 }
 

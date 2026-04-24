@@ -5,13 +5,10 @@
 #include <QStackedWidget>
 #include <QPushButton>
 #include <QLabel>
+#include <QProgressBar>
 #include <QGraphicsScene>
 #include <QGraphicsView>
-#include <QGraphicsRectItem>
-#include <QGraphicsEllipseItem>
 #include <QGraphicsPixmapItem>
-#include <QProgressBar>
-#include <QFrame>
 #include <QKeyEvent>
 
 #include "GameManager.h"
@@ -19,32 +16,24 @@
 #include "Mage.h"
 #include "Archer.h"
 
-// ─────────────────────────────────────────────────────────────
-//  Pages
-//    0 – MenuPage        (title + Play button)
-//    1 – CharacterPage   (pick Warrior / Mage / Archer)
-//    2 – GamePage        (8×8 grid + HUD)
-// ─────────────────────────────────────────────────────────────
-
 class MainWindow : public QMainWindow {
     Q_OBJECT
 
 public:
     explicit MainWindow(QWidget* parent = nullptr);
-    ~MainWindow() override;
+    ~MainWindow();
 
 protected:
-    void keyPressEvent(QKeyEvent* event) override;   // Member 2: movement
+    void keyPressEvent(QKeyEvent* event) override;
 
 private slots:
-    void onCharacterSelected(int type);   // 0=Warrior 1=Mage 2=Archer
+    void onCharacterSelected(int type);
     void onStartClicked();
     void onGameStateChanged(GameState state);
     void onEnemyTurn();
-    
 
 private:
-    // ── pages ──────────────────────────────────────────────
+    // ── pages ───────────────────────────────────────────────
     QStackedWidget* stack;
     QWidget*        menuPage;
     QWidget*        characterPage;
@@ -81,7 +70,7 @@ private:
     QGraphicsScene* scene;
     QGraphicsView*  gridView;
 
-    // Tokens are pixmap items (pixel-art portrait) — replaces the old ellipses
+    // Tokens are pixmap items — arcade sprite per character
     QGraphicsPixmapItem* playerToken = nullptr;
     QGraphicsPixmapItem* enemyToken  = nullptr;
 
@@ -103,6 +92,10 @@ private:
     void updateTokenPositions();
     void updateHUD();
     void showGameOver(bool playerWon);
+
+    // Flash a token/portrait to attack or special pose then restore idle
+    // pose: 1 = attack, 2 = special
+    void flashAttackPose(bool isPlayer, int pose);
 
     // grid drawing constants
     static constexpr int CELL  = 56;

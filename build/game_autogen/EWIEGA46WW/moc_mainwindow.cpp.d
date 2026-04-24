@@ -425,10 +425,7 @@
   /usr/include/x86_64-linux-gnu/qt6/QtGui/qvector2d.h \
   /usr/include/x86_64-linux-gnu/qt6/QtGui/qvectornd.h \
   /usr/include/x86_64-linux-gnu/qt6/QtGui/qwindowdefs.h \
-  /usr/include/x86_64-linux-gnu/qt6/QtWidgets/QFrame \
-  /usr/include/x86_64-linux-gnu/qt6/QtWidgets/QGraphicsEllipseItem \
   /usr/include/x86_64-linux-gnu/qt6/QtWidgets/QGraphicsPixmapItem \
-  /usr/include/x86_64-linux-gnu/qt6/QtWidgets/QGraphicsRectItem \
   /usr/include/x86_64-linux-gnu/qt6/QtWidgets/QGraphicsScene \
   /usr/include/x86_64-linux-gnu/qt6/QtWidgets/QGraphicsView \
   /usr/include/x86_64-linux-gnu/qt6/QtWidgets/QLabel \

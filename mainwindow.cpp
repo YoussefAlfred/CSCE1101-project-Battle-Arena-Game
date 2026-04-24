@@ -21,6 +21,7 @@
 #include <QTimer>
 #include <QPropertyAnimation>
 #include <QDir>
+#include <QPolygon>
 
 // ═══════════════════════════════════════════════════════════════
 //  Palette
@@ -49,25 +50,21 @@ static QPixmap makeArcadeBg(int w, int h) {
     QPainter p(&px);
     p.setRenderHint(QPainter::Antialiasing);
 
-    // Subtle radial glow in centre
     QRadialGradient rg(w/2, h/2, w*0.7);
     rg.setColorAt(0.0, QColor(90, 40, 180, 60));
     rg.setColorAt(1.0, QColor(0, 0, 0, 0));
     p.fillRect(0, 0, w, h, rg);
 
-    // Horizontal scanlines
     p.setPen(QColor(255, 255, 255, 6));
     for (int y = 0; y < h; y += 4)
         p.drawLine(0, y, w, y);
 
-    // Vertical grid lines (very faint)
     p.setPen(QColor(100, 60, 220, 10));
     for (int x = 0; x < w; x += 40)
         p.drawLine(x, 0, x, h);
     for (int y = 0; y < h; y += 40)
         p.drawLine(0, y, w, y);
 
-    // Corner accent glows
     auto corner = [&](int cx, int cy) {
         QRadialGradient cg(cx, cy, 200);
         cg.setColorAt(0.0, QColor(120, 60, 255, 40));
@@ -80,128 +77,468 @@ static QPixmap makeArcadeBg(int w, int h) {
     return px;
 }
 
-// ─── helper: render a character portrait as a pixmap ─────────────────────
-// Uses provided image path if available, otherwise draws SVG-style pixel art
+// ═══════════════════════════════════════════════════════════════
+//  Sprite drawing — true arcade pixel-art style
+//
+//  type:  0 = Warrior, 1 = Mage, 2 = Archer
+//  pose:  0 = Idle, 1 = Attack, 2 = Special
+//  size:  pixel dimensions (square)
+// ═══════════════════════════════════════════════════════════════
+
+// Helper to fill a pixel block (no antialiasing — hard pixel edges)
+static void px(QPainter& p, int x, int y, int w, int h, QColor c) {
+    p.fillRect(x, y, w, h, c);
+}
+
+static QPixmap makeArcadeSprite(int type, int size, int pose = 0) {
+    QPixmap pixmap(size, size);
+    pixmap.fill(Qt::transparent);
+    QPainter p(&pixmap);
+    // Pixel art = NO antialiasing
+    p.setRenderHint(QPainter::Antialiasing, false);
+    p.setRenderHint(QPainter::SmoothPixmapTransform, false);
+
+    // Pixel grid unit — scale everything to 'size'
+    // We design in a 16×16 grid and scale up
+    const int G = size / 16;
+    if (G < 1) { p.end(); return pixmap; }
+
+    // --- WARRIOR ---
+    if (type == 0) {
+        QColor skin("#f5c07a");
+        QColor hair("#3a2010");
+        QColor armor("#b8920a");
+        QColor armorLight("#f0d060");
+        QColor armorDark("#806400");
+        QColor belt("#2a1800");
+        QColor boot("#2a1a0a");
+        QColor sword("#d0d8e8");
+        QColor swordGold("#f0c030");
+        QColor blood("#d94f4f");
+        QColor spark("#fff080");
+
+        if (pose == 0) {
+            // ── IDLE: standing at attention ──────────────────
+            // helmet
+            px(p, 6*G, 0,    4*G, G,   armorDark);
+            px(p, 5*G, G,    6*G, G,   armor);
+            px(p, 5*G, 2*G,  G,   G,   armorDark);   // visor left
+            px(p, 10*G,2*G,  G,   G,   armorDark);   // visor right
+            px(p, 6*G, 2*G,  4*G, G,   skin);        // face
+            px(p, 7*G, 2*G,  G,   G,   hair);        // eye shadow
+            px(p, 8*G, 2*G,  G,   G,   hair);
+            // shoulders
+            px(p, 3*G, 3*G,  3*G, 2*G, armor);
+            px(p, 10*G,3*G,  3*G, 2*G, armor);
+            px(p, 3*G, 3*G,  G,   G,   armorLight);  // shoulder highlight
+            px(p, 12*G,3*G,  G,   G,   armorLight);
+            // torso
+            px(p, 5*G, 3*G,  6*G, 5*G, armor);
+            px(p, 5*G, 3*G,  G,   5*G, armorLight);  // chest highlight
+            px(p, 7*G, 4*G,  2*G, 2*G, armorDark);   // chest emblem
+            // belt
+            px(p, 5*G, 8*G,  6*G, G,   belt);
+            px(p, 7*G, 8*G,  2*G, G,   swordGold);   // buckle
+            // arms
+            px(p, 3*G, 5*G,  2*G, 4*G, armorDark);
+            px(p, 11*G,5*G,  2*G, 4*G, armorDark);
+            // hands/gauntlets
+            px(p, 3*G, 9*G,  2*G, G,   armorDark);
+            px(p, 11*G,9*G,  2*G, G,   armorDark);
+            // legs
+            px(p, 5*G, 9*G,  2*G, 5*G, armorDark);
+            px(p, 9*G, 9*G,  2*G, 5*G, armorDark);
+            px(p, 5*G, 9*G,  G,   5*G, armor);       // leg highlight
+            px(p, 9*G, 9*G,  G,   5*G, armor);
+            // boots
+            px(p, 4*G, 14*G, 3*G, 2*G, boot);
+            px(p, 9*G, 14*G, 3*G, 2*G, boot);
+            // sword (right side, pointing up)
+            px(p, 13*G,0,    G,   10*G,sword);
+            px(p, 13*G,0,    G,   G,   armorLight);  // tip
+            px(p, 12*G,4*G,  3*G, G,   swordGold);   // crossguard
+
+        } else if (pose == 1) {
+            // ── ATTACK: sword raised, lunging right ──────────
+            // helmet (tilted forward)
+            px(p, 5*G, G,    5*G, G,   armorDark);
+            px(p, 4*G, 2*G,  6*G, G,   armor);
+            px(p, 4*G, 3*G,  G,   G,   armorDark);
+            px(p, 5*G, 3*G,  4*G, G,   skin);
+            // angry eyes
+            px(p, 5*G, 3*G,  G,   G,   hair);
+            px(p, 7*G, 3*G,  G,   G,   hair);
+            // torso leaning forward
+            px(p, 4*G, 4*G,  8*G, 4*G, armor);
+            px(p, 4*G, 4*G,  G,   4*G, armorLight);
+            px(p, 6*G, 5*G,  2*G, 2*G, armorDark);
+            // belt
+            px(p, 4*G, 8*G,  7*G, G,   belt);
+            // legs (wide stance)
+            px(p, 3*G, 9*G,  2*G, 6*G, armorDark);
+            px(p, 9*G, 9*G,  3*G, 6*G, armorDark);
+            px(p, 3*G, 9*G,  G,   6*G, armor);
+            px(p, 9*G, 9*G,  G,   6*G, armor);
+            px(p, 2*G, 14*G, 3*G, 2*G, boot);
+            px(p, 9*G, 14*G, 4*G, 2*G, boot);
+            // sword arm extended forward+up (right side)
+            px(p, 9*G, 4*G,  4*G, G,   armorDark);   // arm
+            // SWORD slashing diagonally — bright
+            px(p, 11*G,0,    G,   8*G, sword);
+            px(p, 12*G,0,    G,   2*G, armorLight);  // tip glow
+            px(p, 10*G,3*G,  4*G, G,   swordGold);   // crossguard
+            // motion slash lines
+            px(p, 13*G,2*G,  2*G, G,   QColor(255,255,200,180));
+            px(p, 14*G,4*G,  2*G, G,   QColor(255,255,200,120));
+            px(p, 14*G,1*G,  2*G, G,   QColor(255,255,200,100));
+            // left arm (shield up)
+            px(p, 2*G, 4*G,  3*G, 4*G, armorDark);
+            px(p, G,   4*G,  2*G, 5*G, armor);       // shield
+
+        } else {
+            // ── SPECIAL: power strike — glowing golden blade ─
+            // helmet
+            px(p, 5*G, 0,    6*G, G,   armorDark);
+            px(p, 4*G, G,    8*G, G,   armor);
+            px(p, 4*G, 2*G,  G,   G,   armorDark);
+            px(p, 5*G, 2*G,  4*G, G,   skin);
+            // determined eyes (narrowed)
+            px(p, 5*G, 2*G,  2*G, G,   hair);
+            px(p, 7*G, 2*G,  G,   G,   hair);
+            // torso
+            px(p, 4*G, 3*G,  8*G, 5*G, armor);
+            px(p, 4*G, 3*G,  G,   5*G, armorLight);
+            px(p, 6*G, 4*G,  2*G, 3*G, armorDark);
+            // belt
+            px(p, 4*G, 8*G,  8*G, G,   belt);
+            px(p, 7*G, 8*G,  2*G, G,   swordGold);
+            // legs wide planted
+            px(p, 3*G, 9*G,  2*G, 6*G, armorDark);
+            px(p, 10*G,9*G,  3*G, 6*G, armorDark);
+            px(p, 2*G, 14*G, 4*G, 2*G, boot);
+            px(p, 10*G,14*G, 4*G, 2*G, boot);
+            // both arms raised — sword held aloft two-handed
+            px(p, 2*G, 3*G,  3*G, 5*G, armorDark);  // left arm up
+            px(p, 11*G,3*G,  3*G, 5*G, armorDark);  // right arm up
+            // HUGE glowing sword above head
+            px(p, 7*G, 0,    2*G, 4*G, swordGold);
+            px(p, 6*G, 0,    G,   4*G, QColor(255,220,50,200));
+            px(p, 9*G, 0,    G,   4*G, QColor(255,220,50,200));
+            px(p, 7*G, 0,    2*G, G,   QColor(255,255,180,255)); // tip super bright
+            // golden aura sparks
+            for (int i = 0; i < 8; i++) {
+                int sx = (1 + (i*3)%14) * G;
+                int sy = (i % 4) * G;
+                px(p, sx, sy, G, G, QColor(255, 220, 60, 200 - i*20));
+            }
+            // crossguard
+            px(p, 4*G, 4*G,  8*G, G,   swordGold);
+        }
+    }
+
+    // --- MAGE ---
+    else if (type == 1) {
+        QColor skin("#f4c07a");
+        QColor robe("#1a6a7a");
+        QColor robeDark("#0d4050");
+        QColor robeLight("#30b0c8");
+        QColor hat("#0d4050");
+        QColor hatBand("#d4a017");
+        QColor staff("#6b3a1f");
+        QColor orb("#80ffff");
+        QColor orbGlow("#40e0ff");
+        QColor rune("#ffe060");
+        QColor eye("#2020a0");
+        QColor beard("#e8e0d0");
+
+        if (pose == 0) {
+            // ── IDLE: standing, staff in hand ────────────────
+            // pointy hat
+            px(p, 7*G, 0,    2*G, G,   hat);
+            px(p, 6*G, G,    4*G, G,   hat);
+            px(p, 5*G, 2*G,  6*G, G,   hat);
+            px(p, 5*G, 2*G,  6*G, G,   hat);
+            px(p, 5*G, 3*G,  G,   G,   hatBand);     // hat band details
+            px(p, 10*G,3*G,  G,   G,   hatBand);
+            px(p, 4*G, 3*G,  8*G, G,   hat);
+            px(p, 4*G, 4*G,  8*G, G,   hatBand);     // band
+            // face
+            px(p, 5*G, 5*G,  6*G, 3*G, skin);
+            px(p, 6*G, 5*G,  G,   G,   eye);         // left eye
+            px(p, 9*G, 5*G,  G,   G,   eye);         // right eye
+            px(p, 6*G, 6*G,  G,   G,   QColor("#2a180a")); // brow
+            px(p, 9*G, 6*G,  G,   G,   QColor("#2a180a"));
+            // beard
+            px(p, 5*G, 7*G,  6*G, 2*G, beard);
+            px(p, 6*G, 8*G,  4*G, G,   beard);
+            // robe body
+            px(p, 4*G, 8*G,  8*G, 6*G, robe);
+            px(p, 4*G, 8*G,  G,   6*G, robeLight);   // robe edge highlight
+            px(p, 11*G,8*G,  G,   6*G, robeDark);
+            // robe trim
+            px(p, 4*G, 13*G, 8*G, G,   robeLight);
+            // sleeves wide
+            px(p, 2*G, 8*G,  3*G, 4*G, robe);
+            px(p, 11*G,8*G,  3*G, 4*G, robe);
+            px(p, 2*G, 8*G,  G,   4*G, robeLight);
+            // hands
+            px(p, 2*G, 12*G, 2*G, G,   skin);
+            px(p, 12*G,12*G, 2*G, G,   skin);
+            // feet peeking below robe
+            px(p, 5*G, 14*G, 2*G, 2*G, robeDark);
+            px(p, 9*G, 14*G, 2*G, 2*G, robeDark);
+            // staff (left side)
+            px(p, G,   2*G,  G,   12*G,staff);
+            // orb atop staff
+            px(p, 0,   G,    3*G, 2*G, orb);
+            px(p, 0,   G,    G,   G,   QColor(200,255,255,200)); // orb shine
+
+        } else if (pose == 1) {
+            // ── ATTACK: staff extended, shooting bolt ─────────
+            // hat (tilted slightly)
+            px(p, 7*G, 0,    2*G, G,   hat);
+            px(p, 6*G, G,    4*G, G,   hat);
+            px(p, 5*G, 2*G,  6*G, G,   hat);
+            px(p, 4*G, 3*G,  8*G, G,   hat);
+            px(p, 4*G, 4*G,  8*G, G,   hatBand);
+            // face
+            px(p, 5*G, 5*G,  6*G, 3*G, skin);
+            px(p, 6*G, 5*G,  G,   G,   eye);
+            px(p, 9*G, 5*G,  G,   G,   eye);
+            // concentrating brows
+            px(p, 5*G, 5*G,  2*G, G,   QColor("#2a180a"));
+            px(p, 9*G, 5*G,  2*G, G,   QColor("#2a180a"));
+            px(p, 6*G, 7*G,  4*G, G,   beard);
+            // robe
+            px(p, 4*G, 8*G,  8*G, 6*G, robe);
+            px(p, 4*G, 8*G,  G,   6*G, robeLight);
+            px(p, 11*G,8*G,  G,   6*G, robeDark);
+            px(p, 4*G, 13*G, 8*G, G,   robeLight);
+            // right arm extended forward casting
+            px(p, 11*G,8*G,  4*G, 2*G, robe);
+            px(p, 14*G,8*G,  G,   2*G, skin);        // extended hand
+            // feet
+            px(p, 5*G, 14*G, 2*G, 2*G, robeDark);
+            px(p, 9*G, 14*G, 2*G, 2*G, robeDark);
+            // MAGIC BOLT shooting right
+            px(p, 15*G,7*G,  G,   G,   orbGlow);     // bolt core
+            px(p, 14*G,8*G,  2*G, G,   QColor(100,240,255,220));
+            // bolt trail sparks
+            px(p, 13*G,6*G,  G,   G,   QColor(200,255,255,180));
+            px(p, 14*G,5*G,  G,   G,   QColor(100,240,255,140));
+            px(p, 15*G,6*G,  G,   G,   QColor(60, 200,255,100));
+            // left hand with staff
+            px(p, 2*G, 8*G,  2*G, 5*G, robe);
+            px(p, G,   3*G,  G,   12*G,staff);
+            px(p, 0,   2*G,  3*G, 2*G, orb);
+            px(p, 0,   2*G,  G,   G,   QColor(200,255,255,200));
+            // casting glow on the mage
+            px(p, 11*G,8*G,  G,   G,   QColor(100,240,255,100));
+
+        } else {
+            // ── SPECIAL: Arcane Storm — runes swirling ────────
+            // hat with glow
+            px(p, 7*G, 0,    2*G, G,   hat);
+            px(p, 6*G, G,    4*G, G,   hat);
+            px(p, 5*G, 2*G,  6*G, G,   hat);
+            px(p, 4*G, 3*G,  8*G, G,   QColor(30,100,180));   // glowing hat
+            px(p, 4*G, 4*G,  8*G, G,   QColor(60,180,255));   // glowing band
+            // face eyes glowing
+            px(p, 5*G, 5*G,  6*G, 3*G, skin);
+            px(p, 6*G, 5*G,  2*G, G,   QColor(100,220,255));  // glowing eyes
+            px(p, 9*G, 5*G,  2*G, G,   QColor(100,220,255));
+            px(p, 6*G, 7*G,  4*G, G,   beard);
+            // robe with arcane energy
+            px(p, 3*G, 8*G,  10*G,6*G, QColor(20,80,120));    // dark robe base
+            px(p, 3*G, 8*G,  G,   6*G, QColor(60,160,255));   // bright edge
+            px(p, 12*G,8*G,  G,   6*G, QColor(60,160,255));
+            px(p, 3*G, 13*G, 10*G,G,   QColor(60,160,255));
+            // both arms raised wide
+            px(p, G,   7*G,  3*G, 4*G, QColor(20,80,120));
+            px(p, 12*G,7*G,  3*G, 4*G, QColor(20,80,120));
+            // rune symbols scattered
+            px(p, 0,   3*G,  2*G, G,   rune);
+            px(p, 14*G,3*G,  2*G, G,   rune);
+            px(p, 0,   10*G, G,   2*G, rune);
+            px(p, 15*G,10*G, G,   2*G, rune);
+            px(p, 3*G, 0,    G,   2*G, rune);
+            px(p, 13*G,0,    G,   2*G, QColor(100,220,255));
+            // central arcane burst
+            px(p, 7*G, 3*G,  2*G, 2*G, QColor(255,255,200,230));
+            px(p, 6*G, 4*G,  4*G, G,   QColor(200,240,255,200));
+            px(p, 7*G, 5*G,  2*G, G,   QColor(255,255,255,180));
+            // feet
+            px(p, 5*G, 14*G, 2*G, 2*G, robeDark);
+            px(p, 9*G, 14*G, 2*G, 2*G, robeDark);
+        }
+    }
+
+    // --- ARCHER ---
+    else {
+        QColor skin("#f4c07a");
+        QColor leather("#a05018");
+        QColor leatherLight("#d07028");
+        QColor leatherDark("#603010");
+        QColor hood("#3a2010");
+        QColor cloak("#5a3018");
+        QColor bowWood("#8b5010");
+        QColor bowString("#e8d8b0");
+        QColor arrow("#d8c890");
+        QColor arrowHead("#a0b0c0");
+        QColor eye("#2a1800");
+        QColor quiver("#4a2808");
+
+        if (pose == 0) {
+            // ── IDLE: relaxed, bow at side ────────────────────
+            // hood
+            px(p, 6*G, 0,    4*G, G,   hood);
+            px(p, 5*G, G,    6*G, G,   hood);
+            px(p, 5*G, 2*G,  G,   G,   hood);         // shadow under hood
+            px(p, 10*G,2*G,  G,   G,   hood);
+            // face
+            px(p, 6*G, 2*G,  4*G, 3*G, skin);
+            px(p, 7*G, 3*G,  G,   G,   eye);           // eyes
+            px(p, 9*G, 3*G,  G,   G,   eye);
+            px(p, 7*G, 4*G,  2*G, G,   QColor("#8b4513")); // nose/mouth hint
+            // cloak/hood drape
+            px(p, 4*G, 3*G,  G,   4*G, cloak);
+            px(p, 11*G,3*G,  G,   4*G, cloak);
+            // torso
+            px(p, 5*G, 5*G,  6*G, 5*G, leather);
+            px(p, 5*G, 5*G,  G,   5*G, leatherLight);  // torso highlight
+            px(p, 10*G,5*G,  G,   5*G, leatherDark);
+            // armor straps
+            px(p, 7*G, 5*G,  2*G, G,   leatherDark);   // chest strap
+            px(p, 7*G, 7*G,  2*G, G,   leatherDark);
+            // arms
+            px(p, 3*G, 5*G,  2*G, 4*G, leather);
+            px(p, 11*G,5*G,  2*G, 4*G, leather);
+            // quiver (back right)
+            px(p, 12*G,2*G,  2*G, 8*G, quiver);
+            px(p, 12*G,2*G,  2*G, G,   leatherDark);   // quiver top
+            // arrow shafts in quiver
+            px(p, 13*G,0,    G,   4*G, arrow);
+            px(p, 12*G,G,    G,   3*G, arrow);
+            // legs
+            px(p, 5*G, 10*G, 2*G, 5*G, leatherDark);
+            px(p, 9*G, 10*G, 2*G, 5*G, leatherDark);
+            px(p, 5*G, 10*G, G,   5*G, leather);
+            // boots
+            px(p, 4*G, 14*G, 3*G, 2*G, leatherDark);
+            px(p, 9*G, 14*G, 3*G, 2*G, leatherDark);
+            // bow (left side, relaxed)
+            p.setPen(QPen(QColor(bowWood), G*1.5));
+            p.drawArc(0, 2*G, 4*G, 12*G, 30*16, 120*16);
+            p.setPen(QPen(QColor(bowString), (int)(G*0.5 + 1)));
+            p.drawLine(G, 4*G, G, 12*G);
+            p.setPen(Qt::NoPen);
+
+        } else if (pose == 1) {
+            // ── ATTACK: drawing bowstring, aiming ────────────
+            // hood
+            px(p, 6*G, 0,    4*G, G,   hood);
+            px(p, 5*G, G,    6*G, G,   hood);
+            px(p, 5*G, 2*G,  G,   G,   hood);
+            px(p, 10*G,2*G,  G,   G,   hood);
+            // face — focused, leaning forward
+            px(p, 6*G, 2*G,  4*G, 3*G, skin);
+            px(p, 7*G, 3*G,  G,   G,   eye);
+            px(p, 9*G, 3*G,  G,   G,   eye);
+            // focus squint brow lines
+            px(p, 6*G, 2*G,  2*G, G,   hood);
+            px(p, 8*G, 2*G,  2*G, G,   hood);
+            // torso leaning into draw
+            px(p, 4*G, 5*G,  7*G, 5*G, leather);
+            px(p, 4*G, 5*G,  G,   5*G, leatherLight);
+            px(p, 10*G,5*G,  G,   5*G, leatherDark);
+            // draw arm pulled back (right arm)
+            px(p, 10*G,5*G,  4*G, 2*G, leather);
+            px(p, 13*G,5*G,  2*G, G,   skin);         // hand pulling string
+            // bow arm extended left
+            px(p, G,   5*G,  4*G, 2*G, leather);
+            // quiver
+            px(p, 12*G,2*G,  2*G, 7*G, quiver);
+            // legs (wide stance)
+            px(p, 4*G, 10*G, 2*G, 5*G, leatherDark);
+            px(p, 9*G, 10*G, 3*G, 5*G, leatherDark);
+            px(p, 4*G, 14*G, 3*G, 2*G, leatherDark);
+            px(p, 9*G, 14*G, 4*G, 2*G, leatherDark);
+            // ARROW nocked and drawn
+            px(p, 3*G, 6*G,  10*G,G,   arrow);        // shaft
+            px(p, 13*G,5*G,  3*G, 3*G, arrowHead);    // head (pointing right)
+            px(p, 2*G, 5*G,  G,   3*G, QColor("#8b6030")); // fletching
+            // BOW fully drawn (curved arc, taut)
+            p.setPen(QPen(QColor(bowWood), G*2));
+            p.drawArc(-G, 2*G, 6*G, 10*G, 40*16, 100*16);
+            p.setPen(QPen(QColor(bowString), (int)(G*0.7 + 1)));
+            // taut string pulled back to cheek
+            p.drawLine(G, 3*G, 13*G, 6*G+G/2);
+            p.drawLine(G, 11*G, 13*G, 6*G+G/2);
+            p.setPen(Qt::NoPen);
+            // tension highlight on bow arm
+            px(p, 2*G, 5*G,  G,   G,   leatherLight);
+
+        } else {
+            // ── SPECIAL: Double Shot — two arrows, golden ────
+            // hood
+            px(p, 6*G, 0,    4*G, G,   hood);
+            px(p, 5*G, G,    6*G, G,   hood);
+            // face with golden gleam
+            px(p, 6*G, 2*G,  4*G, 3*G, skin);
+            px(p, 7*G, 3*G,  G,   G,   QColor("#d4a017")); // golden gleam in eyes
+            px(p, 9*G, 3*G,  G,   G,   QColor("#d4a017"));
+            // torso
+            px(p, 4*G, 5*G,  7*G, 5*G, leather);
+            px(p, 4*G, 5*G,  G,   5*G, leatherLight);
+            // draw arm (right) pulled back
+            px(p, 10*G,5*G,  4*G, 2*G, leather);
+            px(p, 13*G,5*G,  2*G, G,   skin);
+            // bow arm (left) extended
+            px(p, G,   5*G,  4*G, 2*G, leather);
+            // quiver
+            px(p, 12*G,2*G,  2*G, 7*G, quiver);
+            // legs
+            px(p, 4*G, 10*G, 2*G, 5*G, leatherDark);
+            px(p, 9*G, 10*G, 3*G, 5*G, leatherDark);
+            px(p, 4*G, 14*G, 3*G, 2*G, leatherDark);
+            px(p, 9*G, 14*G, 4*G, 2*G, leatherDark);
+            // TWO glowing golden arrows!
+            px(p, 3*G, 5*G,  10*G,G,   QColor("#f0c030"));  // arrow 1 (top)
+            px(p, 3*G, 7*G,  10*G,G,   QColor("#f0c030"));  // arrow 2 (bottom)
+            // golden arrowheads
+            px(p, 13*G,4*G,  3*G, 3*G, QColor("#ffe060"));
+            px(p, 13*G,6*G,  3*G, 3*G, QColor("#ffe060"));
+            // golden fletching
+            px(p, 2*G, 4*G,  G,   3*G, QColor("#d4a017"));
+            px(p, 2*G, 6*G,  G,   3*G, QColor("#d4a017"));
+            // BOW glowing gold
+            p.setPen(QPen(QColor("#d4a017"), G*2));
+            p.drawArc(-G, 2*G, 6*G, 10*G, 40*16, 100*16);
+            p.setPen(QPen(QColor("#ffe080"), (int)(G*0.7 + 1)));
+            p.drawLine(G, 3*G, 13*G, 6*G);
+            p.drawLine(G, 11*G, 13*G, 8*G);
+            p.setPen(Qt::NoPen);
+            // golden aura sparks
+            px(p, 14*G,2*G,  G,   G,   QColor(255,240,100,220));
+            px(p, 15*G,5*G,  G,   G,   QColor(255,220,50,180));
+            px(p, 14*G,8*G,  G,   G,   QColor(255,200,0,140));
+            px(p, 15*G,10*G, G,   G,   QColor(255,240,100,120));
+        }
+    }
+
+    p.end();
+    return pixmap;
+}
+
+// Wrapper that checks for image path first, then falls back to arcade sprite
 static QPixmap makeCharacterPixmap(int type, int size,
-                                   const QString& imagePath = QString()) {
+                                   const QString& imagePath = QString(),
+                                   int pose = 0) {
     if (!imagePath.isEmpty() && QFile::exists(imagePath)) {
         QPixmap pm(imagePath);
         return pm.scaled(size, size, Qt::KeepAspectRatio, Qt::SmoothTransformation);
     }
-
-    QPixmap px(size, size);
-    px.fill(Qt::transparent);
-    QPainter p(&px);
-    p.setRenderHint(QPainter::Antialiasing);
-
-    // Background glow
-    QColor glowColor;
-    if (type == 0)      glowColor = QColor("#d4a017");
-    else if (type == 1) glowColor = QColor("#28a89a");
-    else                glowColor = QColor("#c86e2a");
-
-    QRadialGradient bg(size/2, size/2, size/2);
-    bg.setColorAt(0.0, QColor(glowColor.red(), glowColor.green(), glowColor.blue(), 40));
-    bg.setColorAt(1.0, Qt::transparent);
-    p.fillRect(0, 0, size, size, bg);
-
-    // Draw pixel-art style character silhouette
-    p.setPen(Qt::NoPen);
-    int s = size / 6;  // unit
-
-    auto fillR = [&](int x, int y, int w, int h, QColor c) {
-        p.setBrush(c);
-        p.drawRoundedRect(x, y, w, h, 2, 2);
-    };
-
-    if (type == 0) {  // Warrior — gold armor
-        QColor body("#c0940a"), light("#f0c030"), dark("#8a6800"), skin("#f4c07a");
-        // helmet
-        fillR(size/2-s, s,   s*2, s,   light);
-        fillR(size/2-s+2, s/2, s*2-4, s/2, dark);
-        // face
-        fillR(size/2-s+2, s*2, s*2-4, s, skin);
-        // shoulder
-        fillR(size/2-s*2, s*2, s, s, body);
-        fillR(size/2+s,   s*2, s, s, body);
-        // torso
-        fillR(size/2-s, s*3, s*2, s*2, body);
-        // belt
-        fillR(size/2-s, s*5, s*2, s/2, dark);
-        // arms
-        fillR(size/2-s*2, s*3, s, s*2, body);
-        fillR(size/2+s,   s*3, s, s*2, body);
-        // sword (right)
-        fillR(size/2+s*2, s,   s/2, s*4, light);
-        fillR(size/2+s*2-s/2, s*2, s*2, s/2, dark);
-        // legs
-        fillR(size/2-s, s*5+s/2, s-2, s*2, dark);
-        fillR(size/2+2, s*5+s/2, s-2, s*2, dark);
-        // boots
-        fillR(size/2-s, s*7+s/2, s, s/2, dark);
-        fillR(size/2+2, s*7+s/2, s+s/2, s/2, dark);
-    }
-    else if (type == 1) { // Mage — teal robes
-        QColor robe("#1a7a72"), light("#30c0b0"), dark("#0a4a46"), skin("#f4c07a"),
-               star("#ffe060");
-        // hat
-        fillR(size/2-s/2, 0, s, s*2, dark);
-        fillR(size/2-s,   s, s*2, s,   robe);
-        // face
-        fillR(size/2-s+4, s*2, s*2-8, s, skin);
-        // robe
-        fillR(size/2-s, s*3, s*2, s*3, robe);
-        fillR(size/2-s-s/2, s*4, s/2+4, s*2, robe);
-        fillR(size/2+s,     s*4, s/2+4, s*2, robe);
-        // staff
-        fillR(size/2-s*2-s/2, s, s/3, s*7, dark);
-        // orb on staff
-        p.setBrush(QColor(star)); p.setPen(QPen(light,1));
-        p.drawEllipse(size/2-s*3+2, s/2, s, s);
-        p.setPen(Qt::NoPen);
-        // stars/sparks
-        p.setBrush(star);
-        for (int i = 0; i < 4; i++) {
-            int sx = size/2-s*3 + (i%2)*s*5;
-            int sy = s + (i/2)*s*5;
-            p.drawEllipse(sx, sy, 4, 4);
-        }
-    }
-    else {              // Archer — orange leather
-        QColor leather("#a05018"), light("#d07028"), dark("#603010"), skin("#f4c07a"),
-               bow("#8b4513"), string_c("#e8d8b0");
-        // hood
-        fillR(size/2-s, 0,   s*2, s,   dark);
-        fillR(size/2-s, s,   s*2, s/2, dark);
-        // face
-        fillR(size/2-s+4, s+s/2, s*2-8, s, skin);
-        // torso
-        fillR(size/2-s, s*3, s*2, s*3, leather);
-        // arms
-        fillR(size/2-s*2, s*3, s, s*2, leather);
-        fillR(size/2+s,   s*3, s, s*2, leather);
-        // legs
-        fillR(size/2-s, s*6, s-2, s*2, dark);
-        fillR(size/2+2, s*6, s-2, s*2, dark);
-        // bow (left side)
-        p.setBrush(QColor(bow)); p.setPen(Qt::NoPen);
-        p.drawArc(size/2-s*3-s/2, s*2, s*2, s*5, 30*16, 120*16);
-        p.setPen(QPen(QColor(string_c), 1));
-        p.drawLine(size/2-s*3+s/4, s*2+s/2, size/2-s*3+s/4, s*7-s/2);
-        p.setPen(Qt::NoPen);
-        // arrow
-        p.setBrush(QColor(string_c));
-        fillR(size/2-s*2-s/2, s*4, s*3, 3, string_c);
-        // arrowhead
-        QPolygon arrowHead;
-        arrowHead << QPoint(size/2+s/2, s*4-3)
-                  << QPoint(size/2+s/2, s*4+6)
-                  << QPoint(size/2+s,   s*4+1);
-        p.drawPolygon(arrowHead);
-    }
-
-    p.end();
-    return px;
+    return makeArcadeSprite(type, size, pose);
 }
 
 
@@ -274,7 +611,6 @@ void MainWindow::applyGlobalStyle() {
 //  Arcade Background Widget helper
 // ═══════════════════════════════════════════════════════════════
 
-// A QWidget subclass that paints the arcade background
 class ArcadeBgWidget : public QWidget {
     QPixmap bgCache;
 public:
@@ -287,7 +623,7 @@ protected:
         p.drawPixmap(0, 0, bgCache);
     }
     void resizeEvent(QResizeEvent* e) override {
-        bgCache = QPixmap(); // invalidate cache
+        bgCache = QPixmap();
         QWidget::resizeEvent(e);
     }
 };
@@ -304,7 +640,6 @@ void MainWindow::buildMenuPage() {
     lay->setAlignment(Qt::AlignCenter);
     lay->setSpacing(24);
 
-    // ── pixel-art coin animation row ──────────────────
     QHBoxLayout* coinRow = new QHBoxLayout();
     coinRow->setSpacing(16);
     for (int i = 0; i < 5; i++) {
@@ -315,7 +650,6 @@ void MainWindow::buildMenuPage() {
         coinRow->addWidget(coin);
     }
 
-    // ── INSERT COIN label ─────────────────────────────
     QLabel* insertCoin = new QLabel("INSERT COIN");
     insertCoin->setAlignment(Qt::AlignCenter);
     insertCoin->setStyleSheet(R"(
@@ -326,7 +660,6 @@ void MainWindow::buildMenuPage() {
         font-family: "Courier New", monospace;
     )");
 
-    // ── title ─────────────────────────────────────────
     QLabel* title = new QLabel("⚔  BATTLE ARENA");
     title->setAlignment(Qt::AlignCenter);
     title->setStyleSheet(R"(
@@ -336,7 +669,6 @@ void MainWindow::buildMenuPage() {
         color: #ffffff;
         font-family: "Impact", "Arial Black", sans-serif;
     )");
-    // Drop shadow effect on the title label
     QGraphicsDropShadowEffect* glow = new QGraphicsDropShadowEffect();
     glow->setBlurRadius(32);
     glow->setColor(QColor("#7c5cbf"));
@@ -347,7 +679,7 @@ void MainWindow::buildMenuPage() {
     sub->setAlignment(Qt::AlignCenter);
     sub->setStyleSheet("font-size: 12px; color: #7a7a99; letter-spacing: 3px; font-family: 'Courier New', monospace;");
 
-    // ── character preview row ─────────────────────────
+    // ── character preview row — show idle sprites ─────────
     QHBoxLayout* charRow = new QHBoxLayout();
     charRow->setSpacing(30);
     charRow->setAlignment(Qt::AlignCenter);
@@ -360,10 +692,10 @@ void MainWindow::buildMenuPage() {
 
         QLabel* portrait = new QLabel();
         portrait->setFixedSize(80, 80);
-        portrait->setPixmap(makeCharacterPixmap(i, 80));
+        portrait->setPixmap(makeArcadeSprite(i, 80, 0));  // idle pose
         portrait->setAlignment(Qt::AlignCenter);
         portrait->setStyleSheet(QString(
-            "border: 2px solid %1; border-radius: 8px; background: rgba(0,0,0,60);"
+            "border: 2px solid %1; border-radius: 4px; background: rgba(0,0,0,80);"
         ).arg(charColors[i]));
 
         QLabel* name = new QLabel(charNames[i]);
@@ -375,13 +707,11 @@ void MainWindow::buildMenuPage() {
         charRow->addLayout(col);
     }
 
-    // ── separator ─────────────────────────────────────
     QFrame* line = new QFrame();
     line->setFrameShape(QFrame::HLine);
     line->setStyleSheet("border: 1px solid #2a2a4a;");
     line->setFixedWidth(400);
 
-    // ── play button ───────────────────────────────────
     QPushButton* btnPlay = new QPushButton("  ▶   PLAY");
     btnPlay->setFixedSize(300, 64);
     btnPlay->setStyleSheet(R"(
@@ -440,7 +770,6 @@ void MainWindow::buildCharacterPage() {
     root->setContentsMargins(40, 28, 40, 28);
     root->setSpacing(20);
 
-    // ── header ────────────────────────────────────────
     QLabel* header = new QLabel("CHOOSE YOUR FIGHTER");
     header->setAlignment(Qt::AlignCenter);
     header->setStyleSheet(R"(
@@ -456,27 +785,26 @@ void MainWindow::buildCharacterPage() {
 
     selectionLabel = new QLabel("No character selected");
     selectionLabel->setAlignment(Qt::AlignCenter);
-    selectionLabel->setTextFormat(Qt::RichText);      // ← FIX: enable HTML
+    selectionLabel->setTextFormat(Qt::RichText);
     selectionLabel->setStyleSheet("font-size: 13px; color: #7a7a99;");
 
-    // ── cards row ─────────────────────────────────────
     QHBoxLayout* cardsRow = new QHBoxLayout();
     cardsRow->setSpacing(24);
 
     struct CardInfo {
         int type;
-        QString name, hp, atk, special, desc, accent, imagePath;
+        QString name, hp, atk, special, desc, accent;
     };
     QList<CardInfo> cards = {
         {0, "Warrior", "200", "20", "Power Strike (1.5× ATK)",
          "A heavy-hitting frontliner built to absorb punishment.",
-         Pal::AMBER, ":/images/warrior.png"},
+         Pal::AMBER},
         {1, "Mage",    "100", "20", "Arcane Storm (3× ATK)",
          "Fragile but devastating — one burst can turn the tide.",
-         Pal::TEAL,  ":/images/mage.png"},
+         Pal::TEAL},
         {2, "Archer",  "150", "15", "Double Shot (2× ATK)",
          "Balanced ranger who strikes reliably from any range.",
-         Pal::ORANGE,":/images/archer.png"},
+         Pal::ORANGE},
     };
 
     QPushButton** cardPtrs[3] = {&cardWarrior, &cardMage, &cardArcher};
@@ -484,7 +812,7 @@ void MainWindow::buildCharacterPage() {
     for (int i = 0; i < 3; i++) {
         const CardInfo& ci = cards[i];
         QWidget* card = new QWidget();
-        card->setMinimumSize(240, 300);
+        card->setMinimumSize(240, 340);
         card->setCursor(Qt::PointingHandCursor);
         card->setStyleSheet(QString(R"(
             QWidget#card%1 {
@@ -504,28 +832,44 @@ void MainWindow::buildCharacterPage() {
         cLay->setSpacing(10);
         cLay->setAlignment(Qt::AlignCenter);
 
-        // Portrait
-        QLabel* portrait = new QLabel();
-        portrait->setFixedSize(100, 100);
-        portrait->setAlignment(Qt::AlignCenter);
-        QPixmap pm = makeCharacterPixmap(ci.type, 100, ci.imagePath);
-        portrait->setPixmap(pm);
-        portrait->setStyleSheet(QString(
-            "border: 2px solid %1; border-radius: 10px; "
-            "background: rgba(0,0,0,80);"
-        ).arg(ci.accent));
-        QGraphicsDropShadowEffect* pGlow = new QGraphicsDropShadowEffect();
-        pGlow->setBlurRadius(16); pGlow->setColor(QColor(ci.accent)); pGlow->setOffset(0,0);
-        portrait->setGraphicsEffect(pGlow);
+        // Sprite preview — show all 3 poses in a row
+        QHBoxLayout* poseRow = new QHBoxLayout();
+        poseRow->setSpacing(4);
+        poseRow->setAlignment(Qt::AlignCenter);
+        QStringList poseTips = {"Idle", "Attack", "Special"};
+        QStringList poseColors = {"#7a7a99", "#d94f4f", "#d4a017"};
+        for (int pose = 0; pose < 3; pose++) {
+            QVBoxLayout* pCol = new QVBoxLayout();
+            pCol->setAlignment(Qt::AlignCenter);
+            pCol->setSpacing(2);
+
+            QLabel* spr = new QLabel();
+            spr->setFixedSize(56, 56);
+            spr->setPixmap(makeArcadeSprite(ci.type, 56, pose));
+            spr->setAlignment(Qt::AlignCenter);
+            spr->setStyleSheet(QString(
+                "border: 1px solid %1; border-radius: 3px; background: rgba(0,0,0,100);"
+            ).arg(poseColors[pose]));
+
+            QLabel* poseLabel = new QLabel(poseTips[pose]);
+            poseLabel->setAlignment(Qt::AlignCenter);
+            poseLabel->setStyleSheet(QString(
+                "font-size: 8px; color: %1; letter-spacing: 1px; font-family: 'Courier New', monospace;"
+            ).arg(poseColors[pose]));
+
+            pCol->addWidget(spr);
+            pCol->addWidget(poseLabel);
+            poseRow->addLayout(pCol);
+        }
 
         // Name
         QLabel* nameL = new QLabel(ci.name.toUpper());
         nameL->setAlignment(Qt::AlignCenter);
         nameL->setStyleSheet(QString("font-size: 18px; font-weight: bold; color: %1; letter-spacing: 2px; font-family: 'Impact', sans-serif;").arg(ci.accent));
 
-        // Stats row — use RichText via QLabel, not QPushButton
+        // Stats row
         QLabel* statsL = new QLabel();
-        statsL->setTextFormat(Qt::RichText);           // ← FIX
+        statsL->setTextFormat(Qt::RichText);
         statsL->setAlignment(Qt::AlignCenter);
         statsL->setText(
             "<span style='font-size:11px; color:#7a7a99;'>"
@@ -537,39 +881,29 @@ void MainWindow::buildCharacterPage() {
 
         // Special ability
         QLabel* specL = new QLabel();
-        specL->setTextFormat(Qt::RichText);            // ← FIX
+        specL->setTextFormat(Qt::RichText);
         specL->setAlignment(Qt::AlignCenter);
         specL->setWordWrap(true);
         specL->setText(
             "<span style='font-size:11px; color:#b0a0d0;'>✦ " + ci.special + "</span>"
         );
 
-        // Separator
         QFrame* sep = new QFrame();
         sep->setFrameShape(QFrame::HLine);
         sep->setStyleSheet("border-color: #2a2a4a;");
 
-        // Description
         QLabel* descL = new QLabel(ci.desc);
         descL->setAlignment(Qt::AlignCenter);
         descL->setWordWrap(true);
         descL->setStyleSheet("font-size: 10px; color: #606080;");
 
-        // Invisible click button on top
-        QPushButton* btn = new QPushButton();
-        btn->setFlat(true);
-        btn->setStyleSheet("background: transparent; border: none;");
-
-        cLay->addWidget(portrait, 0, Qt::AlignCenter);
+        cLay->addLayout(poseRow);
         cLay->addWidget(nameL,    0, Qt::AlignCenter);
         cLay->addWidget(statsL,   0, Qt::AlignCenter);
         cLay->addWidget(specL,    0, Qt::AlignCenter);
         cLay->addWidget(sep);
         cLay->addWidget(descL,    0, Qt::AlignCenter);
 
-        *cardPtrs[i] = btn; // still store as QPushButton for slot compat
-        // Make entire card clickable via an overlay
-        // Use an event-filter approach with a transparent QPushButton overlay
         QPushButton* overlay = new QPushButton(card);
         overlay->setGeometry(0, 0, 300, 400);
         overlay->setStyleSheet("background: transparent; border: none;");
@@ -579,13 +913,11 @@ void MainWindow::buildCharacterPage() {
         *cardPtrs[i] = overlay;
 
         cardsRow->addWidget(card);
-        // Store card widget for border update
         if (i == 0) cardWarriorWidget = card;
         else if (i == 1) cardMageWidget = card;
         else cardArcherWidget = card;
     }
 
-    // ── bottom buttons ────────────────────────────────
     QHBoxLayout* btnRow = new QHBoxLayout();
 
     QPushButton* btnBack = new QPushButton("← Back");
@@ -633,7 +965,6 @@ void MainWindow::buildCharacterPage() {
 void MainWindow::onCharacterSelected(int type) {
     selectedType = type;
 
-    // Reset all card borders
     auto setCardBorder = [](QWidget* w, const QString& accent, bool selected) {
         w->setStyleSheet(QString(R"(
             QWidget {
@@ -650,7 +981,6 @@ void MainWindow::onCharacterSelected(int type) {
 
     static const QStringList names = {"Warrior", "Mage", "Archer"};
     static const QStringList colors = {Pal::AMBER, Pal::TEAL, Pal::ORANGE};
-    // FIX: selectionLabel already has setTextFormat(Qt::RichText) set
     selectionLabel->setText(
         "<span style='color:#7a7a99;'>Selected: </span>"
         "<b style='color:" + colors[type] + ";'>" + names[type] + "</b>"
@@ -663,43 +993,38 @@ void MainWindow::onStartClicked()
 {
     delete selectedCharacter;
     selectedCharacter = nullptr;
- 
+
     if      (selectedType == 0) selectedCharacter = new Warrior("Player");
     else if (selectedType == 1) selectedCharacter = new Mage("Player");
     else if (selectedType == 2) selectedCharacter = new Archer("Player");
     else return;
- 
+
     Character* enemy = new Warrior("Enemy");
- 
-    // startGame() places both characters on the grid (player at 0,0 enemy at 7,7)
+
     gameManager->startGame(selectedCharacter, enemy);
- 
-    // Update HUD labels
+
     static const QStringList classNames = {"Warrior", "Mage", "Archer"};
     lblPlayerClass->setText(classNames[selectedType]);
     lblEnemyClass->setText("Warrior");
- 
-    // Update HUD portraits
-    QPixmap pm = makeCharacterPixmap(selectedType, 64);
+
+    // Update HUD portraits — show idle pose
+    QPixmap pm = makeArcadeSprite(selectedType, 64, 0);
     if (playerPortraitLabel) playerPortraitLabel->setPixmap(pm);
-    QPixmap enemyPm = makeCharacterPixmap(0, CELL - 8);
+    QPixmap enemyPm = makeArcadeSprite(0, 64, 0);
     if (enemyPortraitLabel) enemyPortraitLabel->setPixmap(enemyPm);
- 
-    // Redraw grid cells cleanly (no tokens yet)
+
     drawGrid();
- 
-    // NOW create tokens — characters are on the grid so positions are valid
-    QPixmap playerPm = makeCharacterPixmap(selectedType, CELL - 8);
+
+    // Create tokens with idle sprites
+    QPixmap playerPm = makeArcadeSprite(selectedType, CELL - 8, 0);
     playerToken = scene->addPixmap(playerPm);
     playerToken->setZValue(2);
- 
-    QPixmap enemyPixmap = makeCharacterPixmap(0, CELL - 8);   // Warrior
+
+    QPixmap enemyPixmap = makeArcadeSprite(0, CELL - 8, 0);
     enemyToken = scene->addPixmap(enemyPixmap);
     enemyToken->setZValue(2);
- 
-    // Sync token positions to where startGame() placed the characters
+
     updateTokenPositions();
- 
     updateHUD();
     stack->setCurrentWidget(gamePage);
     gamePage->setFocus();
@@ -719,7 +1044,6 @@ QWidget* MainWindow::buildHUDPanel(bool isPlayer) {
     lay->setContentsMargins(14, 16, 14, 16);
     lay->setSpacing(8);
 
-    // Role badge
     QLabel* role = new QLabel(isPlayer ? "YOU" : "ENEMY");
     role->setAlignment(Qt::AlignCenter);
     role->setStyleSheet(QString(
@@ -727,35 +1051,30 @@ QWidget* MainWindow::buildHUDPanel(bool isPlayer) {
         "font-size: 11px; font-weight: bold; padding: 3px; letter-spacing: 2px;"
     ).arg(isPlayer ? "#5a3ea0" : "#8b2020"));
 
-    // Portrait
     QLabel*& portraitL = isPlayer ? playerPortraitLabel : enemyPortraitLabel;
     portraitL = new QLabel();
     portraitL->setFixedSize(64, 64);
     portraitL->setAlignment(Qt::AlignCenter);
     portraitL->setStyleSheet(QString(
-        "border: 2px solid %1; border-radius: 8px; background: rgba(0,0,0,80);"
+        "border: 2px solid %1; border-radius: 4px; background: rgba(0,0,0,80);"
     ).arg(isPlayer ? "#7c5cbf" : "#d94f4f"));
-    QPixmap pm = makeCharacterPixmap(isPlayer ? 0 : 0, 64); // placeholder
+    QPixmap pm = makeArcadeSprite(0, 64, 0);
     portraitL->setPixmap(pm);
 
-    // Name
     QLabel*& nameL = isPlayer ? lblPlayerName : lblEnemyName;
     nameL = new QLabel("—");
     nameL->setAlignment(Qt::AlignCenter);
     nameL->setStyleSheet("font-size: 16px; font-weight: bold; color: #e8e4f0;");
 
-    // Class
     QLabel*& classL = isPlayer ? lblPlayerClass : lblEnemyClass;
     classL = new QLabel("—");
     classL->setAlignment(Qt::AlignCenter);
     classL->setStyleSheet(QString("font-size: 12px; color: %1;")
         .arg(isPlayer ? "#7c5cbf" : "#d94f4f"));
 
-    // Separator
     QFrame* sep = new QFrame(); sep->setFrameShape(QFrame::HLine);
     sep->setStyleSheet("border-color: #2a2a4a;");
 
-    // HP label
     QLabel* hpTitle = new QLabel("HP");
     hpTitle->setStyleSheet("font-size: 10px; color: #7a7a99; letter-spacing: 1px;");
 
@@ -788,11 +1107,9 @@ QWidget* MainWindow::buildHUDPanel(bool isPlayer) {
     lay->addWidget(hpVal);
     lay->addStretch();
 
-    // Controls hint (player side only)
     if (isPlayer) {
-        // FIX: use QLabel with setTextFormat(Qt::RichText) instead of raw HTML in QPushButton
         QLabel* hint = new QLabel();
-        hint->setTextFormat(Qt::RichText);             // ← FIX
+        hint->setTextFormat(Qt::RichText);
         hint->setText(
             "<b>Controls</b><br>"
             "&#8593; &#8595; &#8592; &#8594;&nbsp; Move<br>"
@@ -818,7 +1135,6 @@ void MainWindow::buildGamePage() {
     root->setContentsMargins(16, 12, 16, 12);
     root->setSpacing(10);
 
-    // ── top bar ───────────────────────────────────────
     QHBoxLayout* topBar = new QHBoxLayout();
     lblTurnInfo = new QLabel("Your turn — move or attack");
     lblTurnInfo->setStyleSheet("font-size: 13px; color: #7c5cbf; font-weight: bold;");
@@ -828,7 +1144,6 @@ void MainWindow::buildGamePage() {
     topBar->addStretch();
     topBar->addWidget(lblScore);
 
-    // ── main row: [left HUD] [grid] [right HUD] ───────
     QHBoxLayout* midRow = new QHBoxLayout();
     midRow->setSpacing(16);
 
@@ -838,7 +1153,6 @@ void MainWindow::buildGamePage() {
     lblPlayerName->setText("Player");
     lblEnemyName->setText("Enemy");
 
-    // Grid
     scene    = new QGraphicsScene(this);
     gridView = new QGraphicsView(scene);
     gridView->setFixedSize(GCOLS * CELL + 4, GROWS * CELL + 4);
@@ -859,6 +1173,30 @@ void MainWindow::buildGamePage() {
     stack->addWidget(gamePage);
     gamePage->setFocusPolicy(Qt::StrongFocus);
 }
+
+// ─── Helper: flash a character token with an attack pose then restore idle ──
+void MainWindow::flashAttackPose(bool isPlayer, int pose) {
+    Character* ch = isPlayer ? gameManager->getPlayer() : gameManager->getEnemy();
+    if (!ch) return;
+
+    QGraphicsPixmapItem*& token = isPlayer ? playerToken : enemyToken;
+    QLabel*& portrait = isPlayer ? playerPortraitLabel : enemyPortraitLabel;
+    int type = isPlayer ? selectedType : 0;  // enemy is always Warrior
+
+    if (!token) return;
+
+    // Show attack/special sprite
+    QPixmap attackPm = makeArcadeSprite(type, CELL - 8, pose);
+    token->setPixmap(attackPm);
+    if (portrait) portrait->setPixmap(makeArcadeSprite(type, 64, pose));
+
+    // Restore idle sprite after short delay
+    QTimer::singleShot(400, this, [=]() {
+        if (token) token->setPixmap(makeArcadeSprite(type, CELL - 8, 0));
+        if (portrait) portrait->setPixmap(makeArcadeSprite(type, 64, 0));
+    });
+}
+
 void MainWindow::onEnemyTurn() {
     Character* enemy  = gameManager->getEnemy();
     Character* player = gameManager->getPlayer();
@@ -872,7 +1210,6 @@ void MainWindow::onEnemyTurn() {
     int playerRow = player->getGridX();
     int playerCol = player->getGridY();
 
-    // Step 1: try to move one step toward player
     int dr = playerRow - enemyRow;
     int dc = playerCol - enemyCol;
 
@@ -880,36 +1217,36 @@ void MainWindow::onEnemyTurn() {
     int newCol = enemyCol;
 
     if (std::abs(dr) >= std::abs(dc)) {
-        // Move in row direction
         newRow += (dr > 0 ? 1 : -1);
     } else {
-        // Move in col direction
         newCol += (dc > 0 ? 1 : -1);
     }
 
     grid->moveCharacter(enemy, newRow, newCol);
 
-    // Step 2: attack if adjacent after moving
     if (grid->isAdjacent(enemy->getGridX(), enemy->getGridY(), playerRow, playerCol)) {
         player->takeDamage(enemy->attack());
+        // Flash enemy attack pose
+        flashAttackPose(false, 1);
     }
 
-    // Step 3: update UI and check win condition
+    updateTokenPositions();
     updateHUD();
     gameManager->checkWinCondition();
 }
+
 void MainWindow::drawGrid()
 {
     scene->clear();
     playerToken = nullptr;
     enemyToken  = nullptr;
- 
+
     for (int r = 0; r < GROWS; r++) {
         for (int c = 0; c < GCOLS; c++) {
             bool dark = (r + c) % 2 == 0;
             QColor fill(dark ? Pal::GRID_DARK : Pal::GRID_LITE);
             QColor border(Pal::CELL_BORD);
- 
+
             QGraphicsRectItem* cell = scene->addRect(
                 c * CELL, r * CELL, CELL, CELL,
                 QPen(border, 0.8),
@@ -918,23 +1255,19 @@ void MainWindow::drawGrid()
             cell->setZValue(0);
         }
     }
-    // Tokens are NOT created here — they are created in onStartClicked()
-    // after startGame() has placed characters on the grid.
 }
 
 
 void MainWindow::updateTokenPositions()
 {
     if (!gameManager || !gameManager->getPlayer() || !gameManager->getEnemy()) return;
- 
+
     Character* p = gameManager->getPlayer();
     Character* e = gameManager->getEnemy();
- 
-    // getGridX() == row,  getGridY() == col
-    // +4 offset keeps the portrait centered with a small margin inside the cell
+
     if (playerToken)
         playerToken->setPos(p->getGridY() * CELL + 4, p->getGridX() * CELL + 4);
- 
+
     if (enemyToken)
         enemyToken->setPos(e->getGridY() * CELL + 4, e->getGridX() * CELL + 4);
 }
@@ -988,7 +1321,6 @@ void MainWindow::showGameOver(bool playerWon) {
         QPushButton:hover { background: #7c5cbf; }
     )");
 
-    // FIX: use Qt::RichText explicitly on the QMessageBox content
     box->setTextFormat(Qt::RichText);
 
     if (playerWon) {
@@ -1015,7 +1347,6 @@ void MainWindow::showGameOver(bool playerWon) {
     if (box->clickedButton() == restart) {
         gameManager->restartGame();
         stack->setCurrentWidget(characterPage);
-        // reset card selection
         auto resetCard = [](QWidget* w, const QString& accent) {
             Q_UNUSED(accent);
             w->setStyleSheet(R"(
@@ -1037,46 +1368,83 @@ void MainWindow::showGameOver(bool playerWon) {
 }
 
 // ═══════════════════════════════════════════════════════════════
-//  keyPressEvent — Member 2 (movement only)
-//  Arrow keys / WASD move the player one cell per press.
-//  Only runs while the game is in PLAYING state.
+//  keyPressEvent
 // ═══════════════════════════════════════════════════════════════
 
- 
 void MainWindow::keyPressEvent(QKeyEvent* event)
 {
-    // Only accept input during an active game
     if (!gameManager || gameManager->getState() != GameState::PLAYING) {
         QMainWindow::keyPressEvent(event);
         return;
     }
- 
+
     Character* player = gameManager->getPlayer();
     if (!player) {
         QMainWindow::keyPressEvent(event);
         return;
     }
- 
-    int row = player->getGridX();   // X == row
-    int col = player->getGridY();   // Y == col
- 
+
+    int row = player->getGridX();
+    int col = player->getGridY();
+
     int newRow = row;
     int newCol = col;
- 
+
     switch (event->key()) {
+        // ── Movement ────────────────────────────────────
         case Qt::Key_Up:    case Qt::Key_W:  newRow--; break;
         case Qt::Key_Down:  case Qt::Key_S:  newRow++; break;
         case Qt::Key_Left:  case Qt::Key_A:  newCol--; break;
         case Qt::Key_Right: case Qt::Key_D:  newCol++; break;
+
+        // ── Attack (Space) ───────────────────────────────
+        case Qt::Key_Space: {
+            Character* enemy = gameManager->getEnemy();
+            if (!enemy) break;
+            BattleGrid* grid = gameManager->getGrid();
+            if (grid->isAdjacent(row, col, enemy->getGridX(), enemy->getGridY())) {
+                enemy->takeDamage(player->attack());
+                // Flash attack pose on player token + portrait
+                flashAttackPose(true, 1);
+                lblTurnInfo->setText("⚔ Attack! Hit for " +
+                    QString::number(player->attack()) + " damage.");
+                updateHUD();
+                gameManager->checkWinCondition();
+            } else {
+                lblTurnInfo->setText("Too far to attack — move closer!");
+            }
+            return;
+        }
+
+        // ── Special (Q) ──────────────────────────────────
+        case Qt::Key_Q: {
+            Character* enemy = gameManager->getEnemy();
+            if (!enemy) break;
+            BattleGrid* grid = gameManager->getGrid();
+            if (grid->isAdjacent(row, col, enemy->getGridX(), enemy->getGridY())) {
+                int dmg = player->specialAbility();
+                enemy->takeDamage(dmg);
+                // Flash special pose on player token + portrait
+                flashAttackPose(true, 2);
+                lblTurnInfo->setText("✦ Special! Hit for " +
+                    QString::number(dmg) + " damage!");
+                updateHUD();
+                gameManager->checkWinCondition();
+            } else {
+                lblTurnInfo->setText("Too far for special — move closer!");
+            }
+            return;
+        }
+
         default:
             QMainWindow::keyPressEvent(event);
             return;
     }
- 
-    // moveCharacter validates bounds + occupancy; returns false if invalid — just ignore
+
     bool moved = gameManager->getGrid()->moveCharacter(player, newRow, newCol);
     if (moved) {
         updateTokenPositions();
         updateHUD();
+        lblTurnInfo->setText("Your turn — move or attack");
     }
 }
