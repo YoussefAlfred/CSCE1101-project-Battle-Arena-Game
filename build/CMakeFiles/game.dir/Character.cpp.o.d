@@ -1,7 +1,7 @@
 CMakeFiles/game.dir/Character.cpp.o: \
- /home/youssef_alfred/teamproject2026/war/CSCE1101-project-Battle-Arena-Game/Character.cpp \
+ /home/ahmed7/CSCE1101-project-Battle-Arena-Game/Character.cpp \
  /usr/include/stdc-predef.h \
- /home/youssef_alfred/teamproject2026/war/CSCE1101-project-Battle-Arena-Game/Character.h \
+ /home/ahmed7/CSCE1101-project-Battle-Arena-Game/Character.h \
  /usr/include/c++/13/string /usr/include/c++/13/bits/requires_hosted.h \
  /usr/include/x86_64-linux-gnu/c++/13/bits/c++config.h \
  /usr/include/x86_64-linux-gnu/c++/13/bits/os_defines.h \

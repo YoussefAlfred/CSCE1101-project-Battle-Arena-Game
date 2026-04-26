@@ -53,10 +53,10 @@ RM = /usr/bin/cmake -E rm -f
 EQUALS = =
 
 # The top-level source directory on which CMake was run.
-CMAKE_SOURCE_DIR = /home/youssef_alfred/teamproject2026/war/CSCE1101-project-Battle-Arena-Game
+CMAKE_SOURCE_DIR = /home/ahmed7/CSCE1101-project-Battle-Arena-Game
 
 # The top-level build directory on which CMake was run.
-CMAKE_BINARY_DIR = /home/youssef_alfred/teamproject2026/war/CSCE1101-project-Battle-Arena-Game/build
+CMAKE_BINARY_DIR = /home/ahmed7/CSCE1101-project-Battle-Arena-Game/build
 
 # Utility rule file for game_autogen.
 
@@ -70,9 +70,9 @@ CMakeFiles/game_autogen: game_autogen/timestamp
 
 game_autogen/timestamp: /usr/lib/qt6/libexec/moc
 game_autogen/timestamp: CMakeFiles/game_autogen.dir/compiler_depend.ts
-	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --blue --bold --progress-dir=/home/youssef_alfred/teamproject2026/war/CSCE1101-project-Battle-Arena-Game/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_1) "Automatic MOC for target game"
-	/usr/bin/cmake -E cmake_autogen /home/youssef_alfred/teamproject2026/war/CSCE1101-project-Battle-Arena-Game/build/CMakeFiles/game_autogen.dir/AutogenInfo.json ""
-	/usr/bin/cmake -E touch /home/youssef_alfred/teamproject2026/war/CSCE1101-project-Battle-Arena-Game/build/game_autogen/timestamp
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --blue --bold --progress-dir=/home/ahmed7/CSCE1101-project-Battle-Arena-Game/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_1) "Automatic MOC for target game"
+	/usr/bin/cmake -E cmake_autogen /home/ahmed7/CSCE1101-project-Battle-Arena-Game/build/CMakeFiles/game_autogen.dir/AutogenInfo.json ""
+	/usr/bin/cmake -E touch /home/ahmed7/CSCE1101-project-Battle-Arena-Game/build/game_autogen/timestamp
 
 game_autogen: CMakeFiles/game_autogen
 game_autogen: game_autogen/timestamp
@@ -88,6 +88,6 @@ CMakeFiles/game_autogen.dir/clean:
 .PHONY : CMakeFiles/game_autogen.dir/clean
 
 CMakeFiles/game_autogen.dir/depend:
-	cd /home/youssef_alfred/teamproject2026/war/CSCE1101-project-Battle-Arena-Game/build && $(CMAKE_COMMAND) -E cmake_depends "Unix Makefiles" /home/youssef_alfred/teamproject2026/war/CSCE1101-project-Battle-Arena-Game /home/youssef_alfred/teamproject2026/war/CSCE1101-project-Battle-Arena-Game /home/youssef_alfred/teamproject2026/war/CSCE1101-project-Battle-Arena-Game/build /home/youssef_alfred/teamproject2026/war/CSCE1101-project-Battle-Arena-Game/build /home/youssef_alfred/teamproject2026/war/CSCE1101-project-Battle-Arena-Game/build/CMakeFiles/game_autogen.dir/DependInfo.cmake "--color=$(COLOR)"
+	cd /home/ahmed7/CSCE1101-project-Battle-Arena-Game/build && $(CMAKE_COMMAND) -E cmake_depends "Unix Makefiles" /home/ahmed7/CSCE1101-project-Battle-Arena-Game /home/ahmed7/CSCE1101-project-Battle-Arena-Game /home/ahmed7/CSCE1101-project-Battle-Arena-Game/build /home/ahmed7/CSCE1101-project-Battle-Arena-Game/build /home/ahmed7/CSCE1101-project-Battle-Arena-Game/build/CMakeFiles/game_autogen.dir/DependInfo.cmake "--color=$(COLOR)"
 .PHONY : CMakeFiles/game_autogen.dir/depend
 

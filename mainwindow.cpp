@@ -1403,11 +1403,12 @@ void MainWindow::keyPressEvent(QKeyEvent* event)
             if (!enemy) break;
             BattleGrid* grid = gameManager->getGrid();
             if (grid->isAdjacent(row, col, enemy->getGridX(), enemy->getGridY())) {
-                enemy->takeDamage(player->attack());
+		int dmg = player->attack();
+                enemy->takeDamage(dmg);
                 // Flash attack pose on player token + portrait
                 flashAttackPose(true, 1);
                 lblTurnInfo->setText("⚔ Attack! Hit for " +
-                    QString::number(player->attack()) + " damage.");
+                    QString::number(dmg) + " damage.");
                 updateHUD();
                 gameManager->checkWinCondition();
             } else {

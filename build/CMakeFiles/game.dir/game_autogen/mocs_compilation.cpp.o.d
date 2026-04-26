@@ -1,7 +1,7 @@
 CMakeFiles/game.dir/game_autogen/mocs_compilation.cpp.o: \
- /home/youssef_alfred/teamproject2026/war/CSCE1101-project-Battle-Arena-Game/build/game_autogen/mocs_compilation.cpp \
+ /home/ahmed7/CSCE1101-project-Battle-Arena-Game/build/game_autogen/mocs_compilation.cpp \
  /usr/include/stdc-predef.h \
- /home/youssef_alfred/teamproject2026/war/CSCE1101-project-Battle-Arena-Game/build/game_autogen/EWIEGA46WW/moc_GameManager.cpp \
+ /home/ahmed7/CSCE1101-project-Battle-Arena-Game/build/game_autogen/EWIEGA46WW/moc_GameManager.cpp \
  /usr/include/c++/13/memory /usr/include/c++/13/bits/memoryfwd.h \
  /usr/include/x86_64-linux-gnu/c++/13/bits/c++config.h \
  /usr/include/x86_64-linux-gnu/c++/13/bits/os_defines.h \
@@ -116,9 +116,9 @@ CMakeFiles/game.dir/game_autogen/mocs_compilation.cpp.o: \
  /usr/include/c++/13/backward/auto_ptr.h \
  /usr/include/c++/13/pstl/glue_memory_defs.h \
  /usr/include/c++/13/pstl/execution_defs.h \
- /home/youssef_alfred/teamproject2026/war/CSCE1101-project-Battle-Arena-Game/build/game_autogen/EWIEGA46WW/../../../GameManager.h \
- /home/youssef_alfred/teamproject2026/war/CSCE1101-project-Battle-Arena-Game/build/game_autogen/EWIEGA46WW/../../../BattleGrid.h \
- /home/youssef_alfred/teamproject2026/war/CSCE1101-project-Battle-Arena-Game/build/game_autogen/EWIEGA46WW/../../../Cell.h \
+ /home/ahmed7/CSCE1101-project-Battle-Arena-Game/build/game_autogen/EWIEGA46WW/../../../GameManager.h \
+ /home/ahmed7/CSCE1101-project-Battle-Arena-Game/build/game_autogen/EWIEGA46WW/../../../BattleGrid.h \
+ /home/ahmed7/CSCE1101-project-Battle-Arena-Game/build/game_autogen/EWIEGA46WW/../../../Cell.h \
  /usr/include/x86_64-linux-gnu/qt6/QtCore/QObject \
  /usr/include/x86_64-linux-gnu/qt6/QtCore/qobject.h \
  /usr/include/x86_64-linux-gnu/qt6/QtCore/qobjectdefs.h \
@@ -291,8 +291,8 @@ CMakeFiles/game.dir/game_autogen/mocs_compilation.cpp.o: \
  /usr/include/x86_64-linux-gnu/qt6/QtCore/qtimer.h \
  /usr/include/x86_64-linux-gnu/qt6/QtCore/qbasictimer.h \
  /usr/include/x86_64-linux-gnu/qt6/QtCore/qobject.h \
- /home/youssef_alfred/teamproject2026/war/CSCE1101-project-Battle-Arena-Game/build/game_autogen/EWIEGA46WW/moc_mainwindow.cpp \
- /home/youssef_alfred/teamproject2026/war/CSCE1101-project-Battle-Arena-Game/build/game_autogen/EWIEGA46WW/../../../mainwindow.h \
+ /home/ahmed7/CSCE1101-project-Battle-Arena-Game/build/game_autogen/EWIEGA46WW/moc_mainwindow.cpp \
+ /home/ahmed7/CSCE1101-project-Battle-Arena-Game/build/game_autogen/EWIEGA46WW/../../../mainwindow.h \
  /usr/include/x86_64-linux-gnu/qt6/QtWidgets/QMainWindow \
  /usr/include/x86_64-linux-gnu/qt6/QtWidgets/qmainwindow.h \
  /usr/include/x86_64-linux-gnu/qt6/QtWidgets/qtwidgetsglobal.h \
@@ -399,9 +399,9 @@ CMakeFiles/game.dir/game_autogen/mocs_compilation.cpp.o: \
  /usr/include/x86_64-linux-gnu/qt6/QtGui/QTransform \
  /usr/include/x86_64-linux-gnu/qt6/QtGui/qtransform.h \
  /usr/include/x86_64-linux-gnu/qt6/QtCore/qnativeinterface.h \
- /home/youssef_alfred/teamproject2026/war/CSCE1101-project-Battle-Arena-Game/build/game_autogen/EWIEGA46WW/../../../Warrior.h \
- /home/youssef_alfred/teamproject2026/war/CSCE1101-project-Battle-Arena-Game/build/game_autogen/EWIEGA46WW/../../../Character.h \
- /home/youssef_alfred/teamproject2026/war/CSCE1101-project-Battle-Arena-Game/build/game_autogen/EWIEGA46WW/../../../Mage.h \
- /home/youssef_alfred/teamproject2026/war/CSCE1101-project-Battle-Arena-Game/build/game_autogen/EWIEGA46WW/../../../Archer.h \
+ /home/ahmed7/CSCE1101-project-Battle-Arena-Game/build/game_autogen/EWIEGA46WW/../../../Warrior.h \
+ /home/ahmed7/CSCE1101-project-Battle-Arena-Game/build/game_autogen/EWIEGA46WW/../../../Character.h \
+ /home/ahmed7/CSCE1101-project-Battle-Arena-Game/build/game_autogen/EWIEGA46WW/../../../Mage.h \
+ /home/ahmed7/CSCE1101-project-Battle-Arena-Game/build/game_autogen/EWIEGA46WW/../../../Archer.h \
  /usr/include/x86_64-linux-gnu/qt6/QtGui/qtextcursor.h \
  /usr/include/x86_64-linux-gnu/qt6/QtGui/qtextformat.h

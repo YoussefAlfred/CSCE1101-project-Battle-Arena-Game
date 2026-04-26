@@ -1,9 +1,9 @@
 CMakeFiles/game.dir/GameManager.cpp.o: \
- /home/youssef_alfred/teamproject2026/war/CSCE1101-project-Battle-Arena-Game/GameManager.cpp \
+ /home/ahmed7/CSCE1101-project-Battle-Arena-Game/GameManager.cpp \
  /usr/include/stdc-predef.h \
- /home/youssef_alfred/teamproject2026/war/CSCE1101-project-Battle-Arena-Game/GameManager.h \
- /home/youssef_alfred/teamproject2026/war/CSCE1101-project-Battle-Arena-Game/BattleGrid.h \
- /home/youssef_alfred/teamproject2026/war/CSCE1101-project-Battle-Arena-Game/Cell.h \
+ /home/ahmed7/CSCE1101-project-Battle-Arena-Game/GameManager.h \
+ /home/ahmed7/CSCE1101-project-Battle-Arena-Game/BattleGrid.h \
+ /home/ahmed7/CSCE1101-project-Battle-Arena-Game/Cell.h \
  /usr/include/x86_64-linux-gnu/qt6/QtCore/QObject \
  /usr/include/x86_64-linux-gnu/qt6/QtCore/qobject.h \
  /usr/include/x86_64-linux-gnu/qt6/QtCore/qobjectdefs.h \
@@ -286,4 +286,4 @@ CMakeFiles/game.dir/GameManager.cpp.o: \
  /usr/include/x86_64-linux-gnu/qt6/QtCore/qtimer.h \
  /usr/include/x86_64-linux-gnu/qt6/QtCore/qbasictimer.h \
  /usr/include/x86_64-linux-gnu/qt6/QtCore/qobject.h \
- /home/youssef_alfred/teamproject2026/war/CSCE1101-project-Battle-Arena-Game/Character.h
+ /home/ahmed7/CSCE1101-project-Battle-Arena-Game/Character.h
