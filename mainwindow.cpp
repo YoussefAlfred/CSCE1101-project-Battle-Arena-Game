@@ -564,6 +564,7 @@ MainWindow::MainWindow(QWidget* parent)
 
     buildMenuPage();
     buildCharacterPage();
+    buildDifficultyPage();
     buildGamePage();
 
     applyGlobalStyle();
@@ -999,28 +1000,136 @@ void MainWindow::onStartClicked()
     else if (selectedType == 2) selectedCharacter = new Archer("Player");
     else return;
 
-    Character* enemy = new Warrior("Enemy");
+    specialCooldown = 0;
+
+    // Go to difficulty selection instead of starting immediately
+    stack->setCurrentWidget(difficultyPage);
+}
+
+// ═══════════════════════════════════════════════════════════════
+//  Page 1.5 — Difficulty Selection
+// ═══════════════════════════════════════════════════════════════
+
+void MainWindow::buildDifficultyPage() {
+    ArcadeBgWidget* bg = new ArcadeBgWidget();
+    difficultyPage = bg;
+
+    QVBoxLayout* lay = new QVBoxLayout(difficultyPage);
+    lay->setAlignment(Qt::AlignCenter);
+    lay->setSpacing(30);
+
+    QLabel* title = new QLabel("SELECT DIFFICULTY");
+    title->setAlignment(Qt::AlignCenter);
+    title->setStyleSheet(R"(
+        font-size: 32px; font-weight: 900;
+        color: #ffffff; letter-spacing: 6px;
+        font-family: "Impact", "Arial Black", sans-serif;
+    )");
+
+    QLabel* sub = new QLabel("Choose your challenge");
+    sub->setAlignment(Qt::AlignCenter);
+    sub->setStyleSheet("font-size: 13px; color: #7a7a99; letter-spacing: 2px;");
+
+    // Easy button
+    QPushButton* btnEasy = new QPushButton("⚔  EASY");
+    btnEasy->setFixedSize(220, 60);
+    btnEasy->setStyleSheet(R"(
+        QPushButton {
+            background: qlineargradient(x1:0,y1:0,x2:1,y2:0,
+                stop:0 #1a7a3a, stop:1 #3dba6e);
+            color: #fff; font-size: 18px; font-weight: bold;
+            border: none; border-radius: 10px; letter-spacing: 2px;
+        }
+        QPushButton:hover { background: #3dba6e; }
+    )");
+
+    // Hard button
+    QPushButton* btnHard = new QPushButton("💀  HARD");
+    btnHard->setFixedSize(220, 60);
+    btnHard->setStyleSheet(R"(
+        QPushButton {
+            background: qlineargradient(x1:0,y1:0,x2:1,y2:0,
+                stop:0 #8b0000, stop:1 #d94f4f);
+            color: #fff; font-size: 18px; font-weight: bold;
+            border: none; border-radius: 10px; letter-spacing: 2px;
+        }
+        QPushButton:hover { background: #d94f4f; }
+    )");
+
+    QLabel* easyDesc = new QLabel("Normal speed · Enemy uses basic attacks only");
+    easyDesc->setAlignment(Qt::AlignCenter);
+    easyDesc->setStyleSheet("font-size: 11px; color: #3dba6e;");
+
+    QLabel* hardDesc = new QLabel("2× faster timer · Enemy uses special when HP < 30%");
+    hardDesc->setAlignment(Qt::AlignCenter);
+    hardDesc->setStyleSheet("font-size: 11px; color: #d94f4f;");
+
+    QPushButton* btnBack = new QPushButton("← Back");
+    btnBack->setFixedSize(120, 38);
+    btnBack->setStyleSheet(R"(
+        QPushButton {
+            background: #1e1e3a; color: #7a7a99;
+            border: 1px solid #2a2a4a; border-radius: 8px; font-size: 13px;
+        }
+        QPushButton:hover { background: #25253d; color: #e8e4f0; }
+    )");
+    connect(btnBack, &QPushButton::clicked, this, [=]() {
+        stack->setCurrentWidget(characterPage);
+    });
+
+    connect(btnEasy, &QPushButton::clicked, this, [=]() {
+        hardMode = false;
+        gameManager->setHardMode(false);
+        startBattle();
+    });
+    connect(btnHard, &QPushButton::clicked, this, [=]() {
+        hardMode = true;
+        gameManager->setHardMode(true);
+        startBattle();
+    });
+
+    lay->addWidget(title);
+    lay->addWidget(sub);
+    lay->addSpacing(10);
+    lay->addWidget(btnEasy, 0, Qt::AlignCenter);
+    lay->addWidget(easyDesc);
+    lay->addSpacing(6);
+    lay->addWidget(btnHard, 0, Qt::AlignCenter);
+    lay->addWidget(hardDesc);
+    lay->addSpacing(20);
+    lay->addWidget(btnBack, 0, Qt::AlignLeft);
+
+    stack->addWidget(difficultyPage);
+}
+
+// Helper: actually launch the game after difficulty is chosen
+void MainWindow::startBattle()
+{
+    Character* enemy = nullptr;
+    int enemyType = rand() % 3;
+    if      (enemyType == 0) enemy = new Warrior("Enemy");
+    else if (enemyType == 1) enemy = new Mage("Enemy");
+    else                     enemy = new Archer("Enemy");
 
     gameManager->startGame(selectedCharacter, enemy);
 
     static const QStringList classNames = {"Warrior", "Mage", "Archer"};
+    static const QStringList enemyNames = {"Warrior", "Mage", "Archer"};
     lblPlayerClass->setText(classNames[selectedType]);
-    lblEnemyClass->setText("Warrior");
+    lblEnemyClass->setText(enemyNames[enemyType]);
 
-    // Update HUD portraits — show idle pose
     QPixmap pm = makeArcadeSprite(selectedType, 64, 0);
     if (playerPortraitLabel) playerPortraitLabel->setPixmap(pm);
-    QPixmap enemyPm = makeArcadeSprite(0, 64, 0);
+    QPixmap enemyPm = makeArcadeSprite(enemyType, 64, 0);
     if (enemyPortraitLabel) enemyPortraitLabel->setPixmap(enemyPm);
 
     drawGrid();
 
-    // Create tokens with idle sprites
     QPixmap playerPm = makeArcadeSprite(selectedType, CELL - 8, 0);
     playerToken = scene->addPixmap(playerPm);
     playerToken->setZValue(2);
 
-    QPixmap enemyPixmap = makeArcadeSprite(0, CELL - 8, 0);
+    QPixmap enemyPixmap = makeArcadeSprite(enemyType, CELL - 8, 0);
     enemyToken = scene->addPixmap(enemyPixmap);
     enemyToken->setZValue(2);
 
@@ -1225,9 +1334,14 @@ void MainWindow::onEnemyTurn() {
     grid->moveCharacter(enemy, newRow, newCol);
 
     if (grid->isAdjacent(enemy->getGridX(), enemy->getGridY(), playerRow, playerCol)) {
-        player->takeDamage(enemy->attack());
-        // Flash enemy attack pose
-        flashAttackPose(false, 1);
+        // Hard mode: use special if enemy HP < 30% of max
+        if (hardMode && enemy->getCurrentHealth() < 0.3 * enemy->getMaxHealth()) {
+            player->takeDamage(enemy->specialAbility());
+            flashAttackPose(false, 2);
+        } else {
+            player->takeDamage(enemy->attack());
+            flashAttackPose(false, 1);
+        }
     }
 
     updateTokenPositions();
@@ -1405,6 +1519,7 @@ void MainWindow::keyPressEvent(QKeyEvent* event)
             if (grid->isAdjacent(row, col, enemy->getGridX(), enemy->getGridY())) {
 		int dmg = player->attack();
                 enemy->takeDamage(dmg);
+                if (specialCooldown > 0) specialCooldown--;
                 // Flash attack pose on player token + portrait
                 flashAttackPose(true, 1);
                 lblTurnInfo->setText("⚔ Attack! Hit for " +
@@ -1419,12 +1534,18 @@ void MainWindow::keyPressEvent(QKeyEvent* event)
 
         // ── Special (Q) ──────────────────────────────────
         case Qt::Key_Q: {
+            if (specialCooldown > 0) {
+                lblTurnInfo->setText("✦ Special not ready (" +
+                    QString::number(specialCooldown) + " turns)");
+                return;
+            }
             Character* enemy = gameManager->getEnemy();
             if (!enemy) break;
             BattleGrid* grid = gameManager->getGrid();
             if (grid->isAdjacent(row, col, enemy->getGridX(), enemy->getGridY())) {
                 int dmg = player->specialAbility();
                 enemy->takeDamage(dmg);
+                specialCooldown = 3;
                 // Flash special pose on player token + portrait
                 flashAttackPose(true, 2);
                 lblTurnInfo->setText("✦ Special! Hit for " +
@@ -1444,6 +1565,7 @@ void MainWindow::keyPressEvent(QKeyEvent* event)
 
     bool moved = gameManager->getGrid()->moveCharacter(player, newRow, newCol);
     if (moved) {
+        if (specialCooldown > 0) specialCooldown--;
         updateTokenPositions();
         updateHUD();
         lblTurnInfo->setText("Your turn — move or attack");

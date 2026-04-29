@@ -37,6 +37,7 @@ private:
     QStackedWidget* stack;
     QWidget*        menuPage;
     QWidget*        characterPage;
+    QWidget*        difficultyPage;
     QWidget*        gamePage;
 
     // ── character select ────────────────────────────────────
@@ -78,11 +79,15 @@ private:
     GameManager*    gameManager;
     Character*      selectedCharacter;
     int             selectedType;   // 0/1/2
+    int             specialCooldown = 0;
+    bool            hardMode        = false;
 
     // ── helpers ─────────────────────────────────────────────
     void buildMenuPage();
     void buildCharacterPage();
+    void buildDifficultyPage();
     void buildGamePage();
+    void startBattle();
 
     QWidget* buildHUDPanel(bool isPlayer);
 
