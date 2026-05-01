@@ -8,6 +8,7 @@ class Character {
 private:
     string name;
     int health;
+    int maxHealth;      
     int attackPower;
     static int characterCount;
     int gridX = 0;
@@ -15,7 +16,7 @@ private:
 
 protected:
     int getAttackPower() const;
-    int getHealth() const;
+    int getHealth()      const;
 
 public:
     Character(const string& n, int HP, int aP);
@@ -24,16 +25,17 @@ public:
     string getName() const;
 
     // Pure virtuals — every subclass must implement these
-    virtual int attack() const = 0;
-    virtual int specialAbility() const = 0;
-    virtual void move(int dx, int dy) = 0;   // << pure virtual >>
+    virtual int  attack()         const = 0;
+    virtual int  specialAbility() const = 0;
+    virtual void move(int dx, int dy)   = 0;
 
     void takeDamage(int damage);
-    bool isAlive() const;
-    int  getCurrentHealth() const;
+    bool isAlive()           const;
+    int  getCurrentHealth()  const;
+    int  getMaxHealth()      const;   // ← added
 
-    int getGridX() const;
-    int getGridY() const;
+    int  getGridX() const;
+    int  getGridY() const;
     void SetPosition(int x, int y);
 
     static int getCharacterCount();

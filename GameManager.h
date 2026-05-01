@@ -22,12 +22,13 @@ public:
     void startGame(Character* playerCharacter, Character* enemyCharacter);
     void checkWinCondition();
     void restartGame();
+    void setHardMode(bool hard);   // ← added
 
-    Character* getPlayer() const;
-    Character* getEnemy() const;
+    Character*  getPlayer() const;
+    Character*  getEnemy()  const;
     BattleGrid* getGrid();
-    GameState getState() const;
-    int getScore() const;
+    GameState   getState()  const;
+    int         getScore()  const;
 
 signals:
     void gameStateChanged(GameState newState);
@@ -40,10 +41,12 @@ public slots:
 private:
     Character* player;
     Character* enemy;
-    GameState state;
-    int score;
-    QTimer* timer;
+    GameState  state;
+    int        score;
+    bool       hardMode;           // ← added
+    QTimer*    timer;
     BattleGrid battleGrid;
 
-    static const int TIMER_INTERVAL_MS = 800;
+    static const int TIMER_INTERVAL_MS      = 800;
+    static const int TIMER_INTERVAL_HARD_MS = 400;  // 2× faster for Hard mode
 };

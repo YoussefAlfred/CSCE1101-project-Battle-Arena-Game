@@ -10,6 +10,7 @@
 #include <QGraphicsView>
 #include <QGraphicsPixmapItem>
 #include <QKeyEvent>
+#include <QTimer>
 
 #include "GameManager.h"
 #include "Warrior.h"
@@ -39,6 +40,7 @@ private:
     QWidget*        characterPage;
     QWidget*        difficultyPage;
     QWidget*        gamePage;
+    QWidget*        gameOverPage;
 
     // ── character select ────────────────────────────────────
     QPushButton*    cardWarrior;
@@ -58,35 +60,71 @@ private:
     QLabel*         lblPlayerClass;
     QProgressBar*   barPlayerHP;
     QLabel*         lblPlayerHPVal;
+    QLabel*         lblPlayerDanger = nullptr;
 
     QLabel*         lblEnemyName;
     QLabel*         lblEnemyClass;
     QProgressBar*   barEnemyHP;
     QLabel*         lblEnemyHPVal;
+    QLabel*         lblEnemyDanger = nullptr;
 
     QLabel*         lblTurnInfo;
     QLabel*         lblScore;
 
-    // ── grid ────────────────────────────────────────────────
-    QGraphicsScene* scene;
-    QGraphicsView*  gridView;
+    // ── Combat log ──────────────────────────────────────────
+    QLabel*         lblCombatLog = nullptr;
+    QStringList     combatMessages;
 
-    // Tokens are pixmap items — arcade sprite per character
+    // ── Bottom status bar ───────────────────────────────────
+    QLabel*         lblTurnCounter = nullptr;
+    QLabel*         lblDistance    = nullptr;
+    QLabel*         lblDiffBadge  = nullptr;
+
+    // ── Action buttons ──────────────────────────────────────
+    QPushButton*    btnActionAttack  = nullptr;
+    QPushButton*    btnActionSpecial = nullptr;
+
+    // ── Game over overlay ───────────────────────────────────
+    QLabel*         lblGOTitle   = nullptr;
+    QLabel*         lblGOMessage = nullptr;
+    QLabel*         lblGOScore   = nullptr;
+    QLabel*         lblGOSprite  = nullptr;
+
+    // ── Turn counting ───────────────────────────────────────
+    int             turnCount = 0;
+
+    // ── Difficulty page preview ─────────────────────────────
+    QLabel*         diffCharPreview = nullptr;
+    QLabel*         diffCharName    = nullptr;
+
+    // ── Menu animation ──────────────────────────────────────
+    QLabel*         menuSprites[3] = {nullptr, nullptr, nullptr};
+    int             menuPoseFrame  = 0;
+    QTimer*         menuAnimTimer  = nullptr;
+    QLabel*         insertCoinLabel = nullptr;
+    QTimer*         coinBlinkTimer  = nullptr;
+    bool            coinBlinkState  = true;
+
+    // ── grid ────────────────────────────────────────────────
+    QGraphicsScene*      scene;
+    QGraphicsView*       gridView;
     QGraphicsPixmapItem* playerToken = nullptr;
     QGraphicsPixmapItem* enemyToken  = nullptr;
 
     // ── logic ───────────────────────────────────────────────
-    GameManager*    gameManager;
-    Character*      selectedCharacter;
-    int             selectedType;   // 0/1/2
-    int             specialCooldown = 0;
-    bool            hardMode        = false;
+    GameManager* gameManager;
+    Character*   selectedCharacter;
+    int          selectedType  = -1;   // 0=Warrior 1=Mage 2=Archer
+    int          enemyType     = -1;
+    int          specialCooldown = 0;
+    bool         hardMode        = false;
 
     // ── helpers ─────────────────────────────────────────────
     void buildMenuPage();
     void buildCharacterPage();
     void buildDifficultyPage();
     void buildGamePage();
+    void buildGameOverPage();
     void startBattle();
 
     QWidget* buildHUDPanel(bool isPlayer);
@@ -101,6 +139,9 @@ private:
     // Flash a token/portrait to attack or special pose then restore idle
     // pose: 1 = attack, 2 = special
     void flashAttackPose(bool isPlayer, int pose);
+
+    void addCombatMessage(const QString& msg);
+    void updateBottomBar();
 
     // grid drawing constants
     static constexpr int CELL  = 56;

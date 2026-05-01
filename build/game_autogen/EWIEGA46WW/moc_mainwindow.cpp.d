@@ -1,12 +1,12 @@
-/home/ahmed7/CSCE1101-project-Battle-Arena-Game/build/game_autogen/EWIEGA46WW/moc_mainwindow.cpp: /home/ahmed7/CSCE1101-project-Battle-Arena-Game/mainwindow.h \
-  /home/ahmed7/CSCE1101-project-Battle-Arena-Game/build/game_autogen/moc_predefs.h \
-  /home/ahmed7/CSCE1101-project-Battle-Arena-Game/Archer.h \
-  /home/ahmed7/CSCE1101-project-Battle-Arena-Game/BattleGrid.h \
-  /home/ahmed7/CSCE1101-project-Battle-Arena-Game/Cell.h \
-  /home/ahmed7/CSCE1101-project-Battle-Arena-Game/Character.h \
-  /home/ahmed7/CSCE1101-project-Battle-Arena-Game/GameManager.h \
-  /home/ahmed7/CSCE1101-project-Battle-Arena-Game/Mage.h \
-  /home/ahmed7/CSCE1101-project-Battle-Arena-Game/Warrior.h \
+/home/youssef_alfred/teamproject2026/war/CSCE1101-project-Battle-Arena-Game/build/game_autogen/EWIEGA46WW/moc_mainwindow.cpp: /home/youssef_alfred/teamproject2026/war/CSCE1101-project-Battle-Arena-Game/mainwindow.h \
+  /home/youssef_alfred/teamproject2026/war/CSCE1101-project-Battle-Arena-Game/build/game_autogen/moc_predefs.h \
+  /home/youssef_alfred/teamproject2026/war/CSCE1101-project-Battle-Arena-Game/Archer.h \
+  /home/youssef_alfred/teamproject2026/war/CSCE1101-project-Battle-Arena-Game/BattleGrid.h \
+  /home/youssef_alfred/teamproject2026/war/CSCE1101-project-Battle-Arena-Game/Cell.h \
+  /home/youssef_alfred/teamproject2026/war/CSCE1101-project-Battle-Arena-Game/Character.h \
+  /home/youssef_alfred/teamproject2026/war/CSCE1101-project-Battle-Arena-Game/GameManager.h \
+  /home/youssef_alfred/teamproject2026/war/CSCE1101-project-Battle-Arena-Game/Mage.h \
+  /home/youssef_alfred/teamproject2026/war/CSCE1101-project-Battle-Arena-Game/Warrior.h \
   /usr/include/alloca.h \
   /usr/include/asm-generic/errno-base.h \
   /usr/include/asm-generic/errno.h \

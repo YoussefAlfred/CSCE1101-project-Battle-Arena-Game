@@ -1,7 +1,7 @@
 CMakeFiles/game.dir/main.cpp.o: \
- /home/ahmed7/CSCE1101-project-Battle-Arena-Game/main.cpp \
+ /home/youssef_alfred/teamproject2026/war/CSCE1101-project-Battle-Arena-Game/main.cpp \
  /usr/include/stdc-predef.h \
- /home/ahmed7/CSCE1101-project-Battle-Arena-Game/mainwindow.h \
+ /home/youssef_alfred/teamproject2026/war/CSCE1101-project-Battle-Arena-Game/mainwindow.h \
  /usr/include/x86_64-linux-gnu/qt6/QtWidgets/QMainWindow \
  /usr/include/x86_64-linux-gnu/qt6/QtWidgets/qmainwindow.h \
  /usr/include/x86_64-linux-gnu/qt6/QtWidgets/qtwidgetsglobal.h \
@@ -386,17 +386,17 @@ CMakeFiles/game.dir/main.cpp.o: \
  /usr/include/x86_64-linux-gnu/qt6/QtGui/QTransform \
  /usr/include/x86_64-linux-gnu/qt6/QtGui/qtransform.h \
  /usr/include/x86_64-linux-gnu/qt6/QtCore/qnativeinterface.h \
- /home/ahmed7/CSCE1101-project-Battle-Arena-Game/GameManager.h \
- /home/ahmed7/CSCE1101-project-Battle-Arena-Game/BattleGrid.h \
- /home/ahmed7/CSCE1101-project-Battle-Arena-Game/Cell.h \
- /usr/include/x86_64-linux-gnu/qt6/QtCore/QObject \
  /usr/include/x86_64-linux-gnu/qt6/QtCore/QTimer \
  /usr/include/x86_64-linux-gnu/qt6/QtCore/qtimer.h \
  /usr/include/x86_64-linux-gnu/qt6/QtCore/qbasictimer.h \
- /home/ahmed7/CSCE1101-project-Battle-Arena-Game/Warrior.h \
- /home/ahmed7/CSCE1101-project-Battle-Arena-Game/Character.h \
- /home/ahmed7/CSCE1101-project-Battle-Arena-Game/Mage.h \
- /home/ahmed7/CSCE1101-project-Battle-Arena-Game/Archer.h \
+ /home/youssef_alfred/teamproject2026/war/CSCE1101-project-Battle-Arena-Game/GameManager.h \
+ /home/youssef_alfred/teamproject2026/war/CSCE1101-project-Battle-Arena-Game/BattleGrid.h \
+ /home/youssef_alfred/teamproject2026/war/CSCE1101-project-Battle-Arena-Game/Cell.h \
+ /usr/include/x86_64-linux-gnu/qt6/QtCore/QObject \
+ /home/youssef_alfred/teamproject2026/war/CSCE1101-project-Battle-Arena-Game/Warrior.h \
+ /home/youssef_alfred/teamproject2026/war/CSCE1101-project-Battle-Arena-Game/Character.h \
+ /home/youssef_alfred/teamproject2026/war/CSCE1101-project-Battle-Arena-Game/Mage.h \
+ /home/youssef_alfred/teamproject2026/war/CSCE1101-project-Battle-Arena-Game/Archer.h \
  /usr/include/x86_64-linux-gnu/qt6/QtWidgets/QApplication \
  /usr/include/x86_64-linux-gnu/qt6/QtWidgets/qapplication.h \
  /usr/include/x86_64-linux-gnu/qt6/QtCore/qcoreapplication.h \

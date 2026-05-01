@@ -22,6 +22,7 @@
 #include <QPropertyAnimation>
 #include <QDir>
 #include <QPolygon>
+#include <ctime>
 
 // ═══════════════════════════════════════════════════════════════
 //  Palette
@@ -552,8 +553,8 @@ MainWindow::MainWindow(QWidget* parent)
       selectedType(-1)
 {
     setWindowTitle("⚔  Battle Arena");
-    resize(1100, 720);
-    setMinimumSize(900, 620);
+    resize(1100, 750);
+    setMinimumSize(1000, 680);
 
     gameManager = new GameManager(this);
     connect(gameManager, &GameManager::gameStateChanged,
@@ -566,8 +567,29 @@ MainWindow::MainWindow(QWidget* parent)
     buildCharacterPage();
     buildDifficultyPage();
     buildGamePage();
+    buildGameOverPage();
 
     applyGlobalStyle();
+
+    // ── Menu animation: cycle character poses ──────────────
+    menuAnimTimer = new QTimer(this);
+    connect(menuAnimTimer, &QTimer::timeout, this, [this]() {
+        menuPoseFrame = (menuPoseFrame + 1) % 3;
+        for (int i = 0; i < 3; i++) {
+            if (menuSprites[i])
+                menuSprites[i]->setPixmap(makeArcadeSprite(i, 100, menuPoseFrame));
+        }
+    });
+    menuAnimTimer->start(1200);
+
+    // ── Blinking INSERT COIN ──────────────────────────────
+    coinBlinkTimer = new QTimer(this);
+    connect(coinBlinkTimer, &QTimer::timeout, this, [this]() {
+        coinBlinkState = !coinBlinkState;
+        if (insertCoinLabel)
+            insertCoinLabel->setVisible(coinBlinkState);
+    });
+    coinBlinkTimer->start(600);
 
     stack->setCurrentWidget(menuPage);
 }
@@ -612,16 +634,54 @@ void MainWindow::applyGlobalStyle() {
 //  Arcade Background Widget helper
 // ═══════════════════════════════════════════════════════════════
 
+struct FloatingParticle {
+    float x, y, speed;
+    int sz;
+    QColor color;
+};
+
 class ArcadeBgWidget : public QWidget {
     QPixmap bgCache;
+    QVector<FloatingParticle> particles;
+    QTimer* animTimer;
 public:
-    explicit ArcadeBgWidget(QWidget* parent = nullptr) : QWidget(parent) {}
+    explicit ArcadeBgWidget(QWidget* parent = nullptr) : QWidget(parent) {
+        for (int i = 0; i < 35; i++) {
+            FloatingParticle fp;
+            fp.x = rand() % 1400;
+            fp.y = rand() % 900;
+            fp.speed = 0.3f + (rand() % 12) / 10.0f;
+            fp.sz = 1 + rand() % 3;
+            int ct = rand() % 4;
+            if (ct == 0) fp.color = QColor(120, 80, 200, 90 + rand() % 80);
+            else if (ct == 1) fp.color = QColor(200, 160, 40, 70 + rand() % 60);
+            else if (ct == 2) fp.color = QColor(60, 180, 200, 70 + rand() % 60);
+            else fp.color = QColor(220, 80, 80, 50 + rand() % 50);
+            particles.append(fp);
+        }
+        animTimer = new QTimer(this);
+        connect(animTimer, &QTimer::timeout, this, [this]() {
+            for (auto& fp : particles) {
+                fp.y -= fp.speed;
+                fp.x += (rand() % 5 - 2) * 0.15f;
+                if (fp.y < -10) {
+                    fp.y = height() + 5;
+                    fp.x = rand() % (width() > 0 ? width() : 1);
+                }
+            }
+            update();
+        });
+        animTimer->start(50);
+    }
 protected:
     void paintEvent(QPaintEvent*) override {
         if (bgCache.size() != size())
             bgCache = makeArcadeBg(width(), height());
         QPainter p(this);
         p.drawPixmap(0, 0, bgCache);
+        p.setRenderHint(QPainter::Antialiasing, false);
+        for (const auto& fp : particles)
+            p.fillRect((int)fp.x, (int)fp.y, fp.sz, fp.sz, fp.color);
     }
     void resizeEvent(QResizeEvent* e) override {
         bgCache = QPixmap();
@@ -639,11 +699,19 @@ void MainWindow::buildMenuPage() {
 
     QVBoxLayout* lay = new QVBoxLayout(menuPage);
     lay->setAlignment(Qt::AlignCenter);
-    lay->setSpacing(24);
+    lay->setSpacing(12);
+    lay->setContentsMargins(40, 20, 40, 16);
 
+    // ── top decorative border ────────────────────────────────
+    QLabel* topBorder = new QLabel("╔══════════════════════════════════════════════╗");
+    topBorder->setAlignment(Qt::AlignCenter);
+    topBorder->setStyleSheet("font-size: 11px; color: #3a3a60; font-family: 'Courier New', monospace;");
+
+    // ── coin row ─────────────────────────────────────────────
     QHBoxLayout* coinRow = new QHBoxLayout();
     coinRow->setSpacing(16);
-    for (int i = 0; i < 5; i++) {
+    coinRow->setAlignment(Qt::AlignCenter);
+    for (int i = 0; i < 7; i++) {
         QLabel* coin = new QLabel("◆");
         coin->setAlignment(Qt::AlignCenter);
         coin->setStyleSheet(QString("font-size: 14px; color: %1;")
@@ -651,85 +719,106 @@ void MainWindow::buildMenuPage() {
         coinRow->addWidget(coin);
     }
 
-    QLabel* insertCoin = new QLabel("INSERT COIN");
-    insertCoin->setAlignment(Qt::AlignCenter);
-    insertCoin->setStyleSheet(R"(
-        font-size: 12px;
+    // ── blinking INSERT COIN ─────────────────────────────────
+    insertCoinLabel = new QLabel("▸ INSERT COIN ◂");
+    insertCoinLabel->setAlignment(Qt::AlignCenter);
+    insertCoinLabel->setStyleSheet(R"(
+        font-size: 14px;
         font-weight: bold;
         color: #d4a017;
         letter-spacing: 6px;
         font-family: "Courier New", monospace;
     )");
 
-    QLabel* title = new QLabel("⚔  BATTLE ARENA");
+    // ── title ────────────────────────────────────────────────
+    QLabel* title = new QLabel("⚔  BATTLE ARENA  ⚔");
     title->setAlignment(Qt::AlignCenter);
     title->setStyleSheet(R"(
-        font-size: 52px;
+        font-size: 54px;
         font-weight: 900;
         letter-spacing: 8px;
         color: #ffffff;
         font-family: "Impact", "Arial Black", sans-serif;
     )");
     QGraphicsDropShadowEffect* glow = new QGraphicsDropShadowEffect();
-    glow->setBlurRadius(32);
+    glow->setBlurRadius(40);
     glow->setColor(QColor("#7c5cbf"));
     glow->setOffset(0, 0);
     title->setGraphicsEffect(glow);
 
-    QLabel* sub = new QLabel("CSCE 1101  ·  Spring 2026");
+    // ── subtitle ─────────────────────────────────────────────
+    QLabel* sub = new QLabel("CSCE 1101  ·  Spring 2026  ·  Team Project");
     sub->setAlignment(Qt::AlignCenter);
     sub->setStyleSheet("font-size: 12px; color: #7a7a99; letter-spacing: 3px; font-family: 'Courier New', monospace;");
 
-    // ── character preview row — show idle sprites ─────────
+    // ── HIGH SCORE display ───────────────────────────────────
+    QLabel* highScore = new QLabel("HIGH SCORE: 000");
+    highScore->setAlignment(Qt::AlignCenter);
+    highScore->setStyleSheet(R"(
+        font-size: 16px; font-weight: bold;
+        color: #d4a017; letter-spacing: 4px;
+        font-family: "Courier New", monospace;
+    )");
+
+    // ── character preview row — ANIMATED sprites ─────────────
     QHBoxLayout* charRow = new QHBoxLayout();
-    charRow->setSpacing(30);
+    charRow->setSpacing(40);
     charRow->setAlignment(Qt::AlignCenter);
     QStringList charNames = {"WARRIOR", "MAGE", "ARCHER"};
     QStringList charColors = {Pal::AMBER, Pal::TEAL, Pal::ORANGE};
+    QStringList charWeapons = {"⚔ Sword", "✦ Staff", "➹ Bow"};
     for (int i = 0; i < 3; i++) {
         QVBoxLayout* col = new QVBoxLayout();
         col->setAlignment(Qt::AlignCenter);
-        col->setSpacing(6);
+        col->setSpacing(4);
 
         QLabel* portrait = new QLabel();
-        portrait->setFixedSize(80, 80);
-        portrait->setPixmap(makeArcadeSprite(i, 80, 0));  // idle pose
+        portrait->setFixedSize(100, 100);
+        portrait->setPixmap(makeArcadeSprite(i, 100, 0));
         portrait->setAlignment(Qt::AlignCenter);
         portrait->setStyleSheet(QString(
-            "border: 2px solid %1; border-radius: 4px; background: rgba(0,0,0,80);"
+            "border: 2px solid %1; border-radius: 6px; background: rgba(0,0,0,100);"
         ).arg(charColors[i]));
+        menuSprites[i] = portrait;  // store for animation
 
         QLabel* name = new QLabel(charNames[i]);
         name->setAlignment(Qt::AlignCenter);
-        name->setStyleSheet(QString("font-size: 10px; color: %1; letter-spacing: 2px; font-weight: bold; font-family: 'Courier New', monospace;").arg(charColors[i]));
+        name->setStyleSheet(QString("font-size: 12px; color: %1; letter-spacing: 2px; font-weight: bold; font-family: 'Courier New', monospace;").arg(charColors[i]));
+
+        QLabel* weapon = new QLabel(charWeapons[i]);
+        weapon->setAlignment(Qt::AlignCenter);
+        weapon->setStyleSheet(QString("font-size: 9px; color: %1;").arg(Pal::MUTED));
 
         col->addWidget(portrait);
         col->addWidget(name);
+        col->addWidget(weapon);
         charRow->addLayout(col);
     }
 
-    QFrame* line = new QFrame();
-    line->setFrameShape(QFrame::HLine);
-    line->setStyleSheet("border: 1px solid #2a2a4a;");
-    line->setFixedWidth(400);
+    // ── decorative divider ───────────────────────────────────
+    QLabel* divider = new QLabel("━━━━━━━━━━━━━━━━  ◆  ━━━━━━━━━━━━━━━━");
+    divider->setAlignment(Qt::AlignCenter);
+    divider->setStyleSheet("font-size: 11px; color: #2a2a4a;");
 
+    // ── PLAY button ──────────────────────────────────────────
     QPushButton* btnPlay = new QPushButton("  ▶   PLAY");
-    btnPlay->setFixedSize(300, 64);
+    btnPlay->setFixedSize(320, 64);
     btnPlay->setStyleSheet(R"(
         QPushButton {
             background: qlineargradient(x1:0,y1:0,x2:1,y2:0,
                 stop:0 #5a3ea0, stop:1 #7c5cbf);
             color: #fff;
-            font-size: 20px;
+            font-size: 22px;
             font-weight: bold;
             letter-spacing: 4px;
             border-radius: 10px;
-            border: none;
+            border: 2px solid #9370d4;
             font-family: "Impact", "Arial Black", sans-serif;
         }
         QPushButton:hover {
             background: qlineargradient(x1:0,y1:0,x2:1,y2:0,
                 stop:0 #6b4db5, stop:1 #9370d4);
+            border: 2px solid #b090e0;
         }
         QPushButton:pressed { background: #4a3090; }
     )");
@@ -737,24 +826,51 @@ void MainWindow::buildMenuPage() {
         stack->setCurrentWidget(characterPage);
     });
 
+    // ── Controls hint panel ──────────────────────────────────
+    QLabel* controls = new QLabel("↑↓←→  MOVE   ·   SPACE  ATTACK   ·   Q  SPECIAL");
+    controls->setAlignment(Qt::AlignCenter);
+    controls->setStyleSheet(R"(
+        font-size: 11px; color: #555580; letter-spacing: 2px;
+        border: 1px solid #1e1e3a; border-radius: 6px;
+        padding: 8px 20px;
+        font-family: "Courier New", monospace;
+    )");
+
+    // ── credits ──────────────────────────────────────────────
     QLabel* credits = new QLabel("Youssef Gohar · Mohamed · Ahmed · Youssef Al-Ghobary");
     credits->setAlignment(Qt::AlignCenter);
-    credits->setStyleSheet("font-size: 10px; color: #333355; letter-spacing: 1px;");
+    credits->setStyleSheet("font-size: 11px; color: #444466; letter-spacing: 1px;");
 
-    lay->addStretch(2);
+    // ── bottom border + version ──────────────────────────────
+    QLabel* botBorder = new QLabel("╚══════════════════════════════════════════════╝");
+    botBorder->setAlignment(Qt::AlignCenter);
+    botBorder->setStyleSheet("font-size: 11px; color: #3a3a60; font-family: 'Courier New', monospace;");
+
+    QLabel* version = new QLabel("v1.0  ·  Qt6  ·  C++17");
+    version->setAlignment(Qt::AlignCenter);
+    version->setStyleSheet("font-size: 9px; color: #2a2a48; letter-spacing: 2px;");
+
+    // ── assemble ─────────────────────────────────────────────
+    lay->addWidget(topBorder, 0, Qt::AlignCenter);
+    lay->addSpacing(4);
     lay->addLayout(coinRow);
-    lay->addWidget(insertCoin, 0, Qt::AlignCenter);
-    lay->addSpacing(8);
+    lay->addWidget(insertCoinLabel, 0, Qt::AlignCenter);
+    lay->addSpacing(6);
     lay->addWidget(title,      0, Qt::AlignCenter);
     lay->addWidget(sub,        0, Qt::AlignCenter);
-    lay->addSpacing(12);
+    lay->addWidget(highScore,  0, Qt::AlignCenter);
+    lay->addSpacing(10);
     lay->addLayout(charRow);
-    lay->addWidget(line,       0, Qt::AlignCenter);
-    lay->addSpacing(8);
+    lay->addSpacing(4);
+    lay->addWidget(divider,    0, Qt::AlignCenter);
+    lay->addSpacing(6);
     lay->addWidget(btnPlay,    0, Qt::AlignCenter);
-    lay->addStretch(1);
+    lay->addSpacing(8);
+    lay->addWidget(controls,   0, Qt::AlignCenter);
+    lay->addSpacing(10);
     lay->addWidget(credits,    0, Qt::AlignCenter);
-    lay->addStretch(1);
+    lay->addWidget(botBorder,  0, Qt::AlignCenter);
+    lay->addWidget(version,    0, Qt::AlignCenter);
 
     stack->addWidget(menuPage);
 }
@@ -768,8 +884,8 @@ void MainWindow::buildCharacterPage() {
     characterPage = bg;
 
     QVBoxLayout* root = new QVBoxLayout(characterPage);
-    root->setContentsMargins(40, 28, 40, 28);
-    root->setSpacing(20);
+    root->setContentsMargins(30, 20, 30, 16);
+    root->setSpacing(12);
 
     QLabel* header = new QLabel("CHOOSE YOUR FIGHTER");
     header->setAlignment(Qt::AlignCenter);
@@ -790,22 +906,23 @@ void MainWindow::buildCharacterPage() {
     selectionLabel->setStyleSheet("font-size: 13px; color: #7a7a99;");
 
     QHBoxLayout* cardsRow = new QHBoxLayout();
-    cardsRow->setSpacing(24);
+    cardsRow->setSpacing(20);
 
     struct CardInfo {
         int type;
         QString name, hp, atk, special, desc, accent;
+        int hpVal, atkVal;
     };
     QList<CardInfo> cards = {
         {0, "Warrior", "200", "20", "Power Strike (1.5× ATK)",
          "A heavy-hitting frontliner built to absorb punishment.",
-         Pal::AMBER},
+         Pal::AMBER, 200, 20},
         {1, "Mage",    "100", "20", "Arcane Storm (3× ATK)",
          "Fragile but devastating — one burst can turn the tide.",
-         Pal::TEAL},
+         Pal::TEAL, 100, 20},
         {2, "Archer",  "150", "15", "Double Shot (2× ATK)",
          "Balanced ranger who strikes reliably from any range.",
-         Pal::ORANGE},
+         Pal::ORANGE, 150, 15},
     };
 
     QPushButton** cardPtrs[3] = {&cardWarrior, &cardMage, &cardArcher};
@@ -813,7 +930,7 @@ void MainWindow::buildCharacterPage() {
     for (int i = 0; i < 3; i++) {
         const CardInfo& ci = cards[i];
         QWidget* card = new QWidget();
-        card->setMinimumSize(240, 340);
+        card->setMinimumSize(250, 380);
         card->setCursor(Qt::PointingHandCursor);
         card->setStyleSheet(QString(R"(
             QWidget#card%1 {
@@ -829,8 +946,8 @@ void MainWindow::buildCharacterPage() {
         card->setObjectName(QString("card%1").arg(i));
 
         QVBoxLayout* cLay = new QVBoxLayout(card);
-        cLay->setContentsMargins(16, 20, 16, 20);
-        cLay->setSpacing(10);
+        cLay->setContentsMargins(14, 16, 14, 16);
+        cLay->setSpacing(8);
         cLay->setAlignment(Qt::AlignCenter);
 
         // Sprite preview — show all 3 poses in a row
@@ -845,8 +962,8 @@ void MainWindow::buildCharacterPage() {
             pCol->setSpacing(2);
 
             QLabel* spr = new QLabel();
-            spr->setFixedSize(56, 56);
-            spr->setPixmap(makeArcadeSprite(ci.type, 56, pose));
+            spr->setFixedSize(60, 60);
+            spr->setPixmap(makeArcadeSprite(ci.type, 60, pose));
             spr->setAlignment(Qt::AlignCenter);
             spr->setStyleSheet(QString(
                 "border: 1px solid %1; border-radius: 3px; background: rgba(0,0,0,100);"
@@ -868,17 +985,49 @@ void MainWindow::buildCharacterPage() {
         nameL->setAlignment(Qt::AlignCenter);
         nameL->setStyleSheet(QString("font-size: 18px; font-weight: bold; color: %1; letter-spacing: 2px; font-family: 'Impact', sans-serif;").arg(ci.accent));
 
-        // Stats row
-        QLabel* statsL = new QLabel();
-        statsL->setTextFormat(Qt::RichText);
-        statsL->setAlignment(Qt::AlignCenter);
-        statsL->setText(
-            "<span style='font-size:11px; color:#7a7a99;'>"
-            "HP: <b style='color:#3dba6e;'>" + ci.hp + "</b>"
-            "&nbsp;&nbsp;&nbsp;"
-            "ATK: <b style='color:#d94f4f;'>" + ci.atk + "</b>"
-            "</span>"
-        );
+        // HP stat bar
+        QHBoxLayout* hpRow = new QHBoxLayout();
+        QLabel* hpLabel = new QLabel("HP");
+        hpLabel->setStyleSheet("font-size: 10px; color: #3dba6e; font-weight: bold; font-family: 'Courier New', monospace;");
+        hpLabel->setFixedWidth(28);
+        QProgressBar* hpBar = new QProgressBar();
+        hpBar->setRange(0, 200);
+        hpBar->setValue(ci.hpVal);
+        hpBar->setTextVisible(false);
+        hpBar->setFixedHeight(10);
+        hpBar->setStyleSheet(R"(
+            QProgressBar { border: 1px solid #2a2a4a; border-radius: 3px; background: #0a0a18; }
+            QProgressBar::chunk { border-radius: 3px; background: qlineargradient(x1:0,y1:0,x2:1,y2:0, stop:0 #3dba6e, stop:1 #28d47e); }
+        )");
+        QLabel* hpNum = new QLabel(ci.hp);
+        hpNum->setStyleSheet("font-size: 10px; color: #3dba6e; font-family: 'Courier New', monospace;");
+        hpNum->setFixedWidth(28);
+        hpNum->setAlignment(Qt::AlignRight | Qt::AlignVCenter);
+        hpRow->addWidget(hpLabel);
+        hpRow->addWidget(hpBar);
+        hpRow->addWidget(hpNum);
+
+        // ATK stat bar
+        QHBoxLayout* atkRow = new QHBoxLayout();
+        QLabel* atkLabel = new QLabel("ATK");
+        atkLabel->setStyleSheet("font-size: 10px; color: #d94f4f; font-weight: bold; font-family: 'Courier New', monospace;");
+        atkLabel->setFixedWidth(28);
+        QProgressBar* atkBar = new QProgressBar();
+        atkBar->setRange(0, 30);
+        atkBar->setValue(ci.atkVal);
+        atkBar->setTextVisible(false);
+        atkBar->setFixedHeight(10);
+        atkBar->setStyleSheet(R"(
+            QProgressBar { border: 1px solid #2a2a4a; border-radius: 3px; background: #0a0a18; }
+            QProgressBar::chunk { border-radius: 3px; background: qlineargradient(x1:0,y1:0,x2:1,y2:0, stop:0 #d94f4f, stop:1 #ff6b6b); }
+        )");
+        QLabel* atkNum = new QLabel(ci.atk);
+        atkNum->setStyleSheet("font-size: 10px; color: #d94f4f; font-family: 'Courier New', monospace;");
+        atkNum->setFixedWidth(28);
+        atkNum->setAlignment(Qt::AlignRight | Qt::AlignVCenter);
+        atkRow->addWidget(atkLabel);
+        atkRow->addWidget(atkBar);
+        atkRow->addWidget(atkNum);
 
         // Special ability
         QLabel* specL = new QLabel();
@@ -886,7 +1035,7 @@ void MainWindow::buildCharacterPage() {
         specL->setAlignment(Qt::AlignCenter);
         specL->setWordWrap(true);
         specL->setText(
-            "<span style='font-size:11px; color:#b0a0d0;'>✦ " + ci.special + "</span>"
+            "<span style='font-size:10px; color:#b0a0d0;'>✦ " + ci.special + "</span>"
         );
 
         QFrame* sep = new QFrame();
@@ -900,7 +1049,8 @@ void MainWindow::buildCharacterPage() {
 
         cLay->addLayout(poseRow);
         cLay->addWidget(nameL,    0, Qt::AlignCenter);
-        cLay->addWidget(statsL,   0, Qt::AlignCenter);
+        cLay->addLayout(hpRow);
+        cLay->addLayout(atkRow);
         cLay->addWidget(specL,    0, Qt::AlignCenter);
         cLay->addWidget(sep);
         cLay->addWidget(descL,    0, Qt::AlignCenter);
@@ -955,13 +1105,34 @@ void MainWindow::buildCharacterPage() {
     btnRow->addStretch();
     btnRow->addWidget(btnStart, 0, Qt::AlignRight);
 
+    // ── VS Preview panel ─────────────────────────────────────
+    QLabel* vsPanel = new QLabel();
+    vsPanel->setAlignment(Qt::AlignCenter);
+    vsPanel->setTextFormat(Qt::RichText);
+    vsPanel->setText(
+        "<span style='font-size: 12px; color: #555580;'>"
+        "⚔ You will face a <b style='color: #d94f4f;'>random opponent</b> — choose wisely! ⚔"
+        "</span>"
+    );
+    vsPanel->setStyleSheet("border: 1px solid #1e1e3a; border-radius: 6px; padding: 8px;");
+
+    // ── Gameplay tip ─────────────────────────────────────────
+    QLabel* tip = new QLabel("💡 TIP: Get adjacent to the enemy to attack. Use Q for your special ability (3-turn cooldown).");
+    tip->setAlignment(Qt::AlignCenter);
+    tip->setWordWrap(true);
+    tip->setStyleSheet("font-size: 10px; color: #444466; font-style: italic;");
+
     root->addWidget(header);
     root->addWidget(selectionLabel);
     root->addLayout(cardsRow);
     root->addLayout(btnRow);
+    root->addWidget(vsPanel, 0, Qt::AlignCenter);
+    root->addWidget(tip, 0, Qt::AlignCenter);
 
     stack->addWidget(characterPage);
 }
+
+
 
 void MainWindow::onCharacterSelected(int type) {
     selectedType = type;
@@ -1002,6 +1173,13 @@ void MainWindow::onStartClicked()
 
     specialCooldown = 0;
 
+    // Update difficulty page's character preview
+    static const QStringList classNames = {"WARRIOR", "MAGE", "ARCHER"};
+    if (diffCharPreview)
+        diffCharPreview->setPixmap(makeArcadeSprite(selectedType, 80, 0));
+    if (diffCharName)
+        diffCharName->setText(classNames[selectedType]);
+
     // Go to difficulty selection instead of starting immediately
     stack->setCurrentWidget(difficultyPage);
 }
@@ -1016,7 +1194,8 @@ void MainWindow::buildDifficultyPage() {
 
     QVBoxLayout* lay = new QVBoxLayout(difficultyPage);
     lay->setAlignment(Qt::AlignCenter);
-    lay->setSpacing(30);
+    lay->setSpacing(14);
+    lay->setContentsMargins(40, 24, 40, 20);
 
     QLabel* title = new QLabel("SELECT DIFFICULTY");
     title->setAlignment(Qt::AlignCenter);
@@ -1025,44 +1204,128 @@ void MainWindow::buildDifficultyPage() {
         color: #ffffff; letter-spacing: 6px;
         font-family: "Impact", "Arial Black", sans-serif;
     )");
+    QGraphicsDropShadowEffect* dGlow = new QGraphicsDropShadowEffect();
+    dGlow->setBlurRadius(24); dGlow->setColor(QColor("#7c5cbf")); dGlow->setOffset(0,0);
+    title->setGraphicsEffect(dGlow);
 
     QLabel* sub = new QLabel("Choose your challenge");
     sub->setAlignment(Qt::AlignCenter);
     sub->setStyleSheet("font-size: 13px; color: #7a7a99; letter-spacing: 2px;");
 
-    // Easy button
-    QPushButton* btnEasy = new QPushButton("⚔  EASY");
-    btnEasy->setFixedSize(220, 60);
+    // ── Character preview (updated by onStartClicked) ─────────
+    QVBoxLayout* previewCol = new QVBoxLayout();
+    previewCol->setAlignment(Qt::AlignCenter);
+    previewCol->setSpacing(4);
+    diffCharPreview = new QLabel();
+    diffCharPreview->setFixedSize(80, 80);
+    diffCharPreview->setPixmap(makeArcadeSprite(0, 80, 0));
+    diffCharPreview->setAlignment(Qt::AlignCenter);
+    diffCharPreview->setStyleSheet("border: 2px solid #7c5cbf; border-radius: 6px; background: rgba(0,0,0,100);");
+    diffCharName = new QLabel("WARRIOR");
+    diffCharName->setAlignment(Qt::AlignCenter);
+    diffCharName->setStyleSheet("font-size: 12px; color: #7c5cbf; font-weight: bold; letter-spacing: 2px; font-family: 'Courier New', monospace;");
+    QLabel* readyLabel = new QLabel("YOUR FIGHTER");
+    readyLabel->setAlignment(Qt::AlignCenter);
+    readyLabel->setStyleSheet("font-size: 9px; color: #555580; letter-spacing: 3px;");
+    previewCol->addWidget(readyLabel);
+    previewCol->addWidget(diffCharPreview, 0, Qt::AlignCenter);
+    previewCol->addWidget(diffCharName);
+
+    // ── Difficulty buttons in a horizontal layout ─────────────
+    QHBoxLayout* diffRow = new QHBoxLayout();
+    diffRow->setSpacing(30);
+    diffRow->setAlignment(Qt::AlignCenter);
+
+    // Easy card
+    QVBoxLayout* easyCol = new QVBoxLayout();
+    easyCol->setAlignment(Qt::AlignCenter);
+    easyCol->setSpacing(8);
+
+    QLabel* easyBadge = new QLabel("★ RECOMMENDED");
+    easyBadge->setAlignment(Qt::AlignCenter);
+    easyBadge->setStyleSheet("font-size: 9px; color: #3dba6e; letter-spacing: 2px; font-weight: bold;");
+
+    QPushButton* btnEasy = new QPushButton("🛡  EASY");
+    btnEasy->setFixedSize(240, 64);
+    btnEasy->setCursor(Qt::PointingHandCursor);
     btnEasy->setStyleSheet(R"(
         QPushButton {
             background: qlineargradient(x1:0,y1:0,x2:1,y2:0,
                 stop:0 #1a7a3a, stop:1 #3dba6e);
-            color: #fff; font-size: 18px; font-weight: bold;
-            border: none; border-radius: 10px; letter-spacing: 2px;
+            color: #fff; font-size: 20px; font-weight: bold;
+            border: 2px solid #28d47e; border-radius: 10px; letter-spacing: 2px;
         }
-        QPushButton:hover { background: #3dba6e; }
+        QPushButton:hover { background: #3dba6e; border: 2px solid #50e890; }
     )");
 
-    // Hard button
+    QLabel* easyDesc = new QLabel("Normal speed\nBasic attacks only\nPerfect for learning");
+    easyDesc->setAlignment(Qt::AlignCenter);
+    easyDesc->setStyleSheet("font-size: 10px; color: #3dba6e; line-height: 1.4;");
+
+    easyCol->addWidget(easyBadge);
+    easyCol->addWidget(btnEasy);
+    easyCol->addWidget(easyDesc);
+
+    // VS divider
+    QLabel* vsDivider = new QLabel("VS");
+    vsDivider->setAlignment(Qt::AlignCenter);
+    vsDivider->setStyleSheet("font-size: 22px; font-weight: 900; color: #444466; font-family: 'Impact', sans-serif;");
+
+    // Hard card
+    QVBoxLayout* hardCol = new QVBoxLayout();
+    hardCol->setAlignment(Qt::AlignCenter);
+    hardCol->setSpacing(8);
+
+    QLabel* hardBadge = new QLabel("⚠ ONLY FOR THE BRAVE ⚠");
+    hardBadge->setAlignment(Qt::AlignCenter);
+    hardBadge->setStyleSheet("font-size: 9px; color: #d94f4f; letter-spacing: 2px; font-weight: bold;");
+
     QPushButton* btnHard = new QPushButton("💀  HARD");
-    btnHard->setFixedSize(220, 60);
+    btnHard->setFixedSize(240, 64);
+    btnHard->setCursor(Qt::PointingHandCursor);
     btnHard->setStyleSheet(R"(
         QPushButton {
             background: qlineargradient(x1:0,y1:0,x2:1,y2:0,
                 stop:0 #8b0000, stop:1 #d94f4f);
-            color: #fff; font-size: 18px; font-weight: bold;
-            border: none; border-radius: 10px; letter-spacing: 2px;
+            color: #fff; font-size: 20px; font-weight: bold;
+            border: 2px solid #ff6b6b; border-radius: 10px; letter-spacing: 2px;
         }
-        QPushButton:hover { background: #d94f4f; }
+        QPushButton:hover { background: #d94f4f; border: 2px solid #ff9090; }
     )");
 
-    QLabel* easyDesc = new QLabel("Normal speed · Enemy uses basic attacks only");
-    easyDesc->setAlignment(Qt::AlignCenter);
-    easyDesc->setStyleSheet("font-size: 11px; color: #3dba6e;");
-
-    QLabel* hardDesc = new QLabel("2× faster timer · Enemy uses special when HP < 30%");
+    QLabel* hardDesc = new QLabel("2× faster timer\nEnemy uses specials at low HP\nFor experienced warriors");
     hardDesc->setAlignment(Qt::AlignCenter);
-    hardDesc->setStyleSheet("font-size: 11px; color: #d94f4f;");
+    hardDesc->setStyleSheet("font-size: 10px; color: #d94f4f; line-height: 1.4;");
+
+    hardCol->addWidget(hardBadge);
+    hardCol->addWidget(btnHard);
+    hardCol->addWidget(hardDesc);
+
+    diffRow->addLayout(easyCol);
+    diffRow->addWidget(vsDivider);
+    diffRow->addLayout(hardCol);
+
+    // ── Comparison table ─────────────────────────────────────
+    QLabel* comparison = new QLabel();
+    comparison->setTextFormat(Qt::RichText);
+    comparison->setAlignment(Qt::AlignCenter);
+    comparison->setText(
+        "<table style='font-size: 11px; color: #7a7a99;'>"
+        "<tr><td style='color: #555580; padding: 3px 12px;'>Feature</td>"
+        "<td style='color: #3dba6e; padding: 3px 12px;'>Easy</td>"
+        "<td style='color: #d94f4f; padding: 3px 12px;'>Hard</td></tr>"
+        "<tr><td style='padding: 2px 12px;'>Enemy Speed</td>"
+        "<td style='padding: 2px 12px;'>Normal</td>"
+        "<td style='padding: 2px 12px;'>2× Faster</td></tr>"
+        "<tr><td style='padding: 2px 12px;'>Enemy AI</td>"
+        "<td style='padding: 2px 12px;'>Basic</td>"
+        "<td style='padding: 2px 12px;'>Advanced</td></tr>"
+        "<tr><td style='padding: 2px 12px;'>Special Attacks</td>"
+        "<td style='padding: 2px 12px;'>None</td>"
+        "<td style='padding: 2px 12px;'>At low HP</td></tr>"
+        "</table>"
+    );
+    comparison->setStyleSheet("border: 1px solid #1e1e3a; border-radius: 6px; padding: 8px;");
 
     QPushButton* btnBack = new QPushButton("← Back");
     btnBack->setFixedSize(120, 38);
@@ -1090,33 +1353,39 @@ void MainWindow::buildDifficultyPage() {
 
     lay->addWidget(title);
     lay->addWidget(sub);
-    lay->addSpacing(10);
-    lay->addWidget(btnEasy, 0, Qt::AlignCenter);
-    lay->addWidget(easyDesc);
     lay->addSpacing(6);
-    lay->addWidget(btnHard, 0, Qt::AlignCenter);
-    lay->addWidget(hardDesc);
-    lay->addSpacing(20);
+    lay->addLayout(previewCol);
+    lay->addSpacing(8);
+    lay->addLayout(diffRow);
+    lay->addSpacing(6);
+    lay->addWidget(comparison, 0, Qt::AlignCenter);
+    lay->addSpacing(8);
     lay->addWidget(btnBack, 0, Qt::AlignLeft);
 
     stack->addWidget(difficultyPage);
 }
 
+
+
 // Helper: actually launch the game after difficulty is chosen
 void MainWindow::startBattle()
 {
     Character* enemy = nullptr;
-    int enemyType = rand() % 3;
+    enemyType = rand() % 3;
     if      (enemyType == 0) enemy = new Warrior("Enemy");
     else if (enemyType == 1) enemy = new Mage("Enemy");
     else                     enemy = new Archer("Enemy");
 
     gameManager->startGame(selectedCharacter, enemy);
 
+    // Reset combat state
+    turnCount = 0;
+    combatMessages.clear();
+    if (lblCombatLog) lblCombatLog->setText("<span style='color:#555580;'>Battle begins!</span>");
+
     static const QStringList classNames = {"Warrior", "Mage", "Archer"};
-    static const QStringList enemyNames = {"Warrior", "Mage", "Archer"};
     lblPlayerClass->setText(classNames[selectedType]);
-    lblEnemyClass->setText(enemyNames[enemyType]);
+    lblEnemyClass->setText(classNames[enemyType]);
 
     QPixmap pm = makeArcadeSprite(selectedType, 64, 0);
     if (playerPortraitLabel) playerPortraitLabel->setPixmap(pm);
@@ -1135,6 +1404,7 @@ void MainWindow::startBattle()
 
     updateTokenPositions();
     updateHUD();
+    updateBottomBar();
     stack->setCurrentWidget(gamePage);
     gamePage->setFocus();
 }
@@ -1214,6 +1484,15 @@ QWidget* MainWindow::buildHUDPanel(bool isPlayer) {
     lay->addWidget(hpTitle);
     lay->addWidget(bar);
     lay->addWidget(hpVal);
+
+    // DANGER label (hidden by default)
+    QLabel*& dangerL = isPlayer ? lblPlayerDanger : lblEnemyDanger;
+    dangerL = new QLabel("⚠ DANGER");
+    dangerL->setAlignment(Qt::AlignCenter);
+    dangerL->setStyleSheet("font-size: 11px; font-weight: bold; color: #d94f4f; letter-spacing: 2px;");
+    dangerL->setVisible(false);
+    lay->addWidget(dangerL);
+
     lay->addStretch();
 
     if (isPlayer) {
@@ -1241,9 +1520,10 @@ void MainWindow::buildGamePage() {
     connect(gameManager, &GameManager::enemyTurnTriggered,
         this, &MainWindow::onEnemyTurn);
     QVBoxLayout* root = new QVBoxLayout(gamePage);
-    root->setContentsMargins(16, 12, 16, 12);
-    root->setSpacing(10);
+    root->setContentsMargins(16, 8, 16, 8);
+    root->setSpacing(6);
 
+    // ── Top bar ──────────────────────────────────────────────
     QHBoxLayout* topBar = new QHBoxLayout();
     lblTurnInfo = new QLabel("Your turn — move or attack");
     lblTurnInfo->setStyleSheet("font-size: 13px; color: #7c5cbf; font-weight: bold;");
@@ -1253,8 +1533,9 @@ void MainWindow::buildGamePage() {
     topBar->addStretch();
     topBar->addWidget(lblScore);
 
+    // ── Main row: HUD | Grid | HUD ───────────────────────────
     QHBoxLayout* midRow = new QHBoxLayout();
-    midRow->setSpacing(16);
+    midRow->setSpacing(12);
 
     QWidget* leftPanel  = buildHUDPanel(true);
     QWidget* rightPanel = buildHUDPanel(false);
@@ -1276,12 +1557,99 @@ void MainWindow::buildGamePage() {
     midRow->addWidget(gridView,   0, Qt::AlignCenter);
     midRow->addWidget(rightPanel, 0, Qt::AlignTop);
 
+    // ── Action buttons row ───────────────────────────────────
+    QHBoxLayout* actionRow = new QHBoxLayout();
+    actionRow->setSpacing(10);
+    actionRow->setAlignment(Qt::AlignCenter);
+
+    btnActionAttack = new QPushButton("⚔  ATTACK  [Space]");
+    btnActionAttack->setFixedSize(180, 36);
+    btnActionAttack->setCursor(Qt::PointingHandCursor);
+    btnActionAttack->setStyleSheet(R"(
+        QPushButton {
+            background: qlineargradient(x1:0,y1:0,x2:1,y2:0,stop:0 #8b2020,stop:1 #d94f4f);
+            color: #fff; font-size: 11px; font-weight: bold;
+            border: 1px solid #ff6b6b; border-radius: 6px; letter-spacing: 1px;
+        }
+        QPushButton:hover { background: #d94f4f; }
+    )");
+    connect(btnActionAttack, &QPushButton::clicked, this, [this]() {
+        QKeyEvent evt(QEvent::KeyPress, Qt::Key_Space, Qt::NoModifier);
+        keyPressEvent(&evt);
+    });
+
+    btnActionSpecial = new QPushButton("✦  SPECIAL  [Q]");
+    btnActionSpecial->setFixedSize(180, 36);
+    btnActionSpecial->setCursor(Qt::PointingHandCursor);
+    btnActionSpecial->setStyleSheet(R"(
+        QPushButton {
+            background: qlineargradient(x1:0,y1:0,x2:1,y2:0,stop:0 #7a5a10,stop:1 #d4a017);
+            color: #fff; font-size: 11px; font-weight: bold;
+            border: 1px solid #ffe060; border-radius: 6px; letter-spacing: 1px;
+        }
+        QPushButton:hover { background: #d4a017; }
+    )");
+    connect(btnActionSpecial, &QPushButton::clicked, this, [this]() {
+        QKeyEvent evt(QEvent::KeyPress, Qt::Key_Q, Qt::NoModifier);
+        keyPressEvent(&evt);
+    });
+
+    actionRow->addWidget(btnActionAttack);
+    actionRow->addWidget(btnActionSpecial);
+
+    // ── Combat log ───────────────────────────────────────────
+    lblCombatLog = new QLabel("<span style='color:#555580;'>Battle begins!</span>");
+    lblCombatLog->setTextFormat(Qt::RichText);
+    lblCombatLog->setWordWrap(true);
+    lblCombatLog->setAlignment(Qt::AlignLeft | Qt::AlignTop);
+    lblCombatLog->setMinimumHeight(50);
+    lblCombatLog->setMaximumHeight(60);
+    lblCombatLog->setStyleSheet(
+        "font-size: 10px; color: #7a7a99; "
+        "background: rgba(10,10,24,180); border: 1px solid #1e1e3a; "
+        "border-radius: 6px; padding: 6px 10px;"
+    );
+
+    // ── Bottom status bar ────────────────────────────────────
+    QHBoxLayout* botBar = new QHBoxLayout();
+    botBar->setSpacing(20);
+
+    lblTurnCounter = new QLabel("Turn: 0");
+    lblTurnCounter->setStyleSheet("font-size: 11px; color: #7a7a99; font-family: 'Courier New', monospace;");
+
+    lblDistance = new QLabel("Distance: —");
+    lblDistance->setStyleSheet("font-size: 11px; color: #7a7a99; font-family: 'Courier New', monospace;");
+
+    lblDiffBadge = new QLabel("EASY");
+    lblDiffBadge->setAlignment(Qt::AlignCenter);
+    lblDiffBadge->setStyleSheet(
+        "font-size: 10px; font-weight: bold; color: #3dba6e; "
+        "background: rgba(61,186,110,30); border: 1px solid #3dba6e; "
+        "border-radius: 4px; padding: 2px 8px; letter-spacing: 2px;"
+    );
+
+    QLabel* cooldownHint = new QLabel("Cooldown: Ready");
+    cooldownHint->setObjectName("cooldownHint");
+    cooldownHint->setStyleSheet("font-size: 10px; color: #b0a0d0; font-family: 'Courier New', monospace;");
+
+    botBar->addWidget(lblTurnCounter);
+    botBar->addWidget(lblDistance);
+    botBar->addStretch();
+    botBar->addWidget(cooldownHint);
+    botBar->addWidget(lblDiffBadge);
+
+    // ── Assemble ─────────────────────────────────────────────
     root->addLayout(topBar);
     root->addLayout(midRow);
+    root->addLayout(actionRow);
+    root->addWidget(lblCombatLog);
+    root->addLayout(botBar);
 
     stack->addWidget(gamePage);
     gamePage->setFocusPolicy(Qt::StrongFocus);
 }
+
+
 
 // ─── Helper: flash a character token with an attack pose then restore idle ──
 void MainWindow::flashAttackPose(bool isPlayer, int pose) {
@@ -1290,7 +1658,7 @@ void MainWindow::flashAttackPose(bool isPlayer, int pose) {
 
     QGraphicsPixmapItem*& token = isPlayer ? playerToken : enemyToken;
     QLabel*& portrait = isPlayer ? playerPortraitLabel : enemyPortraitLabel;
-    int type = isPlayer ? selectedType : 0;  // enemy is always Warrior
+    int type = isPlayer ? selectedType : enemyType;  // use actual enemy class
 
     if (!token) return;
 
@@ -1334,18 +1702,22 @@ void MainWindow::onEnemyTurn() {
     grid->moveCharacter(enemy, newRow, newCol);
 
     if (grid->isAdjacent(enemy->getGridX(), enemy->getGridY(), playerRow, playerCol)) {
-        // Hard mode: use special if enemy HP < 30% of max
         if (hardMode && enemy->getCurrentHealth() < 0.3 * enemy->getMaxHealth()) {
-            player->takeDamage(enemy->specialAbility());
+            int dmg = enemy->specialAbility();
+            player->takeDamage(dmg);
             flashAttackPose(false, 2);
+            addCombatMessage("<span style='color:#ff6b6b;'>💀 Enemy used Special for " + QString::number(dmg) + " damage!</span>");
         } else {
-            player->takeDamage(enemy->attack());
+            int dmg = enemy->attack();
+            player->takeDamage(dmg);
             flashAttackPose(false, 1);
+            addCombatMessage("<span style='color:#d94f4f;'>⚔ Enemy attacked for " + QString::number(dmg) + " damage</span>");
         }
     }
 
     updateTokenPositions();
     updateHUD();
+    updateBottomBar();
     gameManager->checkWinCondition();
 }
 
@@ -1355,6 +1727,8 @@ void MainWindow::drawGrid()
     playerToken = nullptr;
     enemyToken  = nullptr;
 
+    // Seed a simple deterministic pattern for terrain decoration
+    srand(42);
     for (int r = 0; r < GROWS; r++) {
         for (int c = 0; c < GCOLS; c++) {
             bool dark = (r + c) % 2 == 0;
@@ -1367,7 +1741,41 @@ void MainWindow::drawGrid()
                 QBrush(fill)
             );
             cell->setZValue(0);
+
+            // Terrain decorations — small pixel dots on some cells
+            int rnd = rand() % 6;
+            if (rnd == 0) {
+                // Small grass tuft
+                auto* dot = scene->addRect(c*CELL+20, r*CELL+38, 3, 3, Qt::NoPen, QBrush(QColor(40,80,40,80)));
+                dot->setZValue(1);
+                auto* dot2 = scene->addRect(c*CELL+30, r*CELL+40, 2, 2, Qt::NoPen, QBrush(QColor(50,90,50,60)));
+                dot2->setZValue(1);
+            } else if (rnd == 1) {
+                // Small stone
+                auto* stone = scene->addRect(c*CELL+24, r*CELL+36, 4, 3, Qt::NoPen, QBrush(QColor(60,60,80,70)));
+                stone->setZValue(1);
+            } else if (rnd == 2) {
+                // Rune mark
+                auto* rune = scene->addRect(c*CELL+26, r*CELL+26, 4, 4, Qt::NoPen, QBrush(QColor(80,60,140,40)));
+                rune->setZValue(1);
+            }
         }
+    }
+    srand(time(nullptr));  // restore random seed
+
+    // Coordinate labels along edges
+    QFont coordFont("Courier New", 7);
+    for (int c = 0; c < GCOLS; c++) {
+        auto* label = scene->addText(QString(QChar('A' + c)), coordFont);
+        label->setDefaultTextColor(QColor(80,80,120,120));
+        label->setPos(c * CELL + CELL/2 - 4, -14);
+        label->setZValue(1);
+    }
+    for (int r = 0; r < GROWS; r++) {
+        auto* label = scene->addText(QString::number(r + 1), coordFont);
+        label->setDefaultTextColor(QColor(80,80,120,120));
+        label->setPos(-14, r * CELL + CELL/2 - 6);
+        label->setZValue(1);
     }
 }
 
@@ -1404,9 +1812,26 @@ void MainWindow::updateHUD() {
     barPlayerHP->setValue(pHP);
     lblPlayerHPVal->setText(QString("%1 / %2").arg(pHP).arg(pMax));
 
-    barEnemyHP->setMaximum(200);
+    barEnemyHP->setMaximum(e->getMaxHealth());
     barEnemyHP->setValue(eHP);
-    lblEnemyHPVal->setText(QString("%1 / 200").arg(eHP));
+    lblEnemyHPVal->setText(QString("%1 / %2").arg(eHP).arg(e->getMaxHealth()));
+
+    // HP bar color transitions
+    auto hpBarStyle = [](double pct) -> QString {
+        QString color1, color2;
+        if (pct > 0.6) { color1 = "#3dba6e"; color2 = "#28d47e"; }
+        else if (pct > 0.3) { color1 = "#d4a017"; color2 = "#e8b830"; }
+        else { color1 = "#d94f4f"; color2 = "#ff6b6b"; }
+        return QString("QProgressBar { border:1px solid #2a2a4a; border-radius:4px; background:#0a0a18; height:14px; }"
+                       "QProgressBar::chunk { border-radius:4px; background: qlineargradient(x1:0,y1:0,x2:1,y2:0,stop:0 %1,stop:1 %2); }")
+                .arg(color1, color2);
+    };
+    barPlayerHP->setStyleSheet(hpBarStyle((double)pHP / pMax));
+    barEnemyHP->setStyleSheet(hpBarStyle((double)eHP / e->getMaxHealth()));
+
+    // DANGER labels
+    if (lblPlayerDanger) lblPlayerDanger->setVisible(pHP < 0.25 * pMax);
+    if (lblEnemyDanger)  lblEnemyDanger->setVisible(eHP < 0.25 * e->getMaxHealth());
 
     lblScore->setText("Score: " + QString::number(gameManager->getScore()));
 }
@@ -1419,66 +1844,183 @@ void MainWindow::onGameStateChanged(GameState state) {
 }
 
 void MainWindow::showGameOver(bool playerWon) {
-    QMessageBox* box = new QMessageBox(this);
-    box->setWindowTitle("Battle Over");
-    box->setStyleSheet(R"(
-        QMessageBox {
-            background-color: #0a0a18;
-            color: #e8e4f0;
+    // Update the game over overlay page
+    if (lblGOTitle) {
+        if (playerWon) {
+            lblGOTitle->setText("⚔  VICTORY!  ⚔");
+            lblGOTitle->setStyleSheet("font-size: 48px; font-weight: 900; color: #3dba6e; letter-spacing: 6px; font-family: 'Impact', sans-serif;");
+        } else {
+            lblGOTitle->setText("💀  DEFEATED  💀");
+            lblGOTitle->setStyleSheet("font-size: 48px; font-weight: 900; color: #d94f4f; letter-spacing: 6px; font-family: 'Impact', sans-serif;");
         }
-        QLabel { color: #e8e4f0; font-size: 14px; }
-        QPushButton {
-            background: #5a3ea0; color: white;
-            padding: 8px 20px; border-radius: 6px;
-            font-size: 13px; border: none;
-        }
-        QPushButton:hover { background: #7c5cbf; }
-    )");
-
-    box->setTextFormat(Qt::RichText);
-
-    if (playerWon) {
-        box->setWindowTitle("Victory!");
-        box->setText(
-            "<b style='font-size:20px; color:#3dba6e;'>&#9876;  VICTORY!</b><br><br>"
-            "You defeated the enemy.<br>"
-            "Score: <b>" + QString::number(gameManager->getScore()) + "</b>"
-        );
-    } else {
-        box->setText(
-            "<b style='font-size:20px; color:#d94f4f;'>&#128128;  DEFEATED</b><br><br>"
-            "You were slain in battle.<br>"
-            "Better luck next time."
-        );
+    }
+    if (lblGOMessage) {
+        lblGOMessage->setText(playerWon
+            ? "You vanquished your foe in glorious combat!"
+            : "You were slain in battle. The arena claims another...");
+    }
+    if (lblGOScore) {
+        lblGOScore->setText(QString("SCORE: %1").arg(gameManager->getScore()));
+    }
+    if (lblGOSprite) {
+        int sprType = playerWon ? selectedType : enemyType;
+        lblGOSprite->setPixmap(makeArcadeSprite(sprType, 120, playerWon ? 2 : 1));
     }
 
-    QPushButton* restart = box->addButton("Play Again", QMessageBox::AcceptRole);
-    QPushButton* menu    = box->addButton("Main Menu",  QMessageBox::RejectRole);
-    Q_UNUSED(restart); Q_UNUSED(menu);
+    stack->setCurrentWidget(gameOverPage);
 
-    box->exec();
+    // Update turn summary
+    QLabel* ts = gameOverPage->findChild<QLabel*>("goTurnSummary");
+    if (ts) ts->setText("Turns played: " + QString::number(turnCount));
+}
 
-    if (box->clickedButton() == restart) {
+void MainWindow::addCombatMessage(const QString& msg) {
+    combatMessages.prepend(msg);
+    while (combatMessages.size() > 4)
+        combatMessages.removeLast();
+    if (lblCombatLog)
+        lblCombatLog->setText(combatMessages.join("<br>"));
+}
+
+void MainWindow::updateBottomBar() {
+    if (lblTurnCounter)
+        lblTurnCounter->setText("Turn: " + QString::number(turnCount));
+
+    if (lblDistance && gameManager && gameManager->getPlayer() && gameManager->getEnemy()) {
+        Character* p = gameManager->getPlayer();
+        Character* e = gameManager->getEnemy();
+        int dist = std::abs(p->getGridX() - e->getGridX()) + std::abs(p->getGridY() - e->getGridY());
+        lblDistance->setText("Distance: " + QString::number(dist));
+    }
+
+    if (lblDiffBadge) {
+        if (hardMode) {
+            lblDiffBadge->setText("HARD");
+            lblDiffBadge->setStyleSheet(
+                "font-size: 10px; font-weight: bold; color: #d94f4f; "
+                "background: rgba(217,79,79,30); border: 1px solid #d94f4f; "
+                "border-radius: 4px; padding: 2px 8px; letter-spacing: 2px;"
+            );
+        } else {
+            lblDiffBadge->setText("EASY");
+            lblDiffBadge->setStyleSheet(
+                "font-size: 10px; font-weight: bold; color: #3dba6e; "
+                "background: rgba(61,186,110,30); border: 1px solid #3dba6e; "
+                "border-radius: 4px; padding: 2px 8px; letter-spacing: 2px;"
+            );
+        }
+    }
+
+    // Update cooldown hint
+    QLabel* cdHint = gamePage->findChild<QLabel*>("cooldownHint");
+    if (cdHint) {
+        if (specialCooldown > 0)
+            cdHint->setText("Cooldown: " + QString::number(specialCooldown) + " turns");
+        else
+            cdHint->setText("Cooldown: Ready");
+    }
+}
+
+void MainWindow::buildGameOverPage() {
+    ArcadeBgWidget* bg = new ArcadeBgWidget();
+    gameOverPage = bg;
+
+    QVBoxLayout* lay = new QVBoxLayout(gameOverPage);
+    lay->setAlignment(Qt::AlignCenter);
+    lay->setSpacing(16);
+    lay->setContentsMargins(40, 40, 40, 40);
+
+    lblGOTitle = new QLabel("VICTORY!");
+    lblGOTitle->setAlignment(Qt::AlignCenter);
+    lblGOTitle->setStyleSheet("font-size: 48px; font-weight: 900; color: #3dba6e; letter-spacing: 6px; font-family: 'Impact', sans-serif;");
+    QGraphicsDropShadowEffect* goGlow = new QGraphicsDropShadowEffect();
+    goGlow->setBlurRadius(40); goGlow->setColor(QColor("#3dba6e")); goGlow->setOffset(0,0);
+    lblGOTitle->setGraphicsEffect(goGlow);
+
+    lblGOSprite = new QLabel();
+    lblGOSprite->setFixedSize(120, 120);
+    lblGOSprite->setAlignment(Qt::AlignCenter);
+    lblGOSprite->setPixmap(makeArcadeSprite(0, 120, 2));
+    lblGOSprite->setStyleSheet("border: 2px solid #3a3a60; border-radius: 8px; background: rgba(0,0,0,100);");
+
+    lblGOMessage = new QLabel("You vanquished your foe!");
+    lblGOMessage->setAlignment(Qt::AlignCenter);
+    lblGOMessage->setStyleSheet("font-size: 14px; color: #7a7a99;");
+
+    lblGOScore = new QLabel("SCORE: 0");
+    lblGOScore->setAlignment(Qt::AlignCenter);
+    lblGOScore->setStyleSheet("font-size: 28px; font-weight: bold; color: #d4a017; letter-spacing: 4px; font-family: 'Impact', sans-serif;");
+
+    QLabel* divider = new QLabel("━━━━━━━━━━━━━━━━━━━━━━━━━━━━");
+    divider->setAlignment(Qt::AlignCenter);
+    divider->setStyleSheet("font-size: 11px; color: #2a2a4a;");
+
+    QHBoxLayout* btnRow = new QHBoxLayout();
+    btnRow->setSpacing(20);
+    btnRow->setAlignment(Qt::AlignCenter);
+
+    QPushButton* btnRestart = new QPushButton("▶  PLAY AGAIN");
+    btnRestart->setFixedSize(200, 52);
+    btnRestart->setCursor(Qt::PointingHandCursor);
+    btnRestart->setStyleSheet(R"(
+        QPushButton {
+            background: qlineargradient(x1:0,y1:0,x2:1,y2:0,stop:0 #5a3ea0,stop:1 #7c5cbf);
+            color: #fff; font-size: 16px; font-weight: bold; letter-spacing: 2px;
+            border: 2px solid #9370d4; border-radius: 10px;
+        }
+        QPushButton:hover { background: #7c5cbf; border: 2px solid #b090e0; }
+    )");
+    connect(btnRestart, &QPushButton::clicked, this, [this]() {
         gameManager->restartGame();
         stack->setCurrentWidget(characterPage);
-        auto resetCard = [](QWidget* w, const QString& accent) {
-            Q_UNUSED(accent);
-            w->setStyleSheet(R"(
-                QWidget { background: #12122a; border: 2px solid #2a2a4a; border-radius: 14px; }
-            )");
+        auto resetCard = [](QWidget* w) {
+            w->setStyleSheet("QWidget { background: #12122a; border: 2px solid #2a2a4a; border-radius: 14px; }");
         };
-        resetCard(cardWarriorWidget, Pal::AMBER);
-        resetCard(cardMageWidget,    Pal::TEAL);
-        resetCard(cardArcherWidget,  Pal::ORANGE);
+        resetCard(cardWarriorWidget);
+        resetCard(cardMageWidget);
+        resetCard(cardArcherWidget);
         selectionLabel->setText("No character selected");
         btnStart->setEnabled(false);
         selectedType = -1;
         delete selectedCharacter;
         selectedCharacter = nullptr;
-    } else {
+    });
+
+    QPushButton* btnMenu = new QPushButton("⌂  MAIN MENU");
+    btnMenu->setFixedSize(200, 52);
+    btnMenu->setCursor(Qt::PointingHandCursor);
+    btnMenu->setStyleSheet(R"(
+        QPushButton {
+            background: #1e1e3a; color: #7a7a99; font-size: 16px; font-weight: bold;
+            letter-spacing: 2px; border: 1px solid #2a2a4a; border-radius: 10px;
+        }
+        QPushButton:hover { background: #25253d; color: #e8e4f0; }
+    )");
+    connect(btnMenu, &QPushButton::clicked, this, [this]() {
         gameManager->restartGame();
         stack->setCurrentWidget(menuPage);
-    }
+    });
+
+    btnRow->addWidget(btnRestart);
+    btnRow->addWidget(btnMenu);
+
+    QLabel* turnSummary = new QLabel("Turns played: —");
+    turnSummary->setObjectName("goTurnSummary");
+    turnSummary->setAlignment(Qt::AlignCenter);
+    turnSummary->setStyleSheet("font-size: 11px; color: #555580;");
+
+    lay->addStretch();
+    lay->addWidget(lblGOTitle, 0, Qt::AlignCenter);
+    lay->addWidget(lblGOSprite, 0, Qt::AlignCenter);
+    lay->addWidget(lblGOMessage, 0, Qt::AlignCenter);
+    lay->addWidget(lblGOScore, 0, Qt::AlignCenter);
+    lay->addWidget(divider, 0, Qt::AlignCenter);
+    lay->addWidget(turnSummary, 0, Qt::AlignCenter);
+    lay->addSpacing(10);
+    lay->addLayout(btnRow);
+    lay->addStretch();
+
+    stack->addWidget(gameOverPage);
 }
 
 // ═══════════════════════════════════════════════════════════════
@@ -1520,11 +2062,13 @@ void MainWindow::keyPressEvent(QKeyEvent* event)
 		int dmg = player->attack();
                 enemy->takeDamage(dmg);
                 if (specialCooldown > 0) specialCooldown--;
-                // Flash attack pose on player token + portrait
+                turnCount++;
                 flashAttackPose(true, 1);
                 lblTurnInfo->setText("⚔ Attack! Hit for " +
                     QString::number(dmg) + " damage.");
+                addCombatMessage("<span style='color:#7c5cbf;'>⚔ You attacked for " + QString::number(dmg) + " damage</span>");
                 updateHUD();
+                updateBottomBar();
                 gameManager->checkWinCondition();
             } else {
                 lblTurnInfo->setText("Too far to attack — move closer!");
@@ -1546,11 +2090,13 @@ void MainWindow::keyPressEvent(QKeyEvent* event)
                 int dmg = player->specialAbility();
                 enemy->takeDamage(dmg);
                 specialCooldown = 3;
-                // Flash special pose on player token + portrait
+                turnCount++;
                 flashAttackPose(true, 2);
                 lblTurnInfo->setText("✦ Special! Hit for " +
                     QString::number(dmg) + " damage!");
+                addCombatMessage("<span style='color:#d4a017;'>✦ You used Special for " + QString::number(dmg) + " damage!</span>");
                 updateHUD();
+                updateBottomBar();
                 gameManager->checkWinCondition();
             } else {
                 lblTurnInfo->setText("Too far for special — move closer!");
@@ -1566,8 +2112,10 @@ void MainWindow::keyPressEvent(QKeyEvent* event)
     bool moved = gameManager->getGrid()->moveCharacter(player, newRow, newCol);
     if (moved) {
         if (specialCooldown > 0) specialCooldown--;
+        turnCount++;
         updateTokenPositions();
         updateHUD();
+        updateBottomBar();
         lblTurnInfo->setText("Your turn — move or attack");
     }
 }

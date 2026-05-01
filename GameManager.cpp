@@ -7,6 +7,7 @@ GameManager::GameManager(QObject* parent)
       enemy(nullptr),
       state(GameState::MENU),
       score(0),
+      hardMode(false),
       timer(new QTimer(this))
 {
     connect(timer, &QTimer::timeout, this, &GameManager::onTimerTick);
@@ -16,19 +17,24 @@ GameManager::~GameManager() {
     // player and enemy are owned externally; don't delete here
 }
 
+void GameManager::setHardMode(bool hard) {
+    hardMode = hard;
+}
+
 void GameManager::startGame(Character* playerCharacter, Character* enemyCharacter) {
     player = playerCharacter;
     enemy  = enemyCharacter;
     score  = 0;
 
-    // Place characters on opposite corners of the 8x8 grid
+    // Place characters on opposite corners of the 8×8 grid
     battleGrid.placeCharacter(player, 0, 0);
     battleGrid.placeCharacter(enemy,  7, 7);
 
     state = GameState::PLAYING;
     emit gameStateChanged(state);
 
-    timer->start(TIMER_INTERVAL_MS);
+    int interval = hardMode ? TIMER_INTERVAL_HARD_MS : TIMER_INTERVAL_MS;
+    timer->start(interval);
 }
 
 void GameManager::checkWinCondition() {
@@ -49,21 +55,22 @@ void GameManager::checkWinCondition() {
 
 void GameManager::restartGame() {
     timer->stop();
-    player = nullptr;
-    enemy  = nullptr;
-    score  = 0;
-    state  = GameState::CHARACTER_SELECT;
+    player   = nullptr;
+    enemy    = nullptr;
+    score    = 0;
+    hardMode = false;
+    state    = GameState::CHARACTER_SELECT;
     emit gameStateChanged(state);
 }
 
 void GameManager::onTimerTick() {
-    // Milestone 2: enemy AI movement + attack will be triggered here
+    // Milestone 2: enemy AI movement + attack triggered here
     emit enemyTurnTriggered();
     checkWinCondition();
 }
 
-Character* GameManager::getPlayer() const { return player; }
-Character* GameManager::getEnemy()  const { return enemy;  }
-BattleGrid* GameManager::getGrid()        { return &battleGrid; }
-GameState  GameManager::getState()  const { return state;  }
-int         GameManager::getScore() const { return score;  }
+Character*  GameManager::getPlayer() const { return player; }
+Character*  GameManager::getEnemy()  const { return enemy;  }
+BattleGrid* GameManager::getGrid()         { return &battleGrid; }
+GameState   GameManager::getState()  const { return state;  }
+int         GameManager::getScore()  const { return score;  }
