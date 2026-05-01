@@ -467,5 +467,14 @@ CMakeFiles/game.dir/mainwindow.cpp.o: \
  /usr/include/x86_64-linux-gnu/qt6/QtCore/qdatetime.h \
  /usr/include/x86_64-linux-gnu/qt6/QtCore/qcalendar.h \
  /usr/include/x86_64-linux-gnu/qt6/QtCore/qlocale.h \
+ /usr/include/x86_64-linux-gnu/qt6/QtCore/QFile \
+ /usr/include/x86_64-linux-gnu/qt6/QtCore/qfile.h \
+ /usr/include/x86_64-linux-gnu/qt6/QtCore/QCoreApplication \
+ /usr/include/x86_64-linux-gnu/qt6/QtCore/qcoreapplication.h \
+ /usr/include/x86_64-linux-gnu/qt6/QtCore/qeventloop.h \
+ /usr/include/x86_64-linux-gnu/qt6/QtCore/qcoreapplication_platform.h \
+ /usr/include/x86_64-linux-gnu/qt6/QtCore/qcoreapplication.h \
  /usr/include/x86_64-linux-gnu/qt6/QtGui/QPolygon \
- /usr/include/x86_64-linux-gnu/qt6/QtGui/qpolygon.h
+ /usr/include/x86_64-linux-gnu/qt6/QtGui/qpolygon.h \
+ /usr/include/x86_64-linux-gnu/qt6/QtGui/QImage \
+ /usr/include/x86_64-linux-gnu/qt6/QtGui/qimage.h

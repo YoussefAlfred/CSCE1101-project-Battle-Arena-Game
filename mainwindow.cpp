@@ -22,7 +22,10 @@
 #include <QPropertyAnimation>
 #include <QVariantAnimation>
 #include <QDir>
+#include <QFile>
+#include <QCoreApplication>
 #include <QPolygon>
+#include <QImage>
 #include <ctime>
 
 // ═══════════════════════════════════════════════════════════════
@@ -617,7 +620,134 @@ static QPixmap makeNeonChampionSprite(int type, int size, int pose, int facing =
     return pixmap;
 }
 
+static QString resolveAssetPath(const QString& relativePath) {
+    if (QFile::exists(relativePath)) return relativePath;
+
+    const QString appDir = QCoreApplication::applicationDirPath();
+    const QStringList candidates = {
+        QDir(appDir).filePath(relativePath),
+        QDir(appDir).filePath(QStringLiteral("../") + relativePath),
+        QDir(appDir).filePath(QStringLiteral("../../") + relativePath)
+    };
+    for (const QString& p : candidates) {
+        const QString clean = QDir::cleanPath(p);
+        if (QFile::exists(clean)) return clean;
+    }
+    return QString();
+}
+
+static QString spriteFolderForType(int type) {
+    if (type == 0) return QStringLiteral("Knight_1");
+    if (type == 1) return QStringLiteral("Wanderer Magican");
+    return QStringLiteral("Gorgon_2");
+}
+
+static QString spriteSheetPathForPose(int type, int pose) {
+    int effectivePose = pose;
+    // Gorgon feels better if normal attack uses the snappier strip.
+    if (type == 2) {
+        if (pose == 1) effectivePose = 2;
+        else if (pose == 2) effectivePose = 1;
+    }
+
+    auto buildPath = [&](const QStringList& names) -> QString {
+        const QString folder = spriteFolderForType(type);
+        for (const QString& n : names) {
+            const QString p = QStringLiteral("assets/sprites/%1/%2").arg(folder, n);
+            const QString resolved = resolveAssetPath(p);
+            if (!resolved.isEmpty()) return resolved;
+        }
+        return QString();
+    };
+
+    if (effectivePose == 3) {
+        return buildPath({QStringLiteral("Dead.png")});
+    }
+    if (effectivePose == 1) {
+        return buildPath({
+            QStringLiteral("Attack_1.png"),
+            QStringLiteral("Attack 1.png"),
+            QStringLiteral("Attack_2.png"),
+            QStringLiteral("Attack 2.png"),
+            QStringLiteral("Attack_3.png"),
+            QStringLiteral("Attack 3.png")
+        });
+    }
+    if (effectivePose == 2) {
+        return buildPath({
+            QStringLiteral("Special.png"),
+            QStringLiteral("Fireball.png"),
+            QStringLiteral("Flame_jet.png"),
+            QStringLiteral("Light_ball.png"),
+            QStringLiteral("Light_charge.png"),
+            QStringLiteral("Magic_sphere.png"),
+            QStringLiteral("Magic_arrow.png"),
+            QStringLiteral("Charge.png"),
+            QStringLiteral("Charge_1.png"),
+            QStringLiteral("Charge_2.png"),
+            QStringLiteral("Protect.png"),
+            QStringLiteral("Defend.png"),
+            QStringLiteral("Run+Attack.png")
+        });
+    }
+    if (effectivePose == 4) {
+        const QString walk = buildPath({QStringLiteral("Walk.png"), QStringLiteral("Run.png")});
+        if (!walk.isEmpty()) return walk;
+    }
+    return buildPath({QStringLiteral("Idle.png"), QStringLiteral("Idle_2.png"), QStringLiteral("Walk.png")});
+}
+
+static int spriteFrameCountForPose(int type, int pose) {
+    const QString path = spriteSheetPathForPose(type, pose);
+    QPixmap sheet(path);
+    if (sheet.isNull() || sheet.height() <= 0 || sheet.width() < sheet.height()) return 1;
+    return std::max(1, sheet.width() / sheet.height());
+}
+
 static QPixmap makeArcadeSprite(int type, int size, int pose = 0, int facing = 0, int frame = 0) {
+    const bool backFacing = (facing == 1);
+    const QString sheetPath = spriteSheetPathForPose(type, pose);
+    if (!sheetPath.isEmpty()) {
+        QPixmap sheet(sheetPath);
+        if (!sheet.isNull() && sheet.height() > 0 && sheet.width() >= sheet.height()) {
+            const int frameSide = sheet.height();
+            const int frameCount = std::max(1, sheet.width() / frameSide);
+            const int safeIndex = ((frame % frameCount) + frameCount) % frameCount;
+            QPixmap framePx = sheet.copy(safeIndex * frameSide, 0, frameSide, frameSide);
+
+            // Trim transparent margins so the character fills more of the target size.
+            const QImage frameImg = framePx.toImage().convertToFormat(QImage::Format_ARGB32);
+            int minX = frameImg.width(), minY = frameImg.height();
+            int maxX = -1, maxY = -1;
+            for (int y = 0; y < frameImg.height(); ++y) {
+                const QRgb* row = reinterpret_cast<const QRgb*>(frameImg.constScanLine(y));
+                for (int x = 0; x < frameImg.width(); ++x) {
+                    if (qAlpha(row[x]) > 8) {
+                        minX = std::min(minX, x);
+                        minY = std::min(minY, y);
+                        maxX = std::max(maxX, x);
+                        maxY = std::max(maxY, y);
+                    }
+                }
+            }
+            if (maxX >= minX && maxY >= minY) {
+                const QRect alphaBounds(minX, minY, maxX - minX + 1, maxY - minY + 1);
+                framePx = framePx.copy(alphaBounds);
+            }
+
+            // Side profile handling: right = original, left = mirrored.
+            if (facing == 2) framePx = framePx.transformed(QTransform().scale(-1, 1));
+
+            // Back profile handling: same strip with subtle dark tint.
+            if (backFacing) {
+                QPainter tintPainter(&framePx);
+                tintPainter.fillRect(framePx.rect(), QColor(0, 0, 0, 34));
+            }
+
+            return framePx.scaled(size, size, Qt::KeepAspectRatio, Qt::SmoothTransformation);
+        }
+    }
+
     return makeNeonChampionSprite(type, size, pose, facing, frame);
 
     QPixmap pixmap(size, size);
@@ -1081,7 +1211,7 @@ MainWindow::MainWindow(QWidget* parent)
       selectedCharacter(nullptr),
       selectedType(-1)
 {
-    setWindowTitle("⚔  Battle Arena");
+    setWindowTitle("Battle Arena");
     resize(1100, 750);
     setMinimumSize(1000, 680);
 
@@ -1103,13 +1233,41 @@ MainWindow::MainWindow(QWidget* parent)
     // ── Menu animation: cycle character poses ──────────────
     menuAnimTimer = new QTimer(this);
     connect(menuAnimTimer, &QTimer::timeout, this, [this]() {
-        menuPoseFrame = (menuPoseFrame + 1) % 3;
+        menuPoseFrame++;
         for (int i = 0; i < 3; i++) {
             if (menuSprites[i])
-                menuSprites[i]->setPixmap(makeArcadeSprite(i, 100, menuPoseFrame));
+                menuSprites[i]->setPixmap(makeArcadeSprite(i, 108, 0, 0, menuPoseFrame));
         }
     });
-    menuAnimTimer->start(1200);
+    menuAnimTimer->start(300);
+
+    // Keep battle sprites alive with lightweight idle/walk frame animation.
+    battleAnimTimer = new QTimer(this);
+    connect(battleAnimTimer, &QTimer::timeout, this, [this]() {
+        if (!gameManager || gameManager->getState() != GameState::PLAYING) return;
+        if (combatAnimLocks > 0) return; // don't overwrite attack/special playback
+        battleAnimFrame++;
+
+        if (playerToken)
+            playerToken->setPixmap(makeArcadeSprite(selectedType, CELL - 6, 0, playerFacing, battleAnimFrame));
+        if (enemyToken)
+            enemyToken->setPixmap(makeArcadeSprite(enemyType, CELL - 6, 0, enemyFacing, battleAnimFrame + 2));
+
+        if (playerPortraitLabel)
+            playerPortraitLabel->setPixmap(makeArcadeSprite(selectedType, 72, 0, playerFacing, battleAnimFrame));
+        if (enemyPortraitLabel)
+            enemyPortraitLabel->setPixmap(makeArcadeSprite(enemyType, 72, 0, enemyFacing, battleAnimFrame + 2));
+    });
+    battleAnimTimer->start(320);
+
+    gameOverAnimTimer = new QTimer(this);
+    connect(gameOverAnimTimer, &QTimer::timeout, this, [this]() {
+        if (!lblGOSprite) return;
+        gameOverAnimFrame++;
+        lblGOSprite->setPixmap(makeArcadeSprite(gameOverAnimType, 120, gameOverAnimPose, 0, gameOverAnimFrame));
+    });
+    gameOverAnimTimer->start(260);
+    gameOverAnimTimer->stop();
 
     stack->setCurrentWidget(menuPage);
 }
@@ -1240,7 +1398,7 @@ void MainWindow::buildMenuPage() {
     }
 
     // ── title ────────────────────────────────────────────────
-    QLabel* title = new QLabel("⚔  BATTLE ARENA  ⚔");
+    QLabel* title = new QLabel("BATTLE ARENA");
     title->setAlignment(Qt::AlignCenter);
     title->setStyleSheet(R"(
         font-size: 54px;
@@ -1260,30 +1418,21 @@ void MainWindow::buildMenuPage() {
     sub->setAlignment(Qt::AlignCenter);
     sub->setStyleSheet("font-size: 12px; color: #7a7a99; letter-spacing: 3px; font-family: 'Courier New', monospace;");
 
-    // ── HIGH SCORE display ───────────────────────────────────
-    QLabel* highScore = new QLabel("HIGH SCORE: 000");
-    highScore->setAlignment(Qt::AlignCenter);
-    highScore->setStyleSheet(R"(
-        font-size: 16px; font-weight: bold;
-        color: #d4a017; letter-spacing: 4px;
-        font-family: "Courier New", monospace;
-    )");
-
     // ── character preview row — ANIMATED sprites ─────────────
     QHBoxLayout* charRow = new QHBoxLayout();
     charRow->setSpacing(40);
     charRow->setAlignment(Qt::AlignCenter);
-    QStringList charNames = {"WARRIOR", "MAGE", "ARCHER"};
+    QStringList charNames = {"WARRIOR", "MAGE", "GORGON"};
     QStringList charColors = {Pal::AMBER, Pal::TEAL, Pal::ORANGE};
-    QStringList charWeapons = {"⚔ Sword", "✦ Staff", "➹ Bow"};
+    QStringList charWeapons = {"Sword", "Staff", "Claws"};
     for (int i = 0; i < 3; i++) {
         QVBoxLayout* col = new QVBoxLayout();
         col->setAlignment(Qt::AlignCenter);
         col->setSpacing(4);
 
         QLabel* portrait = new QLabel();
-        portrait->setFixedSize(100, 100);
-        portrait->setPixmap(makeArcadeSprite(i, 100, 0));
+        portrait->setFixedSize(116, 116);
+        portrait->setPixmap(makeArcadeSprite(i, 108, 0));
         portrait->setAlignment(Qt::AlignCenter);
         portrait->setStyleSheet(QString(
             "border: 2px solid %1; border-radius: 6px; background: rgba(0,0,0,100);"
@@ -1310,7 +1459,7 @@ void MainWindow::buildMenuPage() {
     divider->setStyleSheet("font-size: 11px; color: #2a2a4a;");
 
     // ── PLAY button ──────────────────────────────────────────
-    QPushButton* btnPlay = new QPushButton("  ▶   PLAY");
+    QPushButton* btnPlay = new QPushButton("PLAY");
     btnPlay->setFixedSize(320, 64);
     btnPlay->setStyleSheet(R"(
         QPushButton {
@@ -1366,7 +1515,6 @@ void MainWindow::buildMenuPage() {
     lay->addSpacing(6);
     lay->addWidget(title,      0, Qt::AlignCenter);
     lay->addWidget(sub,        0, Qt::AlignCenter);
-    lay->addWidget(highScore,  0, Qt::AlignCenter);
     lay->addSpacing(10);
     lay->addLayout(charRow);
     lay->addSpacing(4);
@@ -1428,8 +1576,8 @@ void MainWindow::buildCharacterPage() {
         {1, "Mage",    "100", "20", "Arcane Storm (3× ATK)",
          "Fragile but devastating — one burst can turn the tide.",
          Pal::TEAL, 100, 20},
-        {2, "Archer",  "150", "15", "Double Shot (2× ATK)",
-         "Balanced ranger who strikes reliably from any range.",
+        {2, "Gorgon",  "150", "15", "Stone Burst (2× ATK)",
+         "Monstrous striker with brutal close-quarters pressure.",
          Pal::ORANGE, 150, 15},
     };
 
@@ -1543,7 +1691,7 @@ void MainWindow::buildCharacterPage() {
         specL->setAlignment(Qt::AlignCenter);
         specL->setWordWrap(true);
         specL->setText(
-            "<span style='font-size:10px; color:#b0a0d0;'>✦ " + ci.special + "</span>"
+            "<span style='font-size:10px; color:#b0a0d0;'>Special: " + ci.special + "</span>"
         );
 
         QFrame* sep = new QFrame();
@@ -1593,7 +1741,7 @@ void MainWindow::buildCharacterPage() {
         stack->setCurrentWidget(menuPage);
     });
 
-    btnStart = new QPushButton("Start Battle  ▶");
+    btnStart = new QPushButton("Start Battle");
     btnStart->setFixedSize(200, 44);
     btnStart->setEnabled(false);
     btnStart->setStyleSheet(R"(
@@ -1619,13 +1767,13 @@ void MainWindow::buildCharacterPage() {
     vsPanel->setTextFormat(Qt::RichText);
     vsPanel->setText(
         "<span style='font-size: 12px; color: #555580;'>"
-        "⚔ You will face a <b style='color: #d94f4f;'>random opponent</b> — choose wisely! ⚔"
+        "You will face a <b style='color: #d94f4f;'>random opponent</b> - choose wisely!"
         "</span>"
     );
     vsPanel->setStyleSheet("border: 1px solid #1e1e3a; border-radius: 6px; padding: 8px;");
 
     // ── Gameplay tip ─────────────────────────────────────────
-    QLabel* tip = new QLabel("💡 TIP: Get adjacent to the enemy to attack. Use Q for your special ability (3-turn cooldown).");
+    QLabel* tip = new QLabel("TIP: Get adjacent to the enemy to attack. Use Q for your special ability (3-turn cooldown).");
     tip->setAlignment(Qt::AlignCenter);
     tip->setWordWrap(true);
     tip->setStyleSheet("font-size: 10px; color: #444466; font-style: italic;");
@@ -1659,7 +1807,7 @@ void MainWindow::onCharacterSelected(int type) {
     setCardBorder(cardMageWidget,    Pal::TEAL,   type == 1);
     setCardBorder(cardArcherWidget,  Pal::ORANGE, type == 2);
 
-    static const QStringList names = {"Warrior", "Mage", "Archer"};
+    static const QStringList names = {"Warrior", "Mage", "Gorgon"};
     static const QStringList colors = {Pal::AMBER, Pal::TEAL, Pal::ORANGE};
     selectionLabel->setText(
         "<span style='color:#7a7a99;'>Selected: </span>"
@@ -1682,7 +1830,7 @@ void MainWindow::onStartClicked()
     specialCooldown = 0;
 
     // Update difficulty page's character preview
-    static const QStringList classNames = {"WARRIOR", "MAGE", "ARCHER"};
+    static const QStringList classNames = {"WARRIOR", "MAGE", "GORGON"};
     if (diffCharPreview)
         diffCharPreview->setPixmap(makeArcadeSprite(selectedType, 80, 0));
     if (diffCharName)
@@ -1749,7 +1897,7 @@ void MainWindow::buildDifficultyPage() {
     easyCol->setAlignment(Qt::AlignCenter);
     easyCol->setSpacing(8);
 
-    QLabel* easyBadge = new QLabel("★ RECOMMENDED");
+    QLabel* easyBadge = new QLabel("RECOMMENDED");
     easyBadge->setAlignment(Qt::AlignCenter);
     easyBadge->setStyleSheet("font-size: 9px; color: #3dba6e; letter-spacing: 2px; font-weight: bold;");
 
@@ -1784,11 +1932,11 @@ void MainWindow::buildDifficultyPage() {
     hardCol->setAlignment(Qt::AlignCenter);
     hardCol->setSpacing(8);
 
-    QLabel* hardBadge = new QLabel("⚠ ONLY FOR THE BRAVE ⚠");
+    QLabel* hardBadge = new QLabel("ONLY FOR THE BRAVE");
     hardBadge->setAlignment(Qt::AlignCenter);
     hardBadge->setStyleSheet("font-size: 9px; color: #d94f4f; letter-spacing: 2px; font-weight: bold;");
 
-    QPushButton* btnHard = new QPushButton("💀  HARD");
+    QPushButton* btnHard = new QPushButton("HARD");
     btnHard->setFixedSize(240, 64);
     btnHard->setCursor(Qt::PointingHandCursor);
     btnHard->setStyleSheet(R"(
@@ -1878,6 +2026,8 @@ void MainWindow::buildDifficultyPage() {
 // Helper: actually launch the game after difficulty is chosen
 void MainWindow::startBattle()
 {
+    if (gameOverAnimTimer) gameOverAnimTimer->stop();
+
     Character* enemy = nullptr;
     enemyType = rand() % 3;
     if      (enemyType == 0) enemy = new Warrior("Enemy");
@@ -1895,7 +2045,7 @@ void MainWindow::startBattle()
     combatMessages.clear();
     if (lblCombatLog) lblCombatLog->setText("<span style='color:#555580;'>Battle begins!</span>");
 
-    static const QStringList classNames = {"Warrior", "Mage", "Archer"};
+    static const QStringList classNames = {"Warrior", "Mage", "Gorgon"};
     lblPlayerClass->setText(classNames[selectedType]);
     lblEnemyClass->setText(classNames[enemyType]);
 
@@ -1906,11 +2056,11 @@ void MainWindow::startBattle()
 
     drawGrid();
 
-    QPixmap playerPm = makeArcadeSprite(selectedType, CELL - 8, 0, playerFacing, playerWalkFrame);
+    QPixmap playerPm = makeArcadeSprite(selectedType, CELL - 6, 0, playerFacing, playerWalkFrame);
     playerToken = scene->addPixmap(playerPm);
     playerToken->setZValue(2);
 
-    QPixmap enemyPixmap = makeArcadeSprite(enemyType, CELL - 8, 0, enemyFacing, enemyWalkFrame);
+    QPixmap enemyPixmap = makeArcadeSprite(enemyType, CELL - 6, 0, enemyFacing, enemyWalkFrame);
     enemyToken = scene->addPixmap(enemyPixmap);
     enemyToken->setZValue(2);
 
@@ -1999,7 +2149,7 @@ QWidget* MainWindow::buildHUDPanel(bool isPlayer) {
 
     // DANGER label (hidden by default)
     QLabel*& dangerL = isPlayer ? lblPlayerDanger : lblEnemyDanger;
-    dangerL = new QLabel("⚠ DANGER");
+    dangerL = new QLabel("DANGER");
     dangerL->setAlignment(Qt::AlignCenter);
     dangerL->setStyleSheet("font-size: 11px; font-weight: bold; color: #d94f4f; letter-spacing: 2px;");
     dangerL->setVisible(false);
@@ -2062,11 +2212,8 @@ void MainWindow::buildGamePage() {
 
     // ── Top bar ──────────────────────────────────────────────
     QHBoxLayout* topBar = new QHBoxLayout();
-    lblTurnInfo = new QLabel("Your turn — move or attack");
-    lblTurnInfo->setStyleSheet("font-size: 13px; color: #7c5cbf; font-weight: bold;");
     lblScore = new QLabel("Score: 0");
     lblScore->setStyleSheet("font-size: 13px; color: #d4a017;");
-    topBar->addWidget(lblTurnInfo);
     topBar->addStretch();
     topBar->addWidget(lblScore);
 
@@ -2094,13 +2241,22 @@ void MainWindow::buildGamePage() {
     midRow->addWidget(gridView,   0, Qt::AlignCenter);
     midRow->addWidget(rightPanel, 0, Qt::AlignTop);
 
-    // ── Action buttons row ───────────────────────────────────
+    // ── Action/status strip ──────────────────────────────────
     QHBoxLayout* actionRow = new QHBoxLayout();
-    actionRow->setSpacing(10);
+    actionRow->setSpacing(8);
     actionRow->setAlignment(Qt::AlignCenter);
 
-    btnActionAttack = new QPushButton("⚔  ATTACK  [Space]");
-    btnActionAttack->setFixedSize(180, 36);
+    lblTurnInfo = new QLabel("Your turn — move or attack");
+    lblTurnInfo->setFixedHeight(36);
+    lblTurnInfo->setMinimumWidth(260);
+    lblTurnInfo->setStyleSheet(
+        "font-size: 12px; color: #bda8ee; font-weight: bold; "
+        "background: rgba(90,62,160,55); border: 1px solid #7c5cbf; "
+        "border-radius: 6px; padding: 0 10px;"
+    );
+
+    btnActionAttack = new QPushButton("ATTACK  [Space]");
+    btnActionAttack->setFixedSize(150, 36);
     btnActionAttack->setCursor(Qt::PointingHandCursor);
     btnActionAttack->setStyleSheet(R"(
         QPushButton {
@@ -2115,8 +2271,8 @@ void MainWindow::buildGamePage() {
         keyPressEvent(&evt);
     });
 
-    btnActionSpecial = new QPushButton("✦  SPECIAL  [Q]");
-    btnActionSpecial->setFixedSize(180, 36);
+    btnActionSpecial = new QPushButton("SPECIAL  [Q]");
+    btnActionSpecial->setFixedSize(150, 36);
     btnActionSpecial->setCursor(Qt::PointingHandCursor);
     btnActionSpecial->setStyleSheet(R"(
         QPushButton {
@@ -2131,6 +2287,7 @@ void MainWindow::buildGamePage() {
         keyPressEvent(&evt);
     });
 
+    actionRow->addWidget(lblTurnInfo);
     actionRow->addWidget(btnActionAttack);
     actionRow->addWidget(btnActionSpecial);
 
@@ -2208,15 +2365,23 @@ void MainWindow::flashAttackPose(bool isPlayer, int pose) {
                                  facing);
     }
 
-    // Show attack/special sprite
-    QPixmap attackPm = makeArcadeSprite(type, CELL - 8, pose, facing, walkFrame);
-    token->setPixmap(attackPm);
-    if (portrait) portrait->setPixmap(makeArcadeSprite(type, 64, pose));
+    const int frameCount = std::max(1, spriteFrameCountForPose(type, pose));
+    const int frameStepMs = 120;
+    const int totalMs = frameCount * frameStepMs;
+    combatAnimLocks++;
 
-    // Restore idle sprite after short delay
-    QTimer::singleShot(400, this, [=]() {
-        if (token) token->setPixmap(makeArcadeSprite(type, CELL - 8, 0, facing, walkFrame));
-        if (portrait) portrait->setPixmap(makeArcadeSprite(type, 64, 0));
+    for (int i = 0; i < frameCount; ++i) {
+        QTimer::singleShot(i * frameStepMs, this, [=]() {
+            if (token) token->setPixmap(makeArcadeSprite(type, CELL - 6, pose, facing, i));
+            if (portrait) portrait->setPixmap(makeArcadeSprite(type, 64, pose, facing, i));
+        });
+    }
+
+    // Restore idle after the full attack/special strip has played.
+    QTimer::singleShot(totalMs + 60, this, [=, this]() {
+        if (token) token->setPixmap(makeArcadeSprite(type, CELL - 6, 0, facing, walkFrame));
+        if (portrait) portrait->setPixmap(makeArcadeSprite(type, 64, 0, facing, battleAnimFrame));
+        combatAnimLocks = std::max(0, combatAnimLocks - 1);
     });
 }
 
@@ -2267,7 +2432,7 @@ void MainWindow::onEnemyTurn() {
             enemyFacing = facingFromDelta(bestRow - enemyRow, bestCol - enemyCol, enemyFacing);
             enemyWalkFrame++;
             if (enemyToken)
-                enemyToken->setPixmap(makeArcadeSprite(enemyType, CELL - 8, 0, enemyFacing, enemyWalkFrame));
+                enemyToken->setPixmap(makeArcadeSprite(enemyType, CELL - 6, 4, enemyFacing, enemyWalkFrame));
         }
     }
 
@@ -2276,12 +2441,12 @@ void MainWindow::onEnemyTurn() {
             int dmg = enemy->specialAbility();
             player->takeDamage(dmg);
             flashAttackPose(false, 2);
-            addCombatMessage("<span style='color:#ff6b6b;'>💀 Enemy used Special for " + QString::number(dmg) + " damage!</span>");
+            addCombatMessage("<span style='color:#ff6b6b;'>Enemy used Special for " + QString::number(dmg) + " damage!</span>");
         } else {
             int dmg = enemy->attack();
             player->takeDamage(dmg);
             flashAttackPose(false, 1);
-            addCombatMessage("<span style='color:#d94f4f;'>⚔ Enemy attacked for " + QString::number(dmg) + " damage</span>");
+            addCombatMessage("<span style='color:#d94f4f;'>Enemy attacked for " + QString::number(dmg) + " damage</span>");
         }
     }
 
@@ -2425,10 +2590,10 @@ void MainWindow::showGameOver(bool playerWon) {
     // Update the game over overlay page
     if (lblGOTitle) {
         if (playerWon) {
-            lblGOTitle->setText("⚔  VICTORY!  ⚔");
+            lblGOTitle->setText("VICTORY!");
             lblGOTitle->setStyleSheet("font-size: 48px; font-weight: 900; color: #3dba6e; letter-spacing: 6px; font-family: 'Impact', sans-serif;");
         } else {
-            lblGOTitle->setText("💀  DEFEATED  💀");
+            lblGOTitle->setText("DEFEATED");
             lblGOTitle->setStyleSheet("font-size: 48px; font-weight: 900; color: #d94f4f; letter-spacing: 6px; font-family: 'Impact', sans-serif;");
         }
     }
@@ -2441,8 +2606,12 @@ void MainWindow::showGameOver(bool playerWon) {
         lblGOScore->setText(QString("SCORE: %1").arg(gameManager->getScore()));
     }
     if (lblGOSprite) {
-        int sprType = playerWon ? selectedType : enemyType;
-        lblGOSprite->setPixmap(makeArcadeSprite(sprType, 120, playerWon ? 2 : 1));
+        // On defeat, show the player's dead animation (not the enemy).
+        gameOverAnimType = selectedType;
+        gameOverAnimPose = playerWon ? 2 : 3;
+        gameOverAnimFrame = 0;
+        lblGOSprite->setPixmap(makeArcadeSprite(gameOverAnimType, 120, gameOverAnimPose, 0, gameOverAnimFrame));
+        if (gameOverAnimTimer) gameOverAnimTimer->start(260);
     }
 
     stack->setCurrentWidget(gameOverPage);
@@ -2537,7 +2706,7 @@ void MainWindow::buildGameOverPage() {
     btnRow->setSpacing(20);
     btnRow->setAlignment(Qt::AlignCenter);
 
-    QPushButton* btnRestart = new QPushButton("▶  PLAY AGAIN");
+    QPushButton* btnRestart = new QPushButton("PLAY AGAIN");
     btnRestart->setFixedSize(200, 52);
     btnRestart->setCursor(Qt::PointingHandCursor);
     btnRestart->setStyleSheet(R"(
@@ -2549,6 +2718,7 @@ void MainWindow::buildGameOverPage() {
         QPushButton:hover { background: #7c5cbf; border: 2px solid #b090e0; }
     )");
     connect(btnRestart, &QPushButton::clicked, this, [this]() {
+        if (gameOverAnimTimer) gameOverAnimTimer->stop();
         gameManager->restartGame();
         stack->setCurrentWidget(characterPage);
         auto resetCard = [](QWidget* w) {
@@ -2564,7 +2734,7 @@ void MainWindow::buildGameOverPage() {
         selectedCharacter = nullptr;
     });
 
-    QPushButton* btnMenu = new QPushButton("⌂  MAIN MENU");
+    QPushButton* btnMenu = new QPushButton("MAIN MENU");
     btnMenu->setFixedSize(200, 52);
     btnMenu->setCursor(Qt::PointingHandCursor);
     btnMenu->setStyleSheet(R"(
@@ -2575,6 +2745,7 @@ void MainWindow::buildGameOverPage() {
         QPushButton:hover { background: #25253d; color: #e8e4f0; }
     )");
     connect(btnMenu, &QPushButton::clicked, this, [this]() {
+        if (gameOverAnimTimer) gameOverAnimTimer->stop();
         gameManager->restartGame();
         stack->setCurrentWidget(menuPage);
     });
@@ -2607,6 +2778,9 @@ void MainWindow::buildGameOverPage() {
 
 void MainWindow::keyPressEvent(QKeyEvent* event)
 {
+    // Prevent hold-to-repeat from issuing many moves/attacks in one turn.
+    if (event && event->isAutoRepeat()) return;
+
     if (!gameManager || gameManager->getState() != GameState::PLAYING) {
         QMainWindow::keyPressEvent(event);
         return;
@@ -2642,9 +2816,9 @@ void MainWindow::keyPressEvent(QKeyEvent* event)
                 if (specialCooldown > 0) specialCooldown--;
                 turnCount++;
                 flashAttackPose(true, 1);
-                lblTurnInfo->setText("⚔ Attack! Hit for " +
+                lblTurnInfo->setText("Attack! Hit for " +
                     QString::number(dmg) + " damage.");
-                addCombatMessage("<span style='color:#7c5cbf;'>⚔ You attacked for " + QString::number(dmg) + " damage</span>");
+                addCombatMessage("<span style='color:#7c5cbf;'>You attacked for " + QString::number(dmg) + " damage</span>");
                 updateHUD();
                 updateBottomBar();
                 gameManager->checkWinCondition();
@@ -2657,7 +2831,7 @@ void MainWindow::keyPressEvent(QKeyEvent* event)
         // ── Special (Q) ──────────────────────────────────
         case Qt::Key_Q: {
             if (specialCooldown > 0) {
-                lblTurnInfo->setText("✦ Special not ready (" +
+                lblTurnInfo->setText("Special not ready (" +
                     QString::number(specialCooldown) + " turns)");
                 return;
             }
@@ -2670,9 +2844,9 @@ void MainWindow::keyPressEvent(QKeyEvent* event)
                 specialCooldown = 3;
                 turnCount++;
                 flashAttackPose(true, 2);
-                lblTurnInfo->setText("✦ Special! Hit for " +
+                lblTurnInfo->setText("Special! Hit for " +
                     QString::number(dmg) + " damage!");
-                addCombatMessage("<span style='color:#d4a017;'>✦ You used Special for " + QString::number(dmg) + " damage!</span>");
+                addCombatMessage("<span style='color:#d4a017;'>You used Special for " + QString::number(dmg) + " damage!</span>");
                 updateHUD();
                 updateBottomBar();
                 gameManager->checkWinCondition();
@@ -2692,7 +2866,7 @@ void MainWindow::keyPressEvent(QKeyEvent* event)
         playerFacing = facingFromDelta(newRow - row, newCol - col, playerFacing);
         playerWalkFrame++;
         if (playerToken)
-            playerToken->setPixmap(makeArcadeSprite(selectedType, CELL - 8, 0, playerFacing, playerWalkFrame));
+            playerToken->setPixmap(makeArcadeSprite(selectedType, CELL - 6, 4, playerFacing, playerWalkFrame));
         if (specialCooldown > 0) specialCooldown--;
         turnCount++;
         updateTokenPositions();

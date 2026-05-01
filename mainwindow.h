@@ -101,6 +101,13 @@ private:
     QLabel*         menuSprites[3] = {nullptr, nullptr, nullptr};
     int             menuPoseFrame  = 0;
     QTimer*         menuAnimTimer  = nullptr;
+    QTimer*         battleAnimTimer = nullptr;
+    int             battleAnimFrame = 0;
+    QTimer*         gameOverAnimTimer = nullptr;
+    int             gameOverAnimFrame = 0;
+    int             gameOverAnimType  = 0;
+    int             gameOverAnimPose  = 2;
+    int             combatAnimLocks   = 0;
 
     // ── grid ────────────────────────────────────────────────
     QGraphicsScene*      scene;
@@ -145,7 +152,7 @@ private:
     void updateBottomBar();
 
     // grid drawing constants
-    static constexpr int CELL  = 56;
+    static constexpr int CELL  = 72;
     static constexpr int GCOLS = 8;
     static constexpr int GROWS = 8;
 };

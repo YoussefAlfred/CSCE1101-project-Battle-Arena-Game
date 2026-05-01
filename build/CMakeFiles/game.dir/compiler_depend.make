@@ -3063,7 +3063,9 @@ CMakeFiles/game.dir/mainwindow.cpp.o: /home/youssef_alfred/teamproject2026/war/C
   /usr/include/x86_64-linux-gnu/c++/13/bits/time_members.h \
   /usr/include/x86_64-linux-gnu/gnu/stubs-64.h \
   /usr/include/x86_64-linux-gnu/gnu/stubs.h \
+  /usr/include/x86_64-linux-gnu/qt6/QtCore/QCoreApplication \
   /usr/include/x86_64-linux-gnu/qt6/QtCore/QDir \
+  /usr/include/x86_64-linux-gnu/qt6/QtCore/QFile \
   /usr/include/x86_64-linux-gnu/qt6/QtCore/QList \
   /usr/include/x86_64-linux-gnu/qt6/QtCore/QObject \
   /usr/include/x86_64-linux-gnu/qt6/QtCore/QPropertyAnimation \
@@ -3097,12 +3099,15 @@ CMakeFiles/game.dir/mainwindow.cpp.o: /home/youssef_alfred/teamproject2026/war/C
   /usr/include/x86_64-linux-gnu/qt6/QtCore/qcontainerinfo.h \
   /usr/include/x86_64-linux-gnu/qt6/QtCore/qcontainertools_impl.h \
   /usr/include/x86_64-linux-gnu/qt6/QtCore/qcontiguouscache.h \
+  /usr/include/x86_64-linux-gnu/qt6/QtCore/qcoreapplication.h \
+  /usr/include/x86_64-linux-gnu/qt6/QtCore/qcoreapplication_platform.h \
   /usr/include/x86_64-linux-gnu/qt6/QtCore/qcoreevent.h \
   /usr/include/x86_64-linux-gnu/qt6/QtCore/qdatastream.h \
   /usr/include/x86_64-linux-gnu/qt6/QtCore/qdatetime.h \
   /usr/include/x86_64-linux-gnu/qt6/QtCore/qdebug.h \
   /usr/include/x86_64-linux-gnu/qt6/QtCore/qdir.h \
   /usr/include/x86_64-linux-gnu/qt6/QtCore/qeasingcurve.h \
+  /usr/include/x86_64-linux-gnu/qt6/QtCore/qeventloop.h \
   /usr/include/x86_64-linux-gnu/qt6/QtCore/qfile.h \
   /usr/include/x86_64-linux-gnu/qt6/QtCore/qfiledevice.h \
   /usr/include/x86_64-linux-gnu/qt6/QtCore/qfileinfo.h \
@@ -3176,6 +3181,7 @@ CMakeFiles/game.dir/mainwindow.cpp.o: /home/youssef_alfred/teamproject2026/war/C
   /usr/include/x86_64-linux-gnu/qt6/QtGui/QBrush \
   /usr/include/x86_64-linux-gnu/qt6/QtGui/QColor \
   /usr/include/x86_64-linux-gnu/qt6/QtGui/QFont \
+  /usr/include/x86_64-linux-gnu/qt6/QtGui/QImage \
   /usr/include/x86_64-linux-gnu/qt6/QtGui/QKeyEvent \
   /usr/include/x86_64-linux-gnu/qt6/QtGui/QLinearGradient \
   /usr/include/x86_64-linux-gnu/qt6/QtGui/QPainter \
@@ -3307,6 +3313,8 @@ CMakeFiles/game.dir/mainwindow.cpp.o: /home/youssef_alfred/teamproject2026/war/C
 
 /usr/include/x86_64-linux-gnu/qt6/QtGui/QLinearGradient:
 
+/usr/include/x86_64-linux-gnu/qt6/QtGui/QImage:
+
 /usr/include/x86_64-linux-gnu/qt6/QtGui/QColor:
 
 /usr/include/x86_64-linux-gnu/qt6/QtCore/qvariantanimation.h:
@@ -3324,6 +3332,8 @@ CMakeFiles/game.dir/mainwindow.cpp.o: /home/youssef_alfred/teamproject2026/war/C
 /usr/include/x86_64-linux-gnu/qt6/QtCore/qabstractanimation.h:
 
 /usr/include/x86_64-linux-gnu/qt6/QtCore/QPropertyAnimation:
+
+/usr/include/x86_64-linux-gnu/qt6/QtCore/QCoreApplication:
 
 /usr/include/x86_64-linux-gnu/c++/13/bits/time_members.h:
 
@@ -3936,6 +3946,8 @@ game_autogen/moc_predefs.h:
 /usr/include/c++/13/bits/stl_raw_storage_iter.h:
 
 /usr/include/c++/13/bits/stream_iterator.h:
+
+/usr/include/x86_64-linux-gnu/qt6/QtCore/QFile:
 
 /usr/include/x86_64-linux-gnu/bits/uio_lim.h:
 
