@@ -91,7 +91,299 @@ static void px(QPainter& p, int x, int y, int w, int h, QColor c) {
     p.fillRect(x, y, w, h, c);
 }
 
+static void drawSpriteStage(QPainter& p, int type, int pose, int G) {
+    const QColor aura[3] = {
+        QColor(255, 196, 48, 75),
+        QColor(64, 224, 255, 78),
+        QColor(255, 124, 48, 70)
+    };
+    const QColor flare = aura[type];
+
+    // Every fighter now reads like a tiny arena champion: shadow, aura, and class crest.
+    px(p, 4*G, 14*G, 8*G, G, QColor(0, 0, 0, 95));
+    px(p, 3*G, 15*G, 10*G, G, QColor(0, 0, 0, 60));
+
+    px(p, 2*G, 3*G, G, 9*G, QColor(flare.red(), flare.green(), flare.blue(), 28));
+    px(p, 13*G, 3*G, G, 9*G, QColor(flare.red(), flare.green(), flare.blue(), 28));
+    px(p, 4*G, G, 8*G, G, QColor(flare.red(), flare.green(), flare.blue(), 34));
+    px(p, 4*G, 13*G, 8*G, G, QColor(flare.red(), flare.green(), flare.blue(), 36));
+
+    if (pose == 2) {
+        px(p, 0, 7*G, 16*G, 2*G, QColor(flare.red(), flare.green(), flare.blue(), 34));
+        px(p, 7*G, 0, 2*G, 16*G, QColor(255, 255, 255, 26));
+    }
+
+    if (type == 0) {
+        px(p, 1*G, 1*G, G, G, QColor("#ffe060"));
+        px(p, 14*G, 1*G, G, G, QColor("#ffe060"));
+        px(p, 1*G, 12*G, G, G, QColor("#b8920a"));
+        px(p, 14*G, 12*G, G, G, QColor("#b8920a"));
+    } else if (type == 1) {
+        px(p, 1*G, 2*G, G, G, QColor("#80ffff"));
+        px(p, 14*G, 2*G, G, G, QColor("#80ffff"));
+        px(p, 2*G, 12*G, G, G, QColor("#ffe060"));
+        px(p, 13*G, 12*G, G, G, QColor("#ffe060"));
+    } else {
+        px(p, 1*G, 4*G, 2*G, G, QColor("#f0c030"));
+        px(p, 13*G, 4*G, 2*G, G, QColor("#f0c030"));
+        px(p, 1*G, 11*G, 2*G, G, QColor("#d07028"));
+        px(p, 13*G, 11*G, 2*G, G, QColor("#d07028"));
+    }
+}
+
+static void drawObstacle(QGraphicsScene* scene, int c, int r, int cell) {
+    const int x = c * cell;
+    const int y = r * cell;
+
+    auto* shadow = scene->addEllipse(x + 12, y + 39, 32, 8, Qt::NoPen, QBrush(QColor(0, 0, 0, 120)));
+    shadow->setZValue(1.3);
+
+    QPolygon crystal;
+    crystal << QPoint(x + 28, y + 7)
+            << QPoint(x + 42, y + 25)
+            << QPoint(x + 36, y + 43)
+            << QPoint(x + 21, y + 45)
+            << QPoint(x + 14, y + 26);
+
+    auto* body = scene->addPolygon(crystal, QPen(QColor("#7df6ff"), 1.2), QBrush(QColor("#21446f")));
+    body->setZValue(1.5);
+
+    QPolygon shine;
+    shine << QPoint(x + 28, y + 8)
+          << QPoint(x + 35, y + 25)
+          << QPoint(x + 28, y + 42)
+          << QPoint(x + 22, y + 25);
+    auto* inner = scene->addPolygon(shine, Qt::NoPen, QBrush(QColor(125, 246, 255, 95)));
+    inner->setZValue(1.6);
+
+    auto* core = scene->addRect(x + 26, y + 22, 5, 12, Qt::NoPen, QBrush(QColor(255, 240, 120, 170)));
+    core->setZValue(1.7);
+
+    auto* spark1 = scene->addRect(x + 15, y + 13, 4, 4, Qt::NoPen, QBrush(QColor(255, 240, 120, 150)));
+    spark1->setZValue(1.7);
+    auto* spark2 = scene->addRect(x + 40, y + 14, 3, 3, Qt::NoPen, QBrush(QColor(125, 246, 255, 150)));
+    spark2->setZValue(1.7);
+}
+
+static void sparkle(QPainter& p, qreal x, qreal y, qreal r, const QColor& color) {
+    p.setPen(QPen(color, 2, Qt::SolidLine, Qt::RoundCap));
+    p.drawLine(QPointF(x - r, y), QPointF(x + r, y));
+    p.drawLine(QPointF(x, y - r), QPointF(x, y + r));
+    p.setPen(Qt::NoPen);
+    p.setBrush(QColor(color.red(), color.green(), color.blue(), 120));
+    p.drawEllipse(QPointF(x, y), r * 0.35, r * 0.35);
+}
+
+static QPixmap makeNeonChampionSprite(int type, int size, int pose) {
+    QPixmap pixmap(size, size);
+    pixmap.fill(Qt::transparent);
+
+    QPainter p(&pixmap);
+    p.setRenderHint(QPainter::Antialiasing, true);
+    p.setRenderHint(QPainter::SmoothPixmapTransform, true);
+    p.scale(size / 96.0, size / 96.0);
+    p.setPen(Qt::NoPen);
+
+    const QColor auraColors[3] = {
+        QColor("#ffd85a"), QColor("#62f7ff"), QColor("#ff9b45")
+    };
+    const QColor aura = auraColors[type];
+
+    QRadialGradient auraGlow(48, 48, pose == 2 ? 50 : 38);
+    auraGlow.setColorAt(0.0, QColor(aura.red(), aura.green(), aura.blue(), pose == 2 ? 150 : 95));
+    auraGlow.setColorAt(0.58, QColor(aura.red(), aura.green(), aura.blue(), 38));
+    auraGlow.setColorAt(1.0, QColor(0, 0, 0, 0));
+    p.setBrush(auraGlow);
+    p.drawEllipse(QRectF(3, 3, 90, 90));
+
+    if (pose == 1) {
+        QLinearGradient slash(12, 20, 88, 70);
+        slash.setColorAt(0.0, QColor(255, 255, 255, 0));
+        slash.setColorAt(0.45, QColor(aura.red(), aura.green(), aura.blue(), 120));
+        slash.setColorAt(1.0, QColor(255, 255, 255, 0));
+        p.setPen(QPen(QBrush(slash), 5, Qt::SolidLine, Qt::RoundCap));
+        p.drawLine(QPointF(13, 24), QPointF(86, 65));
+        p.setPen(Qt::NoPen);
+    }
+
+    if (pose == 2) {
+        p.setPen(QPen(QColor(aura.red(), aura.green(), aura.blue(), 160), 3));
+        p.drawEllipse(QRectF(14, 12, 68, 68));
+        p.drawEllipse(QRectF(21, 19, 54, 54));
+        p.setPen(Qt::NoPen);
+        sparkle(p, 18, 26, 5, QColor("#ffffff"));
+        sparkle(p, 78, 28, 5, aura);
+        sparkle(p, 22, 72, 4, aura);
+        sparkle(p, 75, 70, 4, QColor("#ffffff"));
+    }
+
+    p.setBrush(QColor(0, 0, 0, 130));
+    p.drawEllipse(QRectF(25, 80, 46, 8));
+
+    if (type == 0) {
+        // Solar knight: sharp armor, royal cape, enormous luminous blade.
+        const qreal lean = pose == 1 ? 4 : 0;
+        p.setBrush(QColor("#7b1732"));
+        p.drawPolygon(QPolygonF() << QPointF(30 + lean, 30) << QPointF(22, 75)
+                                  << QPointF(47, 84) << QPointF(53, 33));
+
+        QLinearGradient armor(29, 31, 66, 72);
+        armor.setColorAt(0.0, QColor("#fff0a6"));
+        armor.setColorAt(0.45, QColor("#d69b20"));
+        armor.setColorAt(1.0, QColor("#5f3a0e"));
+        p.setBrush(armor);
+        p.drawRoundedRect(QRectF(30 + lean, 34, 36, 33), 8, 8);
+        p.drawEllipse(QRectF(24 + lean, 36, 15, 15));
+        p.drawEllipse(QRectF(57 + lean, 36, 15, 15));
+
+        p.setBrush(QColor("#172140"));
+        p.drawRoundedRect(QRectF(34 + lean, 64, 11, 18), 4, 4);
+        p.drawRoundedRect(QRectF(52 + lean, 64, 11, 18), 4, 4);
+        p.setBrush(QColor("#2b1830"));
+        p.drawRoundedRect(QRectF(30 + lean, 79, 17, 7), 3, 3);
+        p.drawRoundedRect(QRectF(50 + lean, 79, 17, 7), 3, 3);
+
+        p.setBrush(QColor("#f3bd7d"));
+        p.drawRoundedRect(QRectF(36 + lean, 22, 24, 18), 7, 7);
+        p.setBrush(QColor("#f6cf57"));
+        p.drawPolygon(QPolygonF() << QPointF(31 + lean, 23) << QPointF(48 + lean, 10)
+                                  << QPointF(65 + lean, 23) << QPointF(60 + lean, 31)
+                                  << QPointF(36 + lean, 31));
+        p.setBrush(QColor("#fff3ad"));
+        p.drawPolygon(QPolygonF() << QPointF(39 + lean, 20) << QPointF(48 + lean, 8)
+                                  << QPointF(56 + lean, 20));
+        p.setBrush(QColor("#24345d"));
+        p.drawRoundedRect(QRectF(40 + lean, 29, 16, 5), 2, 2);
+        p.setBrush(QColor("#61f7ff"));
+        p.drawRect(QRectF(42 + lean, 30, 4, 2));
+        p.drawRect(QRectF(51 + lean, 30, 4, 2));
+
+        p.setPen(QPen(QColor("#fff8c7"), pose == 2 ? 8 : 5, Qt::SolidLine, Qt::RoundCap));
+        if (pose == 1)
+            p.drawLine(QPointF(54, 58), QPointF(86, 14));
+        else
+            p.drawLine(QPointF(70, 66), QPointF(72, 13));
+        p.setPen(QPen(QColor("#69f6ff"), 2, Qt::SolidLine, Qt::RoundCap));
+        if (pose == 1)
+            p.drawLine(QPointF(57, 55), QPointF(86, 14));
+        else
+            p.drawLine(QPointF(72, 63), QPointF(73, 15));
+        p.setPen(Qt::NoPen);
+        p.setBrush(QColor("#ffe16a"));
+        p.drawRoundedRect(QRectF(58, 56, 18, 6), 2, 2);
+
+    } else if (type == 1) {
+        // Astral mage: floating robe, comet staff, orbiting runes.
+        QLinearGradient robe(31, 26, 65, 80);
+        robe.setColorAt(0.0, QColor("#82fbff"));
+        robe.setColorAt(0.45, QColor("#326bd6"));
+        robe.setColorAt(1.0, QColor("#151b65"));
+        p.setBrush(robe);
+        p.drawPolygon(QPolygonF() << QPointF(38, 34) << QPointF(58, 34)
+                                  << QPointF(70, 82) << QPointF(26, 82));
+        p.setBrush(QColor("#0a123c"));
+        p.drawPolygon(QPolygonF() << QPointF(45, 37) << QPointF(51, 37)
+                                  << QPointF(55, 80) << QPointF(41, 80));
+
+        p.setBrush(QColor("#f3bd7d"));
+        p.drawEllipse(QRectF(38, 23, 20, 18));
+        QLinearGradient hat(34, 8, 62, 34);
+        hat.setColorAt(0.0, QColor("#bdfcff"));
+        hat.setColorAt(0.55, QColor("#3b2ed6"));
+        hat.setColorAt(1.0, QColor("#120b47"));
+        p.setBrush(hat);
+        p.drawPolygon(QPolygonF() << QPointF(31, 26) << QPointF(48, 5)
+                                  << QPointF(65, 26) << QPointF(58, 35)
+                                  << QPointF(38, 35));
+        p.setBrush(QColor("#ffe66d"));
+        p.drawRoundedRect(QRectF(35, 30, 26, 5), 2, 2);
+        p.setBrush(QColor("#ecfbff"));
+        p.drawRect(QRectF(41, 29, 5, 3));
+        p.drawRect(QRectF(51, 29, 5, 3));
+
+        p.setPen(QPen(QColor("#6b3b1f"), 4, Qt::SolidLine, Qt::RoundCap));
+        p.drawLine(QPointF(pose == 1 ? 22 : 25, 28), QPointF(pose == 1 ? 21 : 25, 80));
+        p.setPen(Qt::NoPen);
+        QRadialGradient orb(24, 22, pose == 2 ? 14 : 10);
+        orb.setColorAt(0.0, QColor("#ffffff"));
+        orb.setColorAt(0.38, QColor("#7df7ff"));
+        orb.setColorAt(1.0, QColor(125, 247, 255, 0));
+        p.setBrush(orb);
+        p.drawEllipse(QRectF(13, 11, 22, 22));
+
+        p.setPen(QPen(QColor("#a8fbff"), 2, Qt::DashLine, Qt::RoundCap));
+        p.drawArc(QRectF(18, 20, 60, 40), 20 * 16, 250 * 16);
+        p.drawArc(QRectF(14, 28, 68, 30), 200 * 16, 230 * 16);
+        p.setPen(Qt::NoPen);
+        sparkle(p, 68, 25, 4, QColor("#ffe66d"));
+        sparkle(p, 72, 61, 5, QColor("#7df7ff"));
+        if (pose == 1 || pose == 2) {
+            p.setPen(QPen(QColor("#7df7ff"), pose == 2 ? 6 : 4, Qt::SolidLine, Qt::RoundCap));
+            p.drawLine(QPointF(56, 47), QPointF(85, 40));
+            p.setPen(Qt::NoPen);
+            sparkle(p, 86, 39, 7, QColor("#ffffff"));
+        }
+
+    } else {
+        // Ember ranger: feathered hood, leaf armor, bright energy bow.
+        const qreal aim = pose == 1 ? -5 : 0;
+        p.setBrush(QColor("#233318"));
+        p.drawPolygon(QPolygonF() << QPointF(27, 28) << QPointF(48, 11)
+                                  << QPointF(69, 28) << QPointF(61, 45)
+                                  << QPointF(35, 45));
+        p.setBrush(QColor("#f0b678"));
+        p.drawRoundedRect(QRectF(38, 27, 20, 17), 7, 7);
+        p.setBrush(QColor("#ffe46a"));
+        p.drawRect(QRectF(41, 33, 5, 3));
+        p.drawRect(QRectF(51, 33, 5, 3));
+
+        QLinearGradient leather(31, 42, 65, 78);
+        leather.setColorAt(0.0, QColor("#f59a45"));
+        leather.setColorAt(0.45, QColor("#4f9f57"));
+        leather.setColorAt(1.0, QColor("#1b4028"));
+        p.setBrush(leather);
+        p.drawRoundedRect(QRectF(32, 42, 32, 29), 8, 8);
+        p.setBrush(QColor("#502910"));
+        p.drawPolygon(QPolygonF() << QPointF(39, 43) << QPointF(50, 43)
+                                  << QPointF(58, 71) << QPointF(48, 72));
+        p.setBrush(QColor("#172a1d"));
+        p.drawRoundedRect(QRectF(34, 69, 11, 15), 4, 4);
+        p.drawRoundedRect(QRectF(52, 69, 11, 15), 4, 4);
+        p.setBrush(QColor("#5b2f16"));
+        p.drawRoundedRect(QRectF(29, 80, 18, 6), 3, 3);
+        p.drawRoundedRect(QRectF(50, 80, 18, 6), 3, 3);
+
+        p.setBrush(QColor("#7a3e18"));
+        p.drawRoundedRect(QRectF(62, 30, 11, 34), 4, 4);
+        p.setBrush(QColor("#ffe16a"));
+        p.drawRect(QRectF(64, 22, 3, 14));
+        p.drawRect(QRectF(69, 24, 3, 12));
+
+        p.setPen(QPen(QColor("#ffcf62"), pose == 2 ? 6 : 4, Qt::SolidLine, Qt::RoundCap));
+        p.drawArc(QRectF(15, 24 + aim, 27, 48), 80 * 16, 205 * 16);
+        p.setPen(QPen(QColor("#f8f1c7"), 1.8, Qt::SolidLine, Qt::RoundCap));
+        p.drawLine(QPointF(26, 27 + aim), QPointF(pose == 1 ? 60 : 31, 50));
+        p.drawLine(QPointF(26, 71 + aim), QPointF(pose == 1 ? 60 : 31, 50));
+        if (pose == 1 || pose == 2) {
+            p.setPen(QPen(QColor("#ffe16a"), pose == 2 ? 4 : 3, Qt::SolidLine, Qt::RoundCap));
+            p.drawLine(QPointF(30, 50), QPointF(86, pose == 2 ? 42 : 50));
+            p.setPen(Qt::NoPen);
+            p.setBrush(QColor("#fff7b0"));
+            p.drawPolygon(QPolygonF() << QPointF(86, pose == 2 ? 42 : 50)
+                                      << QPointF(76, pose == 2 ? 36 : 44)
+                                      << QPointF(77, pose == 2 ? 48 : 56));
+            sparkle(p, 79, pose == 2 ? 37 : 46, 4, QColor("#ffef8a"));
+        }
+        p.setPen(Qt::NoPen);
+    }
+
+    p.end();
+    return pixmap;
+}
+
 static QPixmap makeArcadeSprite(int type, int size, int pose = 0) {
+    return makeNeonChampionSprite(type, size, pose);
+
     QPixmap pixmap(size, size);
     pixmap.fill(Qt::transparent);
     QPainter p(&pixmap);
@@ -103,6 +395,7 @@ static QPixmap makeArcadeSprite(int type, int size, int pose = 0) {
     // We design in a 16×16 grid and scale up
     const int G = size / 16;
     if (G < 1) { p.end(); return pixmap; }
+    drawSpriteStage(p, type, pose, G);
 
     // --- WARRIOR ---
     if (type == 0) {
@@ -1523,6 +1816,25 @@ void MainWindow::buildGamePage() {
     root->setContentsMargins(16, 8, 16, 8);
     root->setSpacing(6);
 
+    QLabel* arenaTitle = new QLabel("BATTLE  ARENA");
+    arenaTitle->setAlignment(Qt::AlignCenter);
+    arenaTitle->setFixedHeight(42);
+    arenaTitle->setStyleSheet(R"(
+        font-size: 30px;
+        font-weight: 900;
+        color: #fff6c7;
+        letter-spacing: 8px;
+        font-family: "Impact", "Arial Black", sans-serif;
+        background: rgba(10, 10, 24, 145);
+        border-top: 1px solid rgba(125, 246, 255, 120);
+        border-bottom: 1px solid rgba(255, 216, 90, 140);
+    )");
+    QGraphicsDropShadowEffect* arenaGlow = new QGraphicsDropShadowEffect();
+    arenaGlow->setBlurRadius(28);
+    arenaGlow->setColor(QColor("#7df6ff"));
+    arenaGlow->setOffset(0, 0);
+    arenaTitle->setGraphicsEffect(arenaGlow);
+
     // ── Top bar ──────────────────────────────────────────────
     QHBoxLayout* topBar = new QHBoxLayout();
     lblTurnInfo = new QLabel("Your turn — move or attack");
@@ -1639,6 +1951,7 @@ void MainWindow::buildGamePage() {
     botBar->addWidget(lblDiffBadge);
 
     // ── Assemble ─────────────────────────────────────────────
+    root->addWidget(arenaTitle);
     root->addLayout(topBar);
     root->addLayout(midRow);
     root->addLayout(actionRow);
@@ -1690,16 +2003,35 @@ void MainWindow::onEnemyTurn() {
     int dr = playerRow - enemyRow;
     int dc = playerCol - enemyCol;
 
-    int newRow = enemyRow;
-    int newCol = enemyCol;
+    if (!grid->isAdjacent(enemyRow, enemyCol, playerRow, playerCol)) {
+        int bestRow = enemyRow;
+        int bestCol = enemyCol;
+        int bestDist = std::abs(dr) + std::abs(dc);
 
-    if (std::abs(dr) >= std::abs(dc)) {
-        newRow += (dr > 0 ? 1 : -1);
-    } else {
-        newCol += (dc > 0 ? 1 : -1);
+        const int moves[4][2] = {
+            {dr > 0 ? 1 : -1, 0},
+            {0, dc > 0 ? 1 : -1},
+            {0, dc > 0 ? -1 : 1},
+            {dr > 0 ? -1 : 1, 0}
+        };
+
+        for (const auto& mv : moves) {
+            int candRow = enemyRow + mv[0];
+            int candCol = enemyCol + mv[1];
+            Cell* cand = grid->getCell(candRow, candCol);
+            if (!grid->isValidMove(candRow, candCol) || (cand && cand->isOccupied()))
+                continue;
+
+            int candDist = std::abs(playerRow - candRow) + std::abs(playerCol - candCol);
+            if (candDist < bestDist || (bestRow == enemyRow && bestCol == enemyCol)) {
+                bestDist = candDist;
+                bestRow = candRow;
+                bestCol = candCol;
+            }
+        }
+
+        grid->moveCharacter(enemy, bestRow, bestCol);
     }
-
-    grid->moveCharacter(enemy, newRow, newCol);
 
     if (grid->isAdjacent(enemy->getGridX(), enemy->getGridY(), playerRow, playerCol)) {
         if (hardMode && enemy->getCurrentHealth() < 0.3 * enemy->getMaxHealth()) {
@@ -1726,6 +2058,7 @@ void MainWindow::drawGrid()
     scene->clear();
     playerToken = nullptr;
     enemyToken  = nullptr;
+    BattleGrid* logicGrid = gameManager ? gameManager->getGrid() : nullptr;
 
     // Seed a simple deterministic pattern for terrain decoration
     srand(42);
@@ -1734,13 +2067,29 @@ void MainWindow::drawGrid()
             bool dark = (r + c) % 2 == 0;
             QColor fill(dark ? Pal::GRID_DARK : Pal::GRID_LITE);
             QColor border(Pal::CELL_BORD);
+            bool blocked = logicGrid && logicGrid->isBlocked(r, c);
+            if (blocked) {
+                fill = QColor("#101526");
+                border = QColor("#7df6ff");
+            }
 
             QGraphicsRectItem* cell = scene->addRect(
                 c * CELL, r * CELL, CELL, CELL,
-                QPen(border, 0.8),
+                QPen(border, blocked ? 1.4 : 0.8),
                 QBrush(fill)
             );
             cell->setZValue(0);
+
+            if (blocked) {
+                auto* glow = scene->addRect(
+                    c * CELL + 3, r * CELL + 3, CELL - 6, CELL - 6,
+                    QPen(QColor(125, 246, 255, 55), 1),
+                    QBrush(QColor(20, 68, 111, 55))
+                );
+                glow->setZValue(0.6);
+                drawObstacle(scene, c, r, CELL);
+                continue;
+            }
 
             // Terrain decorations — small pixel dots on some cells
             int rnd = rand() % 6;
@@ -1762,21 +2111,6 @@ void MainWindow::drawGrid()
         }
     }
     srand(time(nullptr));  // restore random seed
-
-    // Coordinate labels along edges
-    QFont coordFont("Courier New", 7);
-    for (int c = 0; c < GCOLS; c++) {
-        auto* label = scene->addText(QString(QChar('A' + c)), coordFont);
-        label->setDefaultTextColor(QColor(80,80,120,120));
-        label->setPos(c * CELL + CELL/2 - 4, -14);
-        label->setZValue(1);
-    }
-    for (int r = 0; r < GROWS; r++) {
-        auto* label = scene->addText(QString::number(r + 1), coordFont);
-        label->setDefaultTextColor(QColor(80,80,120,120));
-        label->setPos(-14, r * CELL + CELL/2 - 6);
-        label->setZValue(1);
-    }
 }
 
 

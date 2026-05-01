@@ -25,6 +25,7 @@ void GameManager::startGame(Character* playerCharacter, Character* enemyCharacte
     player = playerCharacter;
     enemy  = enemyCharacter;
     score  = 0;
+    battleGrid.reset();
 
     // Place characters on opposite corners of the 8×8 grid
     battleGrid.placeCharacter(player, 0, 0);

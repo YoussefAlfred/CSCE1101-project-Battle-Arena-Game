@@ -3,10 +3,28 @@
 #include <cstdlib> // for abs()
 
 BattleGrid::BattleGrid() {
+    reset();
+}
+
+void BattleGrid::reset() {
     for (int r = 0; r < GRID_SIZE; r++) {
         for (int c = 0; c < GRID_SIZE; c++) {
             grid[r][c] = Cell(r, c);
+            blocked[r][c] = false;
         }
+    }
+    initializeObstacles();
+}
+
+void BattleGrid::initializeObstacles() {
+    // Symmetric ruins: enough cover to change movement, but both corners keep routes.
+    const int obstacles[][2] = {
+        {1, 3}, {2, 3}, {3, 1}, {3, 5},
+        {4, 2}, {4, 6}, {5, 4}, {6, 4}
+    };
+
+    for (const auto& pos : obstacles) {
+        blocked[pos[0]][pos[1]] = true;
     }
 }
 
@@ -42,10 +60,18 @@ bool BattleGrid::isAdjacent(int row1, int col1, int row2, int col2) const {
 }
 
 bool BattleGrid::isValidMove(int row, int col) const {
+    return isInside(row, col) && !isBlocked(row, col);
+}
+
+bool BattleGrid::isBlocked(int row, int col) const {
+    return isInside(row, col) && blocked[row][col];
+}
+
+bool BattleGrid::isInside(int row, int col) const {
     return row >= 0 && row < GRID_SIZE && col >= 0 && col < GRID_SIZE;
 }
 
 Cell* BattleGrid::getCell(int row, int col) {
-    if (!isValidMove(row, col)) return nullptr;
+    if (!isInside(row, col)) return nullptr;
     return &grid[row][col];
 }
