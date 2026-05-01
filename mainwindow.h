@@ -101,9 +101,6 @@ private:
     QLabel*         menuSprites[3] = {nullptr, nullptr, nullptr};
     int             menuPoseFrame  = 0;
     QTimer*         menuAnimTimer  = nullptr;
-    QLabel*         insertCoinLabel = nullptr;
-    QTimer*         coinBlinkTimer  = nullptr;
-    bool            coinBlinkState  = true;
 
     // ── grid ────────────────────────────────────────────────
     QGraphicsScene*      scene;
@@ -118,6 +115,10 @@ private:
     int          enemyType     = -1;
     int          specialCooldown = 0;
     bool         hardMode        = false;
+    int          playerFacing    = 0;    // 0=down/front, 1=up/back, 2=left, 3=right
+    int          enemyFacing     = 1;
+    int          playerWalkFrame = 0;
+    int          enemyWalkFrame  = 0;
 
     // ── helpers ─────────────────────────────────────────────
     void buildMenuPage();

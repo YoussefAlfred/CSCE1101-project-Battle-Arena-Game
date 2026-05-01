@@ -20,6 +20,7 @@
 #include <QGraphicsDropShadowEffect>
 #include <QTimer>
 #include <QPropertyAnimation>
+#include <QVariantAnimation>
 #include <QDir>
 #include <QPolygon>
 #include <ctime>
@@ -165,6 +166,24 @@ static void drawObstacle(QGraphicsScene* scene, int c, int r, int cell) {
     spark2->setZValue(1.7);
 }
 
+static void moveTokenSmoothly(QGraphicsPixmapItem* token, const QPointF& target, bool animated) {
+    if (!token) return;
+    if (!animated || (token->pos() - target).manhattanLength() < 0.5) {
+        token->setPos(target);
+        return;
+    }
+
+    QVariantAnimation* anim = new QVariantAnimation(token->scene());
+    anim->setDuration(170);
+    anim->setEasingCurve(QEasingCurve::OutCubic);
+    anim->setStartValue(token->pos());
+    anim->setEndValue(target);
+    QObject::connect(anim, &QVariantAnimation::valueChanged, [token](const QVariant& value) {
+        token->setPos(value.toPointF());
+    });
+    anim->start(QAbstractAnimation::DeleteWhenStopped);
+}
+
 static void sparkle(QPainter& p, qreal x, qreal y, qreal r, const QColor& color) {
     p.setPen(QPen(color, 2, Qt::SolidLine, Qt::RoundCap));
     p.drawLine(QPointF(x - r, y), QPointF(x + r, y));
@@ -174,7 +193,206 @@ static void sparkle(QPainter& p, qreal x, qreal y, qreal r, const QColor& color)
     p.drawEllipse(QPointF(x, y), r * 0.35, r * 0.35);
 }
 
-static QPixmap makeNeonChampionSprite(int type, int size, int pose) {
+static int facingFromDelta(int dRow, int dCol, int fallback) {
+    if (std::abs(dRow) >= std::abs(dCol) && dRow != 0)
+        return dRow < 0 ? 1 : 0;
+    if (dCol != 0)
+        return dCol < 0 ? 2 : 3;
+    return fallback;
+}
+
+static void drawBackChampion(QPainter& p, int type, int pose, int frame, const QColor& aura) {
+    const qreal bob = frame % 2 == 0 ? -1.4 : 1.4;
+
+    p.setBrush(QColor(aura.red(), aura.green(), aura.blue(), pose == 2 ? 60 : 32));
+    p.drawRoundedRect(QRectF(22, 28 + bob, 52, 50), 18, 18);
+
+    if (type == 0) {
+        QLinearGradient cape(28, 30, 66, 82);
+        cape.setColorAt(0.0, QColor("#b91f45"));
+        cape.setColorAt(0.55, QColor("#5c1230"));
+        cape.setColorAt(1.0, QColor("#210716"));
+        p.setBrush(cape);
+        p.drawPolygon(QPolygonF() << QPointF(28, 28 + bob) << QPointF(68, 28 + bob)
+                                  << QPointF(76, 82) << QPointF(20, 82));
+
+        QLinearGradient backPlate(31, 33, 65, 65);
+        backPlate.setColorAt(0.0, QColor("#fff0a6"));
+        backPlate.setColorAt(0.48, QColor("#c98c1f"));
+        backPlate.setColorAt(1.0, QColor("#513009"));
+        p.setBrush(backPlate);
+        p.drawRoundedRect(QRectF(32, 35 + bob, 32, 31), 8, 8);
+        p.setBrush(QColor("#ffd85a"));
+        p.drawPolygon(QPolygonF() << QPointF(44, 42 + bob) << QPointF(52, 42 + bob)
+                                  << QPointF(57, 56 + bob) << QPointF(48, 62 + bob)
+                                  << QPointF(39, 56 + bob));
+
+        p.setBrush(QColor("#d79b22"));
+        p.drawEllipse(QRectF(24, 35 + bob, 16, 15));
+        p.drawEllipse(QRectF(56, 35 + bob, 16, 15));
+        p.setBrush(QColor("#24345d"));
+        p.drawRoundedRect(QRectF(36, 21 + bob, 24, 20), 8, 8);
+        p.setBrush(QColor("#f6cf57"));
+        p.drawPolygon(QPolygonF() << QPointF(31, 27 + bob) << QPointF(48, 11 + bob)
+                                  << QPointF(65, 27 + bob));
+        p.setPen(QPen(QColor("#fff8c7"), pose == 2 ? 8 : 5, Qt::SolidLine, Qt::RoundCap));
+        p.drawLine(QPointF(69, 69 + bob), QPointF(74, 15 + bob));
+        p.setPen(Qt::NoPen);
+
+    } else if (type == 1) {
+        QLinearGradient robe(28, 28, 68, 84);
+        robe.setColorAt(0.0, QColor("#73f4ff"));
+        robe.setColorAt(0.46, QColor("#2c52c8"));
+        robe.setColorAt(1.0, QColor("#0b1041"));
+        p.setBrush(robe);
+        p.drawPolygon(QPolygonF() << QPointF(36, 31 + bob) << QPointF(60, 31 + bob)
+                                  << QPointF(73, 84) << QPointF(23, 84));
+        p.setBrush(QColor("#081138"));
+        p.drawRoundedRect(QRectF(41, 38 + bob, 14, 39), 7, 7);
+        p.setBrush(QColor("#f4d35e"));
+        p.drawEllipse(QRectF(43, 51 + bob, 10, 10));
+
+        QLinearGradient hat(33, 7, 63, 36);
+        hat.setColorAt(0.0, QColor("#bdfcff"));
+        hat.setColorAt(0.55, QColor("#3b2ed6"));
+        hat.setColorAt(1.0, QColor("#120b47"));
+        p.setBrush(hat);
+        p.drawPolygon(QPolygonF() << QPointF(31, 27 + bob) << QPointF(48, 5 + bob)
+                                  << QPointF(65, 27 + bob) << QPointF(58, 36 + bob)
+                                  << QPointF(38, 36 + bob));
+        p.setPen(QPen(QColor("#6b3b1f"), 4, Qt::SolidLine, Qt::RoundCap));
+        p.drawLine(QPointF(24, 29 + bob), QPointF(24, 82 + bob));
+        p.setPen(Qt::NoPen);
+        sparkle(p, 24, 21 + bob, pose == 2 ? 8 : 5, QColor("#ffffff"));
+
+    } else {
+        QLinearGradient cloak(30, 28, 66, 83);
+        cloak.setColorAt(0.0, QColor("#5aaa52"));
+        cloak.setColorAt(0.48, QColor("#23512d"));
+        cloak.setColorAt(1.0, QColor("#112517"));
+        p.setBrush(cloak);
+        p.drawPolygon(QPolygonF() << QPointF(30, 29 + bob) << QPointF(66, 29 + bob)
+                                  << QPointF(75, 81) << QPointF(22, 83));
+        p.setBrush(QColor("#233318"));
+        p.drawPolygon(QPolygonF() << QPointF(27, 29 + bob) << QPointF(48, 10 + bob)
+                                  << QPointF(69, 29 + bob) << QPointF(60, 47 + bob)
+                                  << QPointF(36, 47 + bob));
+        p.setBrush(QColor("#7a3e18"));
+        p.drawRoundedRect(QRectF(62, 31 + bob, 11, 35), 4, 4);
+        p.setBrush(QColor("#ffe16a"));
+        p.drawRect(QRectF(64, 21 + bob, 3, 14));
+        p.drawRect(QRectF(69, 23 + bob, 3, 12));
+        p.setPen(QPen(QColor("#ffcf62"), pose == 2 ? 6 : 4, Qt::SolidLine, Qt::RoundCap));
+        p.drawArc(QRectF(17, 29 + bob, 24, 45), 80 * 16, 205 * 16);
+        p.setPen(Qt::NoPen);
+    }
+
+    p.setBrush(QColor("#172140"));
+    p.drawRoundedRect(QRectF(35, 68 + bob, 11, 16), 4, 4);
+    p.drawRoundedRect(QRectF(51, 68 - bob, 11, 16), 4, 4);
+    p.setBrush(QColor("#0d0d1d"));
+    p.drawRoundedRect(QRectF(31, 82 + bob, 17, 6), 3, 3);
+    p.drawRoundedRect(QRectF(49, 82 - bob, 17, 6), 3, 3);
+}
+
+static void drawSideChampion(QPainter& p, int type, int pose, int frame, const QColor& aura) {
+    const qreal bob = frame % 2 == 0 ? -1.2 : 1.2;
+    const qreal lunge = pose == 1 ? 5.0 : 0.0;
+
+    p.setBrush(QColor(aura.red(), aura.green(), aura.blue(), pose == 2 ? 54 : 26));
+    p.drawRoundedRect(QRectF(24 + lunge, 27 + bob, 45, 50), 18, 18);
+
+    if (type == 0) {
+        p.setBrush(QColor("#7b1732"));
+        p.drawPolygon(QPolygonF() << QPointF(34 + lunge, 32 + bob) << QPointF(19 + lunge, 77)
+                                  << QPointF(47 + lunge, 82) << QPointF(51 + lunge, 36 + bob));
+        QLinearGradient armor(32 + lunge, 34, 65 + lunge, 68);
+        armor.setColorAt(0.0, QColor("#fff0a6"));
+        armor.setColorAt(0.5, QColor("#d69b20"));
+        armor.setColorAt(1.0, QColor("#5f3a0e"));
+        p.setBrush(armor);
+        p.drawRoundedRect(QRectF(34 + lunge, 36 + bob, 29, 31), 8, 8);
+        p.setBrush(QColor("#f3bd7d"));
+        p.drawEllipse(QRectF(42 + lunge, 22 + bob, 20, 18));
+        p.setBrush(QColor("#f6cf57"));
+        p.drawPolygon(QPolygonF() << QPointF(36 + lunge, 26 + bob) << QPointF(52 + lunge, 10 + bob)
+                                  << QPointF(66 + lunge, 27 + bob) << QPointF(61 + lunge, 35 + bob)
+                                  << QPointF(41 + lunge, 35 + bob));
+        p.setBrush(QColor("#61f7ff"));
+        p.drawRoundedRect(QRectF(56 + lunge, 30 + bob, 7, 4), 2, 2);
+        p.setBrush(QColor("#d69b20"));
+        p.drawEllipse(QRectF(58 + lunge, 39 + bob, 14, 13));
+        p.setPen(QPen(QColor("#fff8c7"), pose == 2 ? 8 : 5, Qt::SolidLine, Qt::RoundCap));
+        p.drawLine(QPointF(62 + lunge, 58 + bob), QPointF(87, pose == 1 ? 20 : 13));
+        p.setPen(QPen(QColor("#69f6ff"), 2, Qt::SolidLine, Qt::RoundCap));
+        p.drawLine(QPointF(64 + lunge, 56 + bob), QPointF(87, pose == 1 ? 20 : 13));
+        p.setPen(Qt::NoPen);
+
+    } else if (type == 1) {
+        QLinearGradient robe(32 + lunge, 27, 66 + lunge, 82);
+        robe.setColorAt(0.0, QColor("#82fbff"));
+        robe.setColorAt(0.46, QColor("#326bd6"));
+        robe.setColorAt(1.0, QColor("#151b65"));
+        p.setBrush(robe);
+        p.drawPolygon(QPolygonF() << QPointF(39 + lunge, 33 + bob) << QPointF(60 + lunge, 35 + bob)
+                                  << QPointF(69 + lunge, 82) << QPointF(29 + lunge, 82));
+        p.setBrush(QColor("#f3bd7d"));
+        p.drawEllipse(QRectF(43 + lunge, 23 + bob, 19, 17));
+        p.setBrush(QColor("#ecfbff"));
+        p.drawRect(QRectF(56 + lunge, 29 + bob, 5, 3));
+        QLinearGradient hat(34 + lunge, 8, 65 + lunge, 35);
+        hat.setColorAt(0.0, QColor("#bdfcff"));
+        hat.setColorAt(0.55, QColor("#3b2ed6"));
+        hat.setColorAt(1.0, QColor("#120b47"));
+        p.setBrush(hat);
+        p.drawPolygon(QPolygonF() << QPointF(33 + lunge, 27 + bob) << QPointF(50 + lunge, 5 + bob)
+                                  << QPointF(67 + lunge, 27 + bob) << QPointF(58 + lunge, 36 + bob));
+        p.setPen(QPen(QColor("#6b3b1f"), 4, Qt::SolidLine, Qt::RoundCap));
+        p.drawLine(QPointF(27, 28 + bob), QPointF(27, 82 + bob));
+        p.setPen(Qt::NoPen);
+        sparkle(p, 27, 21 + bob, pose == 2 ? 8 : 5, QColor("#ffffff"));
+        if (pose != 0) {
+            p.setPen(QPen(QColor("#7df7ff"), pose == 2 ? 6 : 4, Qt::SolidLine, Qt::RoundCap));
+            p.drawLine(QPointF(60 + lunge, 47 + bob), QPointF(88, 42));
+            p.setPen(Qt::NoPen);
+        }
+
+    } else {
+        QLinearGradient leather(32 + lunge, 41, 65 + lunge, 76);
+        leather.setColorAt(0.0, QColor("#f59a45"));
+        leather.setColorAt(0.45, QColor("#4f9f57"));
+        leather.setColorAt(1.0, QColor("#1b4028"));
+        p.setBrush(leather);
+        p.drawRoundedRect(QRectF(35 + lunge, 42 + bob, 29, 28), 8, 8);
+        p.setBrush(QColor("#233318"));
+        p.drawPolygon(QPolygonF() << QPointF(31 + lunge, 29 + bob) << QPointF(50 + lunge, 11 + bob)
+                                  << QPointF(68 + lunge, 29 + bob) << QPointF(60 + lunge, 45 + bob)
+                                  << QPointF(39 + lunge, 45 + bob));
+        p.setBrush(QColor("#f0b678"));
+        p.drawEllipse(QRectF(44 + lunge, 27 + bob, 18, 16));
+        p.setBrush(QColor("#ffe46a"));
+        p.drawRect(QRectF(56 + lunge, 33 + bob, 5, 3));
+        p.setPen(QPen(QColor("#ffcf62"), pose == 2 ? 6 : 4, Qt::SolidLine, Qt::RoundCap));
+        p.drawArc(QRectF(20, 25 + bob, 25, 48), 80 * 16, 205 * 16);
+        p.setPen(QPen(QColor("#f8f1c7"), 1.8, Qt::SolidLine, Qt::RoundCap));
+        p.drawLine(QPointF(30, 29 + bob), QPointF(pose == 0 ? 35 : 62 + lunge, 50 + bob));
+        p.drawLine(QPointF(30, 72 + bob), QPointF(pose == 0 ? 35 : 62 + lunge, 50 + bob));
+        if (pose != 0) {
+            p.setPen(QPen(QColor("#ffe16a"), pose == 2 ? 4 : 3, Qt::SolidLine, Qt::RoundCap));
+            p.drawLine(QPointF(32, 50 + bob), QPointF(88, pose == 2 ? 42 : 50));
+        }
+        p.setPen(Qt::NoPen);
+    }
+
+    p.setBrush(QColor("#172140"));
+    p.drawRoundedRect(QRectF(36 + lunge, 68 + bob, 10, 16), 4, 4);
+    p.drawRoundedRect(QRectF(54 + lunge, 68 - bob, 10, 16), 4, 4);
+    p.setBrush(QColor("#0d0d1d"));
+    p.drawRoundedRect(QRectF(32 + lunge, 82 + bob, 16, 6), 3, 3);
+    p.drawRoundedRect(QRectF(51 + lunge, 82 - bob, 16, 6), 3, 3);
+}
+
+static QPixmap makeNeonChampionSprite(int type, int size, int pose, int facing = 0, int frame = 0) {
     QPixmap pixmap(size, size);
     pixmap.fill(Qt::transparent);
 
@@ -219,6 +437,24 @@ static QPixmap makeNeonChampionSprite(int type, int size, int pose) {
 
     p.setBrush(QColor(0, 0, 0, 130));
     p.drawEllipse(QRectF(25, 80, 46, 8));
+
+    if (facing == 1) {
+        drawBackChampion(p, type, pose, frame, aura);
+        p.end();
+        return pixmap;
+    }
+
+    if (facing == 2 || facing == 3) {
+        p.save();
+        if (facing == 2) {
+            p.translate(96, 0);
+            p.scale(-1, 1);
+        }
+        drawSideChampion(p, type, pose, frame, aura);
+        p.restore();
+        p.end();
+        return pixmap;
+    }
 
     if (type == 0) {
         // Solar knight: sharp armor, royal cape, enormous luminous blade.
@@ -381,8 +617,8 @@ static QPixmap makeNeonChampionSprite(int type, int size, int pose) {
     return pixmap;
 }
 
-static QPixmap makeArcadeSprite(int type, int size, int pose = 0) {
-    return makeNeonChampionSprite(type, size, pose);
+static QPixmap makeArcadeSprite(int type, int size, int pose = 0, int facing = 0, int frame = 0) {
+    return makeNeonChampionSprite(type, size, pose, facing, frame);
 
     QPixmap pixmap(size, size);
     pixmap.fill(Qt::transparent);
@@ -875,15 +1111,6 @@ MainWindow::MainWindow(QWidget* parent)
     });
     menuAnimTimer->start(1200);
 
-    // ── Blinking INSERT COIN ──────────────────────────────
-    coinBlinkTimer = new QTimer(this);
-    connect(coinBlinkTimer, &QTimer::timeout, this, [this]() {
-        coinBlinkState = !coinBlinkState;
-        if (insertCoinLabel)
-            insertCoinLabel->setVisible(coinBlinkState);
-    });
-    coinBlinkTimer->start(600);
-
     stack->setCurrentWidget(menuPage);
 }
 
@@ -1012,17 +1239,6 @@ void MainWindow::buildMenuPage() {
         coinRow->addWidget(coin);
     }
 
-    // ── blinking INSERT COIN ─────────────────────────────────
-    insertCoinLabel = new QLabel("▸ INSERT COIN ◂");
-    insertCoinLabel->setAlignment(Qt::AlignCenter);
-    insertCoinLabel->setStyleSheet(R"(
-        font-size: 14px;
-        font-weight: bold;
-        color: #d4a017;
-        letter-spacing: 6px;
-        font-family: "Courier New", monospace;
-    )");
-
     // ── title ────────────────────────────────────────────────
     QLabel* title = new QLabel("⚔  BATTLE ARENA  ⚔");
     title->setAlignment(Qt::AlignCenter);
@@ -1147,7 +1363,6 @@ void MainWindow::buildMenuPage() {
     lay->addWidget(topBorder, 0, Qt::AlignCenter);
     lay->addSpacing(4);
     lay->addLayout(coinRow);
-    lay->addWidget(insertCoinLabel, 0, Qt::AlignCenter);
     lay->addSpacing(6);
     lay->addWidget(title,      0, Qt::AlignCenter);
     lay->addWidget(sub,        0, Qt::AlignCenter);
@@ -1673,6 +1888,10 @@ void MainWindow::startBattle()
 
     // Reset combat state
     turnCount = 0;
+    playerFacing = 0;
+    enemyFacing = 1;
+    playerWalkFrame = 0;
+    enemyWalkFrame = 0;
     combatMessages.clear();
     if (lblCombatLog) lblCombatLog->setText("<span style='color:#555580;'>Battle begins!</span>");
 
@@ -1687,11 +1906,11 @@ void MainWindow::startBattle()
 
     drawGrid();
 
-    QPixmap playerPm = makeArcadeSprite(selectedType, CELL - 8, 0);
+    QPixmap playerPm = makeArcadeSprite(selectedType, CELL - 8, 0, playerFacing, playerWalkFrame);
     playerToken = scene->addPixmap(playerPm);
     playerToken->setZValue(2);
 
-    QPixmap enemyPixmap = makeArcadeSprite(enemyType, CELL - 8, 0);
+    QPixmap enemyPixmap = makeArcadeSprite(enemyType, CELL - 8, 0, enemyFacing, enemyWalkFrame);
     enemyToken = scene->addPixmap(enemyPixmap);
     enemyToken->setZValue(2);
 
@@ -1816,22 +2035,28 @@ void MainWindow::buildGamePage() {
     root->setContentsMargins(16, 8, 16, 8);
     root->setSpacing(6);
 
-    QLabel* arenaTitle = new QLabel("BATTLE  ARENA");
+    QLabel* arenaTitle = new QLabel("BATTLE ARENA");
     arenaTitle->setAlignment(Qt::AlignCenter);
-    arenaTitle->setFixedHeight(42);
+    arenaTitle->setFixedHeight(56);
     arenaTitle->setStyleSheet(R"(
-        font-size: 30px;
+        font-size: 34px;
         font-weight: 900;
-        color: #fff6c7;
-        letter-spacing: 8px;
-        font-family: "Impact", "Arial Black", sans-serif;
-        background: rgba(10, 10, 24, 145);
-        border-top: 1px solid rgba(125, 246, 255, 120);
-        border-bottom: 1px solid rgba(255, 216, 90, 140);
+        color: #fff2a6;
+        letter-spacing: 10px;
+        font-family: "Impact", "Arial Black", "Courier New", sans-serif;
+        background: qlineargradient(x1:0,y1:0,x2:1,y2:0,
+            stop:0 rgba(124, 92, 191, 70),
+            stop:0.45 rgba(10, 10, 24, 225),
+            stop:0.55 rgba(10, 10, 24, 225),
+            stop:1 rgba(40, 168, 154, 70));
+        border-top: 2px solid rgba(125, 246, 255, 160);
+        border-bottom: 2px solid rgba(255, 216, 90, 175);
+        border-radius: 6px;
+        padding-bottom: 2px;
     )");
     QGraphicsDropShadowEffect* arenaGlow = new QGraphicsDropShadowEffect();
-    arenaGlow->setBlurRadius(28);
-    arenaGlow->setColor(QColor("#7df6ff"));
+    arenaGlow->setBlurRadius(34);
+    arenaGlow->setColor(QColor("#ffd85a"));
     arenaGlow->setOffset(0, 0);
     arenaTitle->setGraphicsEffect(arenaGlow);
 
@@ -1967,22 +2192,30 @@ void MainWindow::buildGamePage() {
 // ─── Helper: flash a character token with an attack pose then restore idle ──
 void MainWindow::flashAttackPose(bool isPlayer, int pose) {
     Character* ch = isPlayer ? gameManager->getPlayer() : gameManager->getEnemy();
+    Character* target = isPlayer ? gameManager->getEnemy() : gameManager->getPlayer();
     if (!ch) return;
 
     QGraphicsPixmapItem*& token = isPlayer ? playerToken : enemyToken;
     QLabel*& portrait = isPlayer ? playerPortraitLabel : enemyPortraitLabel;
     int type = isPlayer ? selectedType : enemyType;  // use actual enemy class
+    int& facing = isPlayer ? playerFacing : enemyFacing;
+    int& walkFrame = isPlayer ? playerWalkFrame : enemyWalkFrame;
 
     if (!token) return;
+    if (target) {
+        facing = facingFromDelta(target->getGridX() - ch->getGridX(),
+                                 target->getGridY() - ch->getGridY(),
+                                 facing);
+    }
 
     // Show attack/special sprite
-    QPixmap attackPm = makeArcadeSprite(type, CELL - 8, pose);
+    QPixmap attackPm = makeArcadeSprite(type, CELL - 8, pose, facing, walkFrame);
     token->setPixmap(attackPm);
     if (portrait) portrait->setPixmap(makeArcadeSprite(type, 64, pose));
 
     // Restore idle sprite after short delay
     QTimer::singleShot(400, this, [=]() {
-        if (token) token->setPixmap(makeArcadeSprite(type, CELL - 8, 0));
+        if (token) token->setPixmap(makeArcadeSprite(type, CELL - 8, 0, facing, walkFrame));
         if (portrait) portrait->setPixmap(makeArcadeSprite(type, 64, 0));
     });
 }
@@ -2030,7 +2263,12 @@ void MainWindow::onEnemyTurn() {
             }
         }
 
-        grid->moveCharacter(enemy, bestRow, bestCol);
+        if (grid->moveCharacter(enemy, bestRow, bestCol)) {
+            enemyFacing = facingFromDelta(bestRow - enemyRow, bestCol - enemyCol, enemyFacing);
+            enemyWalkFrame++;
+            if (enemyToken)
+                enemyToken->setPixmap(makeArcadeSprite(enemyType, CELL - 8, 0, enemyFacing, enemyWalkFrame));
+        }
     }
 
     if (grid->isAdjacent(enemy->getGridX(), enemy->getGridY(), playerRow, playerCol)) {
@@ -2121,11 +2359,17 @@ void MainWindow::updateTokenPositions()
     Character* p = gameManager->getPlayer();
     Character* e = gameManager->getEnemy();
 
-    if (playerToken)
-        playerToken->setPos(p->getGridY() * CELL + 4, p->getGridX() * CELL + 4);
+    if (playerToken) {
+        QPointF target(p->getGridY() * CELL + 4, p->getGridX() * CELL + 4);
+        moveTokenSmoothly(playerToken, target, turnCount > 0);
+        playerToken->setZValue(2.0 + p->getGridX() * 0.05);
+    }
 
-    if (enemyToken)
-        enemyToken->setPos(e->getGridY() * CELL + 4, e->getGridX() * CELL + 4);
+    if (enemyToken) {
+        QPointF target(e->getGridY() * CELL + 4, e->getGridX() * CELL + 4);
+        moveTokenSmoothly(enemyToken, target, turnCount > 0);
+        enemyToken->setZValue(2.0 + e->getGridX() * 0.05);
+    }
 }
 
 
@@ -2445,6 +2689,10 @@ void MainWindow::keyPressEvent(QKeyEvent* event)
 
     bool moved = gameManager->getGrid()->moveCharacter(player, newRow, newCol);
     if (moved) {
+        playerFacing = facingFromDelta(newRow - row, newCol - col, playerFacing);
+        playerWalkFrame++;
+        if (playerToken)
+            playerToken->setPixmap(makeArcadeSprite(selectedType, CELL - 8, 0, playerFacing, playerWalkFrame));
         if (specialCooldown > 0) specialCooldown--;
         turnCount++;
         updateTokenPositions();

@@ -3071,6 +3071,7 @@ CMakeFiles/game.dir/mainwindow.cpp.o: /home/youssef_alfred/teamproject2026/war/C
   /usr/include/x86_64-linux-gnu/qt6/QtCore/QSize \
   /usr/include/x86_64-linux-gnu/qt6/QtCore/QSizeF \
   /usr/include/x86_64-linux-gnu/qt6/QtCore/QTimer \
+  /usr/include/x86_64-linux-gnu/qt6/QtCore/QVariantAnimation \
   /usr/include/x86_64-linux-gnu/qt6/QtCore/qabstractanimation.h \
   /usr/include/x86_64-linux-gnu/qt6/QtCore/qalgorithms.h \
   /usr/include/x86_64-linux-gnu/qt6/QtCore/qanystringview.h \
@@ -4035,6 +4036,8 @@ game_autogen/moc_predefs.h:
 /usr/include/x86_64-linux-gnu/qt6/QtCore/qbindingstorage.h:
 
 /usr/include/c++/13/bits/postypes.h:
+
+/usr/include/x86_64-linux-gnu/qt6/QtCore/QVariantAnimation:
 
 /usr/include/c++/13/bits/uses_allocator_args.h:
 

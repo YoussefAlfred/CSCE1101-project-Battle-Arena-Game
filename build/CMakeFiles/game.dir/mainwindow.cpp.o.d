@@ -436,6 +436,8 @@ CMakeFiles/game.dir/mainwindow.cpp.o: \
  /usr/include/x86_64-linux-gnu/qt6/QtCore/qvariantanimation.h \
  /usr/include/x86_64-linux-gnu/qt6/QtCore/qabstractanimation.h \
  /usr/include/x86_64-linux-gnu/qt6/QtCore/qeasingcurve.h \
+ /usr/include/x86_64-linux-gnu/qt6/QtCore/QVariantAnimation \
+ /usr/include/x86_64-linux-gnu/qt6/QtCore/qvariantanimation.h \
  /usr/include/x86_64-linux-gnu/qt6/QtCore/QDir \
  /usr/include/x86_64-linux-gnu/qt6/QtCore/qdir.h \
  /usr/include/x86_64-linux-gnu/qt6/QtCore/qfile.h \
