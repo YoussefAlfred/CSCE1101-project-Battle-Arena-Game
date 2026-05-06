@@ -26,6 +26,7 @@ public:
 
 protected:
     void keyPressEvent(QKeyEvent* event) override;
+    bool eventFilter(QObject* watched, QEvent* event) override;
 
 private slots:
     void onCharacterSelected(int type);
@@ -43,14 +44,22 @@ private:
     QWidget*        gameOverPage;
 
     // ── character select ────────────────────────────────────
-    QPushButton*    cardWarrior;
-    QPushButton*    cardMage;
-    QPushButton*    cardArcher;
-    QWidget*        cardWarriorWidget = nullptr;
-    QWidget*        cardMageWidget    = nullptr;
-    QWidget*        cardArcherWidget  = nullptr;
+    QWidget*        cardWidget[3] = {nullptr, nullptr, nullptr};
     QPushButton*    btnStart;
     QLabel*         selectionLabel;
+
+    // ── Character select live preview ───────────────────────
+    QLabel*         selPreviewSprite   = nullptr;
+    QLabel*         selPreviewName     = nullptr;
+    QLabel*         selPreviewSubtitle = nullptr;
+    QLabel*         selPreviewSpecial  = nullptr;
+    QLabel*         selPreviewDesc     = nullptr;
+    QLabel*         selPreviewPoseTag  = nullptr;
+    QTimer*         selPreviewTimer    = nullptr;
+    int             selPreviewType     = 0;
+    int             selPreviewPose     = 0;
+    int             selPreviewFrame    = 0;
+    int             selPoseTicksLeft   = 0;
 
     // ── game HUD ────────────────────────────────────────────
     QLabel*         playerPortraitLabel = nullptr;
@@ -135,6 +144,12 @@ private:
     void buildGameOverPage();
     void startBattle();
 
+    // ── audio (no-op when Qt6 Multimedia is not available) ──
+    void initAudio();
+    void playClickSound();
+    void playVictorySound();
+    void playGameOverSound();
+
     QWidget* buildHUDPanel(bool isPlayer);
 
     void applyGlobalStyle();
@@ -152,7 +167,7 @@ private:
     void updateBottomBar();
 
     // grid drawing constants
-    static constexpr int CELL  = 72;
+    static constexpr int CELL  = 100;
     static constexpr int GCOLS = 8;
     static constexpr int GROWS = 8;
 };

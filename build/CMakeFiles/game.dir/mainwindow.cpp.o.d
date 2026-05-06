@@ -474,7 +474,27 @@ CMakeFiles/game.dir/mainwindow.cpp.o: \
  /usr/include/x86_64-linux-gnu/qt6/QtCore/qeventloop.h \
  /usr/include/x86_64-linux-gnu/qt6/QtCore/qcoreapplication_platform.h \
  /usr/include/x86_64-linux-gnu/qt6/QtCore/qcoreapplication.h \
+ /usr/include/x86_64-linux-gnu/qt6/QtWidgets/QApplication \
+ /usr/include/x86_64-linux-gnu/qt6/QtWidgets/qapplication.h \
+ /usr/include/x86_64-linux-gnu/qt6/QtGui/qguiapplication.h \
+ /usr/include/x86_64-linux-gnu/qt6/QtGui/qinputmethod.h \
+ /usr/include/x86_64-linux-gnu/qt6/QtGui/qguiapplication_platform.h \
  /usr/include/x86_64-linux-gnu/qt6/QtGui/QPolygon \
  /usr/include/x86_64-linux-gnu/qt6/QtGui/qpolygon.h \
  /usr/include/x86_64-linux-gnu/qt6/QtGui/QImage \
- /usr/include/x86_64-linux-gnu/qt6/QtGui/qimage.h
+ /usr/include/x86_64-linux-gnu/qt6/QtGui/qimage.h \
+ /usr/include/x86_64-linux-gnu/qt6/QtWidgets/QAbstractButton \
+ /usr/include/x86_64-linux-gnu/qt6/QtWidgets/qabstractbutton.h \
+ /usr/include/x86_64-linux-gnu/qt6/QtGui/QMouseEvent \
+ /usr/include/x86_64-linux-gnu/qt6/QtCore/QUrl \
+ /usr/include/x86_64-linux-gnu/qt6/QtCore/qurl.h \
+ /usr/include/x86_64-linux-gnu/qt6/QtMultimedia/QMediaPlayer \
+ /usr/include/x86_64-linux-gnu/qt6/QtMultimedia/qmediaplayer.h \
+ /usr/include/x86_64-linux-gnu/qt6/QtMultimedia/qtmultimediaglobal.h \
+ /usr/include/x86_64-linux-gnu/qt6/QtMultimedia/qtmultimedia-config.h \
+ /usr/include/x86_64-linux-gnu/qt6/QtMultimedia/qtmultimediaexports.h \
+ /usr/include/x86_64-linux-gnu/qt6/QtMultimedia/qmediaenumdebug.h \
+ /usr/include/x86_64-linux-gnu/qt6/QtCore/qmetaobject.h \
+ /usr/include/x86_64-linux-gnu/qt6/QtMultimedia/qaudio.h \
+ /usr/include/x86_64-linux-gnu/qt6/QtMultimedia/QAudioOutput \
+ /usr/include/x86_64-linux-gnu/qt6/QtMultimedia/qaudiooutput.h

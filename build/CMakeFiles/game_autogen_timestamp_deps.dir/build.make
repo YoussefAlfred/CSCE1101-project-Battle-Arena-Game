@@ -68,6 +68,7 @@ include CMakeFiles/game_autogen_timestamp_deps.dir/progress.make
 
 CMakeFiles/game_autogen_timestamp_deps: /usr/lib/x86_64-linux-gnu/libQt6Widgets.so.6.4.2
 CMakeFiles/game_autogen_timestamp_deps: /usr/lib/qt6/libexec/moc
+CMakeFiles/game_autogen_timestamp_deps: /usr/lib/x86_64-linux-gnu/libQt6Multimedia.so.6.4.2
 
 game_autogen_timestamp_deps: CMakeFiles/game_autogen_timestamp_deps
 game_autogen_timestamp_deps: CMakeFiles/game_autogen_timestamp_deps.dir/build.make

@@ -3,8 +3,12 @@ project(BattleArenaGame)
 
 set(CMAKE_CXX_STANDARD 17)
 
-# Find Qt (Qt6 preferred)
+# Required Qt6 modules
 find_package(Qt6 REQUIRED COMPONENTS Widgets)
+
+# Optional: Qt6 Multimedia for click/victory/game-over sounds.
+# Install with: sudo apt install qt6-multimedia-dev libqt6multimedia6
+find_package(Qt6 QUIET COMPONENTS Multimedia)
 
 set(CMAKE_AUTOMOC ON)
 
@@ -34,3 +38,11 @@ set(HEADERS
 add_executable(game ${SOURCES} ${HEADERS})
 
 target_link_libraries(game Qt6::Widgets)
+
+if(Qt6Multimedia_FOUND)
+    message(STATUS "Qt6 Multimedia found — audio enabled")
+    target_link_libraries(game Qt6::Multimedia)
+    target_compile_definitions(game PRIVATE BATTLE_HAS_AUDIO=1)
+else()
+    message(STATUS "Qt6 Multimedia NOT found — audio disabled (install qt6-multimedia-dev)")
+endif()

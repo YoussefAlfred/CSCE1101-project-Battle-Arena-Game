@@ -243,10 +243,12 @@ game: CMakeFiles/game.dir/Mage.cpp.o
 game: CMakeFiles/game.dir/Warrior.cpp.o
 game: CMakeFiles/game.dir/build.make
 game: /usr/lib/x86_64-linux-gnu/libQt6Widgets.so.6.4.2
+game: /usr/lib/x86_64-linux-gnu/libQt6Multimedia.so.6.4.2
 game: /usr/lib/x86_64-linux-gnu/libQt6Gui.so.6.4.2
-game: /usr/lib/x86_64-linux-gnu/libQt6Core.so.6.4.2
 game: /usr/lib/x86_64-linux-gnu/libGLX.so
 game: /usr/lib/x86_64-linux-gnu/libOpenGL.so
+game: /usr/lib/x86_64-linux-gnu/libQt6Network.so.6.4.2
+game: /usr/lib/x86_64-linux-gnu/libQt6Core.so.6.4.2
 game: CMakeFiles/game.dir/link.txt
 	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --bold --progress-dir=/home/youssef_alfred/teamproject2026/war/CSCE1101-project-Battle-Arena-Game/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_12) "Linking CXX executable game"
 	$(CMAKE_COMMAND) -E cmake_link_script CMakeFiles/game.dir/link.txt --verbose=$(VERBOSE)
