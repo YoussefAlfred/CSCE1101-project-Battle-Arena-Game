@@ -16,7 +16,18 @@ GameManager::GameManager(QObject* parent)
 GameManager::~GameManager() {
     // player and enemy are owned externally; don't delete here
 }
-
+void GameManager::pauseGame() {
+    if (timer) {
+        timer->stop();
+    }
+    state = GameState::PAUSED; // for the game to stop
+}
+void GameManager::resumeGame() {
+    state = GameState::PLAYING;
+    int interval = hardMode ? TIMER_INTERVAL_HARD_MS : TIMER_INTERVAL_MS;
+    timer->start(interval);
+    emit gameStateChanged(state);
+}
 void GameManager::setHardMode(bool hard) {
     hardMode = hard;
 }

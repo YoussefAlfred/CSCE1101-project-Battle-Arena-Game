@@ -1551,6 +1551,7 @@ void MainWindow::buildMenuPage() {
         "font-family: 'Courier New', monospace;"
     );
 
+
     // ── character preview row — ANIMATED sprites ─────────────
     QHBoxLayout* charRow = new QHBoxLayout();
     charRow->setSpacing(80);
@@ -1667,6 +1668,22 @@ void MainWindow::buildMenuPage() {
     lay->addSpacing(8);
     lay->addWidget(btnPlay,    0, Qt::AlignCenter);
     lay->addSpacing(12);
+    // load button
+    QPushButton* loadBtn = new QPushButton("📂  LOAD GAME");
+    loadBtn->setFixedSize(440, 60);
+    loadBtn->setCursor(Qt::PointingHandCursor);
+    loadBtn->setStyleSheet(R"(
+    QPushButton {
+        background: #1a3a5c; color: #7ab8e8; font-size: 20px; font-weight: 900;
+        letter-spacing: 6px; border: 2px solid #2980b9; border-radius: 14px;
+        font-family: "Impact", "Arial Black", sans-serif;
+    }
+    QPushButton:hover { background: #1e4a70; color: #ffffff; border: 2px solid #5aabf0; }
+)");
+    connect(loadBtn, &QPushButton::clicked, this, &MainWindow::onLoadClicked);
+    lay->addWidget(loadBtn, 0, Qt::AlignCenter);
+    lay->addSpacing(12);
+
     lay->addWidget(controls,   0, Qt::AlignCenter);
     lay->addStretch(1);
     lay->addWidget(credits,    0, Qt::AlignCenter);
@@ -2709,6 +2726,31 @@ void MainWindow::buildGamePage() {
     topBar->addStretch();
     topBar->addWidget(lblScore);
 
+    QPushButton* pauseBtn = new QPushButton("SAVE  ·  PAUSE", this);
+    pauseBtn->setFixedSize(220, 44);
+    pauseBtn->setStyleSheet(
+        "font-size: 13px; color: #ffd85a; letter-spacing: 4px; font-weight: bold; "
+        "font-family: 'Courier New', monospace; "
+        "background: rgba(10,10,24,200); border: 1px solid #d4a017; "
+        "border-radius: 6px; padding: 6px 16px;"
+        );
+    topBar->addWidget(pauseBtn);
+    connect(pauseBtn, &QPushButton::clicked, this, &MainWindow::onPauseClicked);
+    btnResume = new QPushButton("RESUME", this);
+    btnResume->setFixedSize(220, 44);
+    btnResume->setVisible(false);
+    btnResume->setStyleSheet(
+        "font-size: 13px; color: #a8f0a8; letter-spacing: 4px; font-weight: bold; "
+        "font-family: 'Courier New', monospace; "
+        "background: rgba(10,10,24,200); border: 1px solid #3dba6e; "
+        "border-radius: 6px; padding: 6px 16px;"
+        );
+    topBar->addWidget(btnResume);
+    connect(btnResume, &QPushButton::clicked, this, [this]() {
+        gameManager->resumeGame();
+        btnResume->setVisible(false);
+        lblTurnInfo->setText("Your turn — move or attack");
+    });
     // ── Main row: HUD | Grid | HUD ───────────────────────────
     QHBoxLayout* midRow = new QHBoxLayout();
     midRow->setSpacing(20);
@@ -3482,4 +3524,91 @@ void MainWindow::keyPressEvent(QKeyEvent* event)
         updateBottomBar();
         lblTurnInfo->setText("Your turn — move or attack");
     }
+}
+void MainWindow::onPauseClicked() {
+    if (gameManager) {
+        gameManager->pauseGame();
+    }
+
+    QFile file(QCoreApplication::applicationDirPath() + "/savegame.txt");
+    if (file.open(QIODevice::WriteOnly | QIODevice::Text)) {
+        QTextStream out(&file);
+
+
+        out << selectedType << "\n";
+        Character* player = gameManager->getPlayer();
+        Character* enemy  = gameManager->getEnemy();
+        out << (player ? player->getCurrentHealth() : 0) << "\n";
+        out << (player ? player->getGridX() : 0) << "\n";
+        out << (player ? player->getGridY() : 0) << "\n";
+        out << enemyType << "\n";
+        out << (enemy ? enemy->getCurrentHealth() : 0) << "\n";
+        out << (enemy ? enemy->getGridX() : 0) << "\n";
+        out << (enemy ? enemy->getGridY() : 0) << "\n";
+        out << score << "\n";
+        out << turnCount << "\n";
+
+        file.close();
+
+        // Check if lblTurnInfo exists before trying to use it
+        if (lblTurnInfo) {
+            lblTurnInfo->setText("GAME SAVED!");
+        }
+    }
+    if (btnResume) btnResume->setVisible(true);
+}
+
+void MainWindow::onLoadClicked() {
+    QFile file(QCoreApplication::applicationDirPath() + "/savegame.txt");
+    if (!file.open(QIODevice::ReadOnly | QIODevice::Text)) return;
+
+    QTextStream in(&file);
+    selectedType = in.readLine().toInt();
+    int pHP = in.readLine().toInt(), pR = in.readLine().toInt(), pC = in.readLine().toInt();
+    enemyType = in.readLine().toInt();
+    int eHP = in.readLine().toInt(), eR = in.readLine().toInt(), eC = in.readLine().toInt();
+    score = in.readLine().toInt();
+    turnCount = in.readLine().toInt();
+    file.close();
+
+    delete selectedCharacter;
+    selectedCharacter = nullptr;
+    if      (selectedType == 0) selectedCharacter = new Warrior("Player");
+    else if (selectedType == 1) selectedCharacter = new Mage("Player");
+    else if (selectedType == 2) selectedCharacter = new Archer("Player");
+    else return;
+
+    Character* enemy = nullptr;
+    if      (enemyType == 0) enemy = new Warrior("Enemy");
+    else if (enemyType == 1) enemy = new Mage("Enemy");
+    else if (enemyType == 2) enemy = new Archer("Enemy");
+    else return;
+
+    specialCooldown = 0;
+    gameManager->startGame(selectedCharacter, enemy);
+    gameManager->getPlayer()->SetPosition(pR, pC);
+    gameManager->getEnemy()->SetPosition(eR, eC);
+    gameManager->getPlayer()->takeDamage(gameManager->getPlayer()->getMaxHealth() - pHP);
+    gameManager->getEnemy()->takeDamage(gameManager->getEnemy()->getMaxHealth() - eHP);
+    drawGrid();
+    QPixmap testPm(CELL - 6, CELL - 6);
+    testPm.fill(Qt::red);
+    playerToken = scene->addPixmap(testPm);
+    playerToken->setZValue(999);
+    QPixmap enemyPixmap = makeBattleSprite(enemyType, CELL - 6, 0, enemyFacing, enemyWalkFrame, true);
+    enemyToken = scene->addPixmap(enemyPixmap);
+    enemyToken->setZValue(999);
+    playerToken->setPos(pC * CELL + 4, pR * CELL + 4);
+    enemyToken->setPos(eC * CELL + 4, eR * CELL + 4);
+    gridView->viewport()->update();
+    gridView->update();
+    scene->update();
+
+    updateTokenPositions();
+    updateHUD();
+    updateBottomBar();
+    stack->setCurrentWidget(gamePage);
+    gamePage->setFocus();
+
+
 }

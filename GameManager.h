@@ -9,6 +9,7 @@ enum class GameState {
     MENU,
     CHARACTER_SELECT,
     PLAYING,
+    PAUSED,
     GAME_OVER
 };
 
@@ -19,6 +20,8 @@ public:
     explicit GameManager(QObject* parent = nullptr);
     ~GameManager();
 
+    void resumeGame();
+    void pauseGame();
     void startGame(Character* playerCharacter, Character* enemyCharacter);
     void checkWinCondition();
     void restartGame();

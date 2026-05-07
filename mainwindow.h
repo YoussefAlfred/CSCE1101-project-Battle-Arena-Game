@@ -33,6 +33,8 @@ private slots:
     void onStartClicked();
     void onGameStateChanged(GameState state);
     void onEnemyTurn();
+    void onPauseClicked();
+    void onLoadClicked();
 
 private:
     // ── pages ───────────────────────────────────────────────
@@ -92,12 +94,13 @@ private:
     // ── Action buttons ──────────────────────────────────────
     QPushButton*    btnActionAttack  = nullptr;
     QPushButton*    btnActionSpecial = nullptr;
-
+    QPushButton*    btnResume = nullptr;
     // ── Game over overlay ───────────────────────────────────
     QLabel*         lblGOTitle   = nullptr;
     QLabel*         lblGOMessage = nullptr;
     QLabel*         lblGOScore   = nullptr;
     QLabel*         lblGOSprite  = nullptr;
+
 
     // ── Turn counting ───────────────────────────────────────
     int             turnCount = 0;
@@ -170,6 +173,9 @@ private:
     static constexpr int CELL  = 100;
     static constexpr int GCOLS = 8;
     static constexpr int GROWS = 8;
+
+    int score = 0;
+
 };
 
 #endif // MAINWINDOW_H
