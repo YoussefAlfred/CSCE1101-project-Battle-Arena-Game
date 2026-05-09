@@ -1,19 +1,19 @@
 {
 	"AUTOGEN_COMMAND_LINE_LENGTH_MAX" : 32000,
-	"BUILD_DIR" : "C:/Users/hp/OneDrive/Desktop/Cs2PROJECT/CSCE1101-project-Battle-Arena-Game/build/Desktop_Qt_6_10_2_MinGW_64_bit-Debug/game_autogen",
-	"CMAKE_BINARY_DIR" : "C:/Users/hp/OneDrive/Desktop/Cs2PROJECT/CSCE1101-project-Battle-Arena-Game/build/Desktop_Qt_6_10_2_MinGW_64_bit-Debug",
-	"CMAKE_CURRENT_BINARY_DIR" : "C:/Users/hp/OneDrive/Desktop/Cs2PROJECT/CSCE1101-project-Battle-Arena-Game/build/Desktop_Qt_6_10_2_MinGW_64_bit-Debug",
-	"CMAKE_CURRENT_SOURCE_DIR" : "C:/Users/hp/OneDrive/Desktop/Cs2PROJECT/CSCE1101-project-Battle-Arena-Game",
+	"BUILD_DIR" : "C:/Users/Top10/CSCE1101-project-Battle-Arena-Game/build/Desktop_Qt_6_10_2_MinGW_64_bit-Debug/game_autogen",
+	"CMAKE_BINARY_DIR" : "C:/Users/Top10/CSCE1101-project-Battle-Arena-Game/build/Desktop_Qt_6_10_2_MinGW_64_bit-Debug",
+	"CMAKE_CURRENT_BINARY_DIR" : "C:/Users/Top10/CSCE1101-project-Battle-Arena-Game/build/Desktop_Qt_6_10_2_MinGW_64_bit-Debug",
+	"CMAKE_CURRENT_SOURCE_DIR" : "C:/Users/Top10/CSCE1101-project-Battle-Arena-Game",
 	"CMAKE_EXECUTABLE" : "C:/Qt/Tools/CMake_64/bin/cmake.exe",
 	"CMAKE_LIST_FILES" : 
 	[
-		"C:/Users/hp/OneDrive/Desktop/Cs2PROJECT/CSCE1101-project-Battle-Arena-Game/CMakeLists.txt",
-		"C:/Users/hp/OneDrive/Desktop/Cs2PROJECT/CSCE1101-project-Battle-Arena-Game/build/Desktop_Qt_6_10_2_MinGW_64_bit-Debug/.qtc/package-manager/auto-setup.cmake",
+		"C:/Users/Top10/CSCE1101-project-Battle-Arena-Game/CMakeLists.txt",
+		"C:/Users/Top10/CSCE1101-project-Battle-Arena-Game/build/Desktop_Qt_6_10_2_MinGW_64_bit-Debug/.qtc/package-manager/auto-setup.cmake",
 		"C:/Qt/Tools/CMake_64/share/cmake-3.30/Modules/CMakeDetermineSystem.cmake",
 		"C:/Qt/Tools/CMake_64/share/cmake-3.30/Modules/CMakeSystem.cmake.in",
-		"C:/Users/hp/OneDrive/Desktop/Cs2PROJECT/CSCE1101-project-Battle-Arena-Game/build/Desktop_Qt_6_10_2_MinGW_64_bit-Debug/CMakeFiles/3.30.5/CMakeSystem.cmake",
+		"C:/Users/Top10/CSCE1101-project-Battle-Arena-Game/build/Desktop_Qt_6_10_2_MinGW_64_bit-Debug/CMakeFiles/3.30.5/CMakeSystem.cmake",
 		"C:/Qt/Tools/CMake_64/share/cmake-3.30/Modules/CMakeNinjaFindMake.cmake",
-		"C:/Users/hp/OneDrive/Desktop/Cs2PROJECT/CSCE1101-project-Battle-Arena-Game/build/Desktop_Qt_6_10_2_MinGW_64_bit-Debug/.qtc/package-manager/maintenance_tool_provider.cmake",
+		"C:/Users/Top10/CSCE1101-project-Battle-Arena-Game/build/Desktop_Qt_6_10_2_MinGW_64_bit-Debug/.qtc/package-manager/maintenance_tool_provider.cmake",
 		"C:/Qt/Tools/CMake_64/share/cmake-3.30/Modules/CMakeSystemSpecificInitialize.cmake",
 		"C:/Qt/Tools/CMake_64/share/cmake-3.30/Modules/Platform/Windows-Initialize.cmake",
 		"C:/Qt/Tools/CMake_64/share/cmake-3.30/Modules/CMakeDetermineCCompiler.cmake",
@@ -68,7 +68,7 @@
 		"C:/Qt/Tools/CMake_64/share/cmake-3.30/Modules/CMakeFindBinUtils.cmake",
 		"C:/Qt/Tools/CMake_64/share/cmake-3.30/Modules/Compiler/GNU-FindBinUtils.cmake",
 		"C:/Qt/Tools/CMake_64/share/cmake-3.30/Modules/CMakeCCompiler.cmake.in",
-		"C:/Users/hp/OneDrive/Desktop/Cs2PROJECT/CSCE1101-project-Battle-Arena-Game/build/Desktop_Qt_6_10_2_MinGW_64_bit-Debug/CMakeFiles/3.30.5/CMakeCCompiler.cmake",
+		"C:/Users/Top10/CSCE1101-project-Battle-Arena-Game/build/Desktop_Qt_6_10_2_MinGW_64_bit-Debug/CMakeFiles/3.30.5/CMakeCCompiler.cmake",
 		"C:/Qt/Tools/CMake_64/share/cmake-3.30/Modules/CMakeDetermineCXXCompiler.cmake",
 		"C:/Qt/Tools/CMake_64/share/cmake-3.30/Modules/CMakeDetermineCompiler.cmake",
 		"C:/Qt/Tools/CMake_64/share/cmake-3.30/Modules/Platform/Windows-Determine-CXX.cmake",
@@ -119,7 +119,7 @@
 		"C:/Qt/Tools/CMake_64/share/cmake-3.30/Modules/CMakeFindBinUtils.cmake",
 		"C:/Qt/Tools/CMake_64/share/cmake-3.30/Modules/Compiler/GNU-FindBinUtils.cmake",
 		"C:/Qt/Tools/CMake_64/share/cmake-3.30/Modules/CMakeCXXCompiler.cmake.in",
-		"C:/Users/hp/OneDrive/Desktop/Cs2PROJECT/CSCE1101-project-Battle-Arena-Game/build/Desktop_Qt_6_10_2_MinGW_64_bit-Debug/CMakeFiles/3.30.5/CMakeCXXCompiler.cmake",
+		"C:/Users/Top10/CSCE1101-project-Battle-Arena-Game/build/Desktop_Qt_6_10_2_MinGW_64_bit-Debug/CMakeFiles/3.30.5/CMakeCXXCompiler.cmake",
 		"C:/Qt/Tools/CMake_64/share/cmake-3.30/Modules/CMakeSystemSpecificInformation.cmake",
 		"C:/Qt/Tools/CMake_64/share/cmake-3.30/Modules/CMakeGenericSystem.cmake",
 		"C:/Qt/Tools/CMake_64/share/cmake-3.30/Modules/CMakeInitializeConfigs.cmake",
@@ -134,7 +134,7 @@
 		"C:/Qt/Tools/CMake_64/share/cmake-3.30/Modules/Platform/Windows-GNU.cmake",
 		"C:/Qt/Tools/CMake_64/share/cmake-3.30/Modules/CMakeDetermineRCCompiler.cmake",
 		"C:/Qt/Tools/CMake_64/share/cmake-3.30/Modules/CMakeRCCompiler.cmake.in",
-		"C:/Users/hp/OneDrive/Desktop/Cs2PROJECT/CSCE1101-project-Battle-Arena-Game/build/Desktop_Qt_6_10_2_MinGW_64_bit-Debug/CMakeFiles/3.30.5/CMakeRCCompiler.cmake",
+		"C:/Users/Top10/CSCE1101-project-Battle-Arena-Game/build/Desktop_Qt_6_10_2_MinGW_64_bit-Debug/CMakeFiles/3.30.5/CMakeRCCompiler.cmake",
 		"C:/Qt/Tools/CMake_64/share/cmake-3.30/Modules/CMakeRCInformation.cmake",
 		"C:/Qt/Tools/CMake_64/share/cmake-3.30/Modules/Platform/Windows-windres.cmake",
 		"C:/Qt/Tools/CMake_64/share/cmake-3.30/Modules/CMakeTestRCCompiler.cmake",
@@ -151,7 +151,7 @@
 		"C:/Qt/Tools/CMake_64/share/cmake-3.30/Modules/CMakeDetermineCompilerSupport.cmake",
 		"C:/Qt/Tools/CMake_64/share/cmake-3.30/Modules/Internal/FeatureTesting.cmake",
 		"C:/Qt/Tools/CMake_64/share/cmake-3.30/Modules/CMakeCCompiler.cmake.in",
-		"C:/Users/hp/OneDrive/Desktop/Cs2PROJECT/CSCE1101-project-Battle-Arena-Game/build/Desktop_Qt_6_10_2_MinGW_64_bit-Debug/CMakeFiles/3.30.5/CMakeCCompiler.cmake",
+		"C:/Users/Top10/CSCE1101-project-Battle-Arena-Game/build/Desktop_Qt_6_10_2_MinGW_64_bit-Debug/CMakeFiles/3.30.5/CMakeCCompiler.cmake",
 		"C:/Qt/Tools/CMake_64/share/cmake-3.30/Modules/Platform/Windows-GNU-C-ABI.cmake",
 		"C:/Qt/Tools/CMake_64/share/cmake-3.30/Modules/CMakeCXXInformation.cmake",
 		"C:/Qt/Tools/CMake_64/share/cmake-3.30/Modules/CMakeLanguageInformation.cmake",
@@ -172,7 +172,7 @@
 		"C:/Qt/Tools/CMake_64/share/cmake-3.30/Modules/CMakeDetermineCompilerSupport.cmake",
 		"C:/Qt/Tools/CMake_64/share/cmake-3.30/Modules/Internal/FeatureTesting.cmake",
 		"C:/Qt/Tools/CMake_64/share/cmake-3.30/Modules/CMakeCXXCompiler.cmake.in",
-		"C:/Users/hp/OneDrive/Desktop/Cs2PROJECT/CSCE1101-project-Battle-Arena-Game/build/Desktop_Qt_6_10_2_MinGW_64_bit-Debug/CMakeFiles/3.30.5/CMakeCXXCompiler.cmake",
+		"C:/Users/Top10/CSCE1101-project-Battle-Arena-Game/build/Desktop_Qt_6_10_2_MinGW_64_bit-Debug/CMakeFiles/3.30.5/CMakeCXXCompiler.cmake",
 		"C:/Qt/Tools/CMake_64/share/cmake-3.30/Modules/Platform/Windows-GNU-CXX-ABI.cmake",
 		"C:/Qt/6.10.2/mingw_64/lib/cmake/Qt6Widgets/Qt6WidgetsConfigVersion.cmake",
 		"C:/Qt/6.10.2/mingw_64/lib/cmake/Qt6Widgets/Qt6WidgetsConfigVersionImpl.cmake",
@@ -567,64 +567,64 @@
 		"C:/Qt/6.10.2/mingw_64/lib/cmake/Qt6Multimedia/Qt6QWindowsMediaPluginAdditionalTargetInfo.cmake",
 		"C:/Qt/6.10.2/mingw_64/lib/cmake/Qt6Multimedia/Qt6MultimediaVersionlessAliasTargets.cmake"
 	],
-	"CMAKE_SOURCE_DIR" : "C:/Users/hp/OneDrive/Desktop/Cs2PROJECT/CSCE1101-project-Battle-Arena-Game",
+	"CMAKE_SOURCE_DIR" : "C:/Users/Top10/CSCE1101-project-Battle-Arena-Game",
 	"CROSS_CONFIG" : false,
-	"DEP_FILE" : "C:/Users/hp/OneDrive/Desktop/Cs2PROJECT/CSCE1101-project-Battle-Arena-Game/build/Desktop_Qt_6_10_2_MinGW_64_bit-Debug/game_autogen/deps",
+	"DEP_FILE" : "C:/Users/Top10/CSCE1101-project-Battle-Arena-Game/build/Desktop_Qt_6_10_2_MinGW_64_bit-Debug/game_autogen/deps",
 	"DEP_FILE_RULE_NAME" : "game_autogen/timestamp",
 	"HEADERS" : 
 	[
 		[
-			"C:/Users/hp/OneDrive/Desktop/Cs2PROJECT/CSCE1101-project-Battle-Arena-Game/Archer.h",
+			"C:/Users/Top10/CSCE1101-project-Battle-Arena-Game/Archer.h",
 			"Mu",
 			"EWIEGA46WW/moc_Archer.cpp",
 			null
 		],
 		[
-			"C:/Users/hp/OneDrive/Desktop/Cs2PROJECT/CSCE1101-project-Battle-Arena-Game/BattleGrid.h",
+			"C:/Users/Top10/CSCE1101-project-Battle-Arena-Game/BattleGrid.h",
 			"Mu",
 			"EWIEGA46WW/moc_BattleGrid.cpp",
 			null
 		],
 		[
-			"C:/Users/hp/OneDrive/Desktop/Cs2PROJECT/CSCE1101-project-Battle-Arena-Game/Cell.h",
+			"C:/Users/Top10/CSCE1101-project-Battle-Arena-Game/Cell.h",
 			"Mu",
 			"EWIEGA46WW/moc_Cell.cpp",
 			null
 		],
 		[
-			"C:/Users/hp/OneDrive/Desktop/Cs2PROJECT/CSCE1101-project-Battle-Arena-Game/Character.h",
+			"C:/Users/Top10/CSCE1101-project-Battle-Arena-Game/Character.h",
 			"Mu",
 			"EWIEGA46WW/moc_Character.cpp",
 			null
 		],
 		[
-			"C:/Users/hp/OneDrive/Desktop/Cs2PROJECT/CSCE1101-project-Battle-Arena-Game/GameManager.h",
+			"C:/Users/Top10/CSCE1101-project-Battle-Arena-Game/GameManager.h",
 			"Mu",
 			"EWIEGA46WW/moc_GameManager.cpp",
 			null
 		],
 		[
-			"C:/Users/hp/OneDrive/Desktop/Cs2PROJECT/CSCE1101-project-Battle-Arena-Game/Mage.h",
+			"C:/Users/Top10/CSCE1101-project-Battle-Arena-Game/Mage.h",
 			"Mu",
 			"EWIEGA46WW/moc_Mage.cpp",
 			null
 		],
 		[
-			"C:/Users/hp/OneDrive/Desktop/Cs2PROJECT/CSCE1101-project-Battle-Arena-Game/Warrior.h",
+			"C:/Users/Top10/CSCE1101-project-Battle-Arena-Game/Warrior.h",
 			"Mu",
 			"EWIEGA46WW/moc_Warrior.cpp",
 			null
 		],
 		[
-			"C:/Users/hp/OneDrive/Desktop/Cs2PROJECT/CSCE1101-project-Battle-Arena-Game/mainwindow.h",
+			"C:/Users/Top10/CSCE1101-project-Battle-Arena-Game/mainwindow.h",
 			"Mu",
 			"EWIEGA46WW/moc_mainwindow.cpp",
 			null
 		]
 	],
 	"HEADER_EXTENSIONS" : [ "h", "hh", "h++", "hm", "hpp", "hxx", "in", "txx" ],
-	"INCLUDE_DIR" : "C:/Users/hp/OneDrive/Desktop/Cs2PROJECT/CSCE1101-project-Battle-Arena-Game/build/Desktop_Qt_6_10_2_MinGW_64_bit-Debug/game_autogen/include",
-	"MOC_COMPILATION_FILE" : "C:/Users/hp/OneDrive/Desktop/Cs2PROJECT/CSCE1101-project-Battle-Arena-Game/build/Desktop_Qt_6_10_2_MinGW_64_bit-Debug/game_autogen/mocs_compilation.cpp",
+	"INCLUDE_DIR" : "C:/Users/Top10/CSCE1101-project-Battle-Arena-Game/build/Desktop_Qt_6_10_2_MinGW_64_bit-Debug/game_autogen/include",
+	"MOC_COMPILATION_FILE" : "C:/Users/Top10/CSCE1101-project-Battle-Arena-Game/build/Desktop_Qt_6_10_2_MinGW_64_bit-Debug/game_autogen/mocs_compilation.cpp",
 	"MOC_DEFINITIONS" : 
 	[
 		"BATTLE_HAS_AUDIO=1",
@@ -684,61 +684,61 @@
 		"-c",
 		"C:/Qt/Tools/CMake_64/share/cmake-3.30/Modules/CMakeCXXCompilerABI.cpp"
 	],
-	"MOC_PREDEFS_FILE" : "C:/Users/hp/OneDrive/Desktop/Cs2PROJECT/CSCE1101-project-Battle-Arena-Game/build/Desktop_Qt_6_10_2_MinGW_64_bit-Debug/game_autogen/moc_predefs.h",
+	"MOC_PREDEFS_FILE" : "C:/Users/Top10/CSCE1101-project-Battle-Arena-Game/build/Desktop_Qt_6_10_2_MinGW_64_bit-Debug/game_autogen/moc_predefs.h",
 	"MOC_RELAXED_MODE" : false,
 	"MOC_SKIP" : [],
 	"MULTI_CONFIG" : false,
-	"PARALLEL" : 10,
-	"PARSE_CACHE_FILE" : "C:/Users/hp/OneDrive/Desktop/Cs2PROJECT/CSCE1101-project-Battle-Arena-Game/build/Desktop_Qt_6_10_2_MinGW_64_bit-Debug/CMakeFiles/game_autogen.dir/ParseCache.txt",
+	"PARALLEL" : 4,
+	"PARSE_CACHE_FILE" : "C:/Users/Top10/CSCE1101-project-Battle-Arena-Game/build/Desktop_Qt_6_10_2_MinGW_64_bit-Debug/CMakeFiles/game_autogen.dir/ParseCache.txt",
 	"QT_MOC_EXECUTABLE" : "C:/Qt/6.10.2/mingw_64/bin/moc.exe",
 	"QT_UIC_EXECUTABLE" : "",
 	"QT_VERSION_MAJOR" : 6,
 	"QT_VERSION_MINOR" : 10,
-	"SETTINGS_FILE" : "C:/Users/hp/OneDrive/Desktop/Cs2PROJECT/CSCE1101-project-Battle-Arena-Game/build/Desktop_Qt_6_10_2_MinGW_64_bit-Debug/CMakeFiles/game_autogen.dir/AutogenUsed.txt",
+	"SETTINGS_FILE" : "C:/Users/Top10/CSCE1101-project-Battle-Arena-Game/build/Desktop_Qt_6_10_2_MinGW_64_bit-Debug/CMakeFiles/game_autogen.dir/AutogenUsed.txt",
 	"SOURCES" : 
 	[
 		[
-			"C:/Users/hp/OneDrive/Desktop/Cs2PROJECT/CSCE1101-project-Battle-Arena-Game/Archer.cpp",
+			"C:/Users/Top10/CSCE1101-project-Battle-Arena-Game/Archer.cpp",
 			"Mu",
 			null
 		],
 		[
-			"C:/Users/hp/OneDrive/Desktop/Cs2PROJECT/CSCE1101-project-Battle-Arena-Game/BattleGrid.cpp",
+			"C:/Users/Top10/CSCE1101-project-Battle-Arena-Game/BattleGrid.cpp",
 			"Mu",
 			null
 		],
 		[
-			"C:/Users/hp/OneDrive/Desktop/Cs2PROJECT/CSCE1101-project-Battle-Arena-Game/Cell.cpp",
+			"C:/Users/Top10/CSCE1101-project-Battle-Arena-Game/Cell.cpp",
 			"Mu",
 			null
 		],
 		[
-			"C:/Users/hp/OneDrive/Desktop/Cs2PROJECT/CSCE1101-project-Battle-Arena-Game/Character.cpp",
+			"C:/Users/Top10/CSCE1101-project-Battle-Arena-Game/Character.cpp",
 			"Mu",
 			null
 		],
 		[
-			"C:/Users/hp/OneDrive/Desktop/Cs2PROJECT/CSCE1101-project-Battle-Arena-Game/GameManager.cpp",
+			"C:/Users/Top10/CSCE1101-project-Battle-Arena-Game/GameManager.cpp",
 			"Mu",
 			null
 		],
 		[
-			"C:/Users/hp/OneDrive/Desktop/Cs2PROJECT/CSCE1101-project-Battle-Arena-Game/Mage.cpp",
+			"C:/Users/Top10/CSCE1101-project-Battle-Arena-Game/Mage.cpp",
 			"Mu",
 			null
 		],
 		[
-			"C:/Users/hp/OneDrive/Desktop/Cs2PROJECT/CSCE1101-project-Battle-Arena-Game/Warrior.cpp",
+			"C:/Users/Top10/CSCE1101-project-Battle-Arena-Game/Warrior.cpp",
 			"Mu",
 			null
 		],
 		[
-			"C:/Users/hp/OneDrive/Desktop/Cs2PROJECT/CSCE1101-project-Battle-Arena-Game/main.cpp",
+			"C:/Users/Top10/CSCE1101-project-Battle-Arena-Game/main.cpp",
 			"Mu",
 			null
 		],
 		[
-			"C:/Users/hp/OneDrive/Desktop/Cs2PROJECT/CSCE1101-project-Battle-Arena-Game/mainwindow.cpp",
+			"C:/Users/Top10/CSCE1101-project-Battle-Arena-Game/mainwindow.cpp",
 			"Mu",
 			null
 		]

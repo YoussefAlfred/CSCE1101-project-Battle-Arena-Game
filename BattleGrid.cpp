@@ -9,11 +9,13 @@ BattleGrid::BattleGrid() {
 void BattleGrid::reset() {
     for (int r = 0; r < GRID_SIZE; r++) {
         for (int c = 0; c < GRID_SIZE; c++) {
-            grid[r][c] = Cell(r, c);
+            grid[r][c]    = Cell(r, c);
             blocked[r][c] = false;
+            spells[r][c]  = SpellType::NONE;
         }
     }
     initializeObstacles();
+    initializeSpells();
 }
 
 void BattleGrid::initializeObstacles() {
@@ -74,4 +76,31 @@ bool BattleGrid::isInside(int row, int col) const {
 Cell* BattleGrid::getCell(int row, int col) {
     if (!isInside(row, col)) return nullptr;
     return &grid[row][col];
+}
+
+void BattleGrid::initializeSpells() {
+    // Fixed symmetric rune positions — avoid corners (spawn points) and obstacles
+    const int healCells[][2] = { {1, 6}, {3, 3}, {6, 1} };
+    const int slowCells[][2] = { {1, 1}, {4, 4}, {6, 6} };
+
+    for (const auto& pos : healCells) {
+        if (!blocked[pos[0]][pos[1]])
+            spells[pos[0]][pos[1]] = SpellType::HEAL;
+    }
+    for (const auto& pos : slowCells) {
+        if (!blocked[pos[0]][pos[1]])
+            spells[pos[0]][pos[1]] = SpellType::SLOW;
+    }
+}
+
+SpellType BattleGrid::getSpell(int row, int col) const {
+    if (!isInside(row, col)) return SpellType::NONE;
+    return spells[row][col];
+}
+
+SpellType BattleGrid::consumeSpell(int row, int col) {
+    if (!isInside(row, col)) return SpellType::NONE;
+    SpellType s = spells[row][col];
+    spells[row][col] = SpellType::NONE;
+    return s;
 }

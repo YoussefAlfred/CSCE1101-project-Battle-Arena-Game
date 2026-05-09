@@ -3,6 +3,8 @@
 
 class Character; // forward declaration
 
+enum class SpellType { NONE, HEAL, SLOW };
+
 class BattleGrid {
 public:
     BattleGrid();
@@ -17,12 +19,18 @@ public:
 
     Cell* getCell(int row, int col);
 
+    // Spell rune methods
+    SpellType getSpell(int row, int col) const;
+    SpellType consumeSpell(int row, int col); // returns type then clears it
+
     static const int GRID_SIZE = 8;
 
 private:
     bool isInside(int row, int col) const;
     void initializeObstacles();
+    void initializeSpells();
 
-    Cell grid[GRID_SIZE][GRID_SIZE];
-    bool blocked[GRID_SIZE][GRID_SIZE];
+    Cell      grid[GRID_SIZE][GRID_SIZE];
+    bool      blocked[GRID_SIZE][GRID_SIZE];
+    SpellType spells[GRID_SIZE][GRID_SIZE];
 };

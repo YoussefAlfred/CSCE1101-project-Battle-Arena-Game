@@ -1,0 +1,78 @@
+{
+	"configurations" : 
+	[
+		{
+			"directories" : 
+			[
+				{
+					"build" : ".",
+					"jsonFile" : "directory-.-Debug-d0094a50bb2071803777.json",
+					"minimumCMakeVersion" : 
+					{
+						"string" : "3.16"
+					},
+					"projectIndex" : 0,
+					"source" : ".",
+					"targetIndexes" : 
+					[
+						0,
+						1,
+						2
+					]
+				}
+			],
+			"name" : "Debug",
+			"projects" : 
+			[
+				{
+					"directoryIndexes" : 
+					[
+						0
+					],
+					"name" : "BattleArenaGame",
+					"targetIndexes" : 
+					[
+						0,
+						1,
+						2
+					]
+				}
+			],
+			"targets" : 
+			[
+				{
+					"directoryIndex" : 0,
+					"id" : "game::@6890427a1f51a3e7e1df",
+					"jsonFile" : "target-game-Debug-c3abc0aa16baca9c0b53.json",
+					"name" : "game",
+					"projectIndex" : 0
+				},
+				{
+					"directoryIndex" : 0,
+					"id" : "game_autogen::@6890427a1f51a3e7e1df",
+					"jsonFile" : "target-game_autogen-Debug-cff3c9a65bab0bb71aae.json",
+					"name" : "game_autogen",
+					"projectIndex" : 0
+				},
+				{
+					"directoryIndex" : 0,
+					"id" : "game_autogen_timestamp_deps::@6890427a1f51a3e7e1df",
+					"jsonFile" : "target-game_autogen_timestamp_deps-Debug-2c9bcd208eb2a1abc4f0.json",
+					"name" : "game_autogen_timestamp_deps",
+					"projectIndex" : 0
+				}
+			]
+		}
+	],
+	"kind" : "codemodel",
+	"paths" : 
+	{
+		"build" : "C:/Users/Top10/CSCE1101-project-Battle-Arena-Game/build/Desktop_Qt_6_10_2_MinGW_64_bit-Debug",
+		"source" : "C:/Users/Top10/CSCE1101-project-Battle-Arena-Game"
+	},
+	"version" : 
+	{
+		"major" : 2,
+		"minor" : 7
+	}
+}

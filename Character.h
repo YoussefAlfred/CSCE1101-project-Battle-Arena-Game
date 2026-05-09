@@ -30,9 +30,10 @@ public:
     virtual void move(int dx, int dy)   = 0;
 
     void takeDamage(int damage);
+    void heal(int amount);
     bool isAlive()           const;
     int  getCurrentHealth()  const;
-    int  getMaxHealth()      const;   // ← added
+    int  getMaxHealth()      const;
 
     int  getGridX() const;
     int  getGridY() const;

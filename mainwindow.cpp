@@ -2534,6 +2534,8 @@ void MainWindow::startBattle()
     if (enemyPortraitLabel) enemyPortraitLabel->setPixmap(enemyPm);
 
     drawGrid();
+    runeItems.clear();
+    drawRunes();
 
     QPixmap playerPm = makeBattleSprite(selectedType, CELL - 6, 0, playerFacing, playerWalkFrame, false);
     playerToken = scene->addPixmap(playerPm);
@@ -2986,6 +2988,7 @@ void MainWindow::onEnemyTurn() {
             enemyWalkFrame++;
             if (enemyToken)
                 enemyToken->setPixmap(makeBattleSprite(enemyType, CELL - 6, 4, enemyFacing, enemyWalkFrame, true));
+            checkSpellCell(bestRow, bestCol, false);
         }
     }
 
@@ -3519,6 +3522,7 @@ void MainWindow::keyPressEvent(QKeyEvent* event)
             playerToken->setPixmap(makeBattleSprite(selectedType, CELL - 6, 4, playerFacing, playerWalkFrame, false));
         if (specialCooldown > 0) specialCooldown--;
         turnCount++;
+        checkSpellCell(newRow, newCol, true);
         updateTokenPositions();
         updateHUD();
         updateBottomBar();
@@ -3558,6 +3562,161 @@ void MainWindow::onPauseClicked() {
     if (btnResume) btnResume->setVisible(true);
 }
 
+void MainWindow::drawRunes()
+{
+    BattleGrid* grid = gameManager ? gameManager->getGrid() : nullptr;
+    if (!grid || !scene) return;
+
+    for (int r = 0; r < BattleGrid::GRID_SIZE; r++) {
+        for (int c = 0; c < BattleGrid::GRID_SIZE; c++) {
+            SpellType t = grid->getSpell(r, c);
+            if (t == SpellType::NONE) continue;
+
+            bool isHeal = (t == SpellType::HEAL);
+            QColor base  = isHeal ? QColor(61, 186, 110) : QColor(40, 168, 255);
+            QColor glow  = isHeal ? QColor(61, 186, 110, 60) : QColor(40, 168, 255, 60);
+
+            qreal cx = c * CELL + CELL / 2.0;
+            qreal cy = r * CELL + CELL / 2.0;
+            qreal rs = CELL * 0.32;
+
+            // Outer glow disc
+            auto* disc = scene->addEllipse(cx - rs, cy - rs, rs*2, rs*2,
+                Qt::NoPen, QBrush(glow));
+            disc->setZValue(1.5);
+
+            // Ring
+            auto* ring = scene->addEllipse(cx - rs + 4, cy - rs + 4,
+                (rs-4)*2, (rs-4)*2,
+                QPen(base, 2.5), Qt::NoBrush);
+            ring->setZValue(1.6);
+
+            // Inner symbol — + for heal, * for slow
+            QString sym = isHeal ? "✚" : "❄";
+            auto* txt = scene->addText(sym);
+            txt->setDefaultTextColor(base);
+            QFont f; f.setPixelSize(20); f.setBold(true);
+            txt->setFont(f);
+            txt->setPos(cx - txt->boundingRect().width()/2,
+                        cy - txt->boundingRect().height()/2);
+            txt->setZValue(1.7);
+
+            // Group items so we can remove them together via the disc pointer
+            // We store the disc as the key item; we'll also store ring and txt
+            // by tagging them with the same cell key
+            auto key = QPair<int,int>(r, c);
+
+            // We store a simple container: use a QGraphicsItemGroup
+            QGraphicsItemGroup* grp = scene->createItemGroup({disc, ring, txt});
+            grp->setZValue(1.5);
+            runeItems[key] = grp;
+        }
+    }
+}
+
+void MainWindow::checkSpellCell(int row, int col, bool isPlayer)
+{
+    BattleGrid* grid = gameManager ? gameManager->getGrid() : nullptr;
+    if (!grid) return;
+
+    SpellType t = grid->consumeSpell(row, col);
+    if (t == SpellType::NONE) return;
+
+    // Remove rune graphic
+    auto key = QPair<int,int>(row, col);
+    if (runeItems.contains(key)) {
+        QGraphicsItem* item = runeItems.take(key);
+        scene->removeItem(item);
+        delete item;
+    }
+
+    bool isHeal = (t == SpellType::HEAL);
+    playSpellAnimation(isHeal, row, col);
+
+    if (isHeal) {
+        // Heal whoever stepped on it
+        Character* target = isPlayer ? gameManager->getPlayer() : gameManager->getEnemy();
+        if (target) {
+            int amt = target->getMaxHealth() / 4;
+            target->heal(amt);
+            if (isPlayer) {
+                addCombatMessage("<span style='color:#3dba6e;'>✚ Heal rune! +" + QString::number(amt) + " HP</span>");
+                lblTurnInfo->setText("Heal rune! +" + QString::number(amt) + " HP");
+            } else {
+                addCombatMessage("<span style='color:#ff9966;'>Enemy stepped on a Heal rune! +" + QString::number(amt) + " HP</span>");
+            }
+        }
+    } else {
+        // Slow whoever stepped on it (Option C — symmetric)
+        if (isPlayer) {
+            // Player stepped on slow rune — enemy attacks faster for 10 ticks
+            gameManager->applyPlayerSlow();
+            addCombatMessage("<span style='color:#ff6b6b;'>❄ Slow rune! You move slower for 10 turns</span>");
+            lblTurnInfo->setText("Slow rune! You are slowed for 10 turns.");
+            if (lblSlowIndicator) lblSlowIndicator->setVisible(true);
+        } else {
+            // Enemy stepped on slow rune — enemy gets slowed
+            gameManager->applySlowness();
+            addCombatMessage("<span style='color:#28a8ff;'>❄ Enemy hit a Slow rune! Enemy slowed for 10 turns</span>");
+            lblTurnInfo->setText("Enemy hit a Slow rune! They're slowed.");
+            if (lblSlowIndicator) lblSlowIndicator->setVisible(true);
+        }
+    }
+
+    updateHUD();
+    updateBottomBar();
+}
+
+void MainWindow::playSpellAnimation(bool isHeal, int row, int col) {
+    if (!scene) return;
+
+    QColor color = isHeal ? QColor(61, 186, 110, 180) : QColor(40, 168, 255, 180);
+    qreal cx = col * CELL + CELL / 2.0;
+    qreal cy = row * CELL + CELL / 2.0;
+
+    for (int i = 0; i < 3; ++i) {
+        QGraphicsEllipseItem* ring = scene->addEllipse(
+            cx - 10, cy - 10, 20, 20,
+            QPen(color, 3),
+            Qt::NoBrush
+        );
+        ring->setZValue(10);
+
+        int delay = i * 130;
+        QTimer::singleShot(delay, this, [=]() {
+            if (!ring->scene()) return;
+            QVariantAnimation* anim = new QVariantAnimation(ring->scene());
+            anim->setDuration(500);
+            anim->setStartValue(0.0);
+            anim->setEndValue(1.0);
+            QObject::connect(anim, &QVariantAnimation::valueChanged, [=](const QVariant& v) {
+                qreal t = v.toReal();
+                qreal r = 10 + t * (CELL * 0.6);
+                ring->setRect(cx - r, cy - r, r * 2, r * 2);
+                QColor c = color;
+                c.setAlpha(static_cast<int>(180 * (1.0 - t)));
+                ring->setPen(QPen(c, 3.0 - t * 2.0));
+            });
+            QObject::connect(anim, &QVariantAnimation::finished, [=]() {
+                if (ring->scene()) ring->scene()->removeItem(ring);
+                delete ring;
+            });
+            anim->start(QAbstractAnimation::DeleteWhenStopped);
+        });
+    }
+
+    QGraphicsEllipseItem* flash = scene->addEllipse(
+        cx - 10, cy - 10, 20, 20,
+        Qt::NoPen,
+        QBrush(isHeal ? QColor(61, 186, 110, 210) : QColor(40, 168, 255, 210))
+    );
+    flash->setZValue(11);
+    QTimer::singleShot(280, this, [=]() {
+        if (flash->scene()) flash->scene()->removeItem(flash);
+        delete flash;
+    });
+}
+
 void MainWindow::onLoadClicked() {
     QFile file(QCoreApplication::applicationDirPath() + "/savegame.txt");
     if (!file.open(QIODevice::ReadOnly | QIODevice::Text)) return;
@@ -3591,6 +3750,8 @@ void MainWindow::onLoadClicked() {
     gameManager->getPlayer()->takeDamage(gameManager->getPlayer()->getMaxHealth() - pHP);
     gameManager->getEnemy()->takeDamage(gameManager->getEnemy()->getMaxHealth() - eHP);
     drawGrid();
+    runeItems.clear();
+    drawRunes();
     QPixmap testPm(CELL - 6, CELL - 6);
     testPm.fill(Qt::red);
     playerToken = scene->addPixmap(testPm);

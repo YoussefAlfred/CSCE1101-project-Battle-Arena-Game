@@ -67,16 +67,43 @@ void GameManager::checkWinCondition() {
 
 void GameManager::restartGame() {
     timer->stop();
-    player   = nullptr;
-    enemy    = nullptr;
-    score    = 0;
-    hardMode = false;
-    state    = GameState::CHARACTER_SELECT;
+    player            = nullptr;
+    enemy             = nullptr;
+    score             = 0;
+    hardMode          = false;
+    playerSlowed      = false;
+    slownessTicksLeft = 0;
+    state             = GameState::CHARACTER_SELECT;
     emit gameStateChanged(state);
 }
 
+void GameManager::applySlowness() {
+    playerSlowed      = true;
+    slownessTicksLeft = 10;
+    // halve the enemy's attack speed
+    timer->setInterval(hardMode ? 800 : 1600);
+}
+
+void GameManager::applyPlayerSlow() {
+    // Enemy attacks twice as fast — halve the timer interval
+    playerSlowed      = true;
+    slownessTicksLeft = 10;
+    timer->setInterval(hardMode ? 200 : 400);
+}
+
+void GameManager::tickSlowness() {
+    if (!playerSlowed) return;
+    slownessTicksLeft--;
+    if (slownessTicksLeft <= 0) {
+        playerSlowed = false;
+        timer->setInterval(hardMode ? TIMER_INTERVAL_HARD_MS : TIMER_INTERVAL_MS);
+    }
+}
+
+bool GameManager::isPlayerSlowed() const { return playerSlowed; }
+
 void GameManager::onTimerTick() {
-    // Milestone 2: enemy AI movement + attack triggered here
+    tickSlowness();
     emit enemyTurnTriggered();
     checkWinCondition();
 }

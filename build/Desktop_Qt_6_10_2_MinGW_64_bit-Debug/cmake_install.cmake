@@ -1,4 +1,4 @@
-# Install script for directory: C:/Users/hp/OneDrive/Desktop/Cs2PROJECT/CSCE1101-project-Battle-Arena-Game
+# Install script for directory: C:/Users/Top10/CSCE1101-project-Battle-Arena-Game
 
 # Set the install prefix
 if(NOT DEFINED CMAKE_INSTALL_PREFIX)
@@ -52,6 +52,6 @@ endif()
 if(NOT CMAKE_INSTALL_LOCAL_ONLY)
   string(REPLACE ";" "\n" CMAKE_INSTALL_MANIFEST_CONTENT
        "${CMAKE_INSTALL_MANIFEST_FILES}")
-  file(WRITE "C:/Users/hp/OneDrive/Desktop/Cs2PROJECT/CSCE1101-project-Battle-Arena-Game/build/Desktop_Qt_6_10_2_MinGW_64_bit-Debug/${CMAKE_INSTALL_MANIFEST}"
+  file(WRITE "C:/Users/Top10/CSCE1101-project-Battle-Arena-Game/build/Desktop_Qt_6_10_2_MinGW_64_bit-Debug/${CMAKE_INSTALL_MANIFEST}"
      "${CMAKE_INSTALL_MANIFEST_CONTENT}")
 endif()

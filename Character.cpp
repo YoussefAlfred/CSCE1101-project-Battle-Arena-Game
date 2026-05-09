@@ -23,6 +23,11 @@ void Character::takeDamage(int damage) {
     if (health < 0) health = 0;
 }
 
+void Character::heal(int amount) {
+    health += amount;
+    if (health > maxHealth) health = maxHealth;
+}
+
 bool Character::isAlive()          const { return health > 0; }
 int  Character::getCurrentHealth() const { return health; }
 int  Character::getMaxHealth()     const { return maxHealth; }   // ← added

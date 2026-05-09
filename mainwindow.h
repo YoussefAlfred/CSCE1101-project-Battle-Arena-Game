@@ -11,6 +11,8 @@
 #include <QGraphicsPixmapItem>
 #include <QKeyEvent>
 #include <QTimer>
+#include <QMap>
+#include <QPair>
 
 #include "GameManager.h"
 #include "Warrior.h"
@@ -87,20 +89,21 @@ private:
     QStringList     combatMessages;
 
     // ── Bottom status bar ───────────────────────────────────
-    QLabel*         lblTurnCounter = nullptr;
-    QLabel*         lblDistance    = nullptr;
-    QLabel*         lblDiffBadge  = nullptr;
+    QLabel*         lblTurnCounter   = nullptr;
+    QLabel*         lblDistance      = nullptr;
+    QLabel*         lblDiffBadge     = nullptr;
+    QLabel*         lblSlowIndicator = nullptr;
 
     // ── Action buttons ──────────────────────────────────────
     QPushButton*    btnActionAttack  = nullptr;
     QPushButton*    btnActionSpecial = nullptr;
-    QPushButton*    btnResume = nullptr;
+    QPushButton*    btnResume        = nullptr;
+
     // ── Game over overlay ───────────────────────────────────
     QLabel*         lblGOTitle   = nullptr;
     QLabel*         lblGOMessage = nullptr;
     QLabel*         lblGOScore   = nullptr;
     QLabel*         lblGOSprite  = nullptr;
-
 
     // ── Turn counting ───────────────────────────────────────
     int             turnCount = 0;
@@ -109,12 +112,12 @@ private:
     QLabel*         diffCharPreview = nullptr;
     QLabel*         diffCharName    = nullptr;
 
-    // ── Menu animation ──────────────────────────────────────
-    QLabel*         menuSprites[3] = {nullptr, nullptr, nullptr};
-    int             menuPoseFrame  = 0;
-    QTimer*         menuAnimTimer  = nullptr;
-    QTimer*         battleAnimTimer = nullptr;
-    int             battleAnimFrame = 0;
+    // ── Menu / battle animations ────────────────────────────
+    QLabel*         menuSprites[3]    = {nullptr, nullptr, nullptr};
+    int             menuPoseFrame     = 0;
+    QTimer*         menuAnimTimer     = nullptr;
+    QTimer*         battleAnimTimer   = nullptr;
+    int             battleAnimFrame   = 0;
     QTimer*         gameOverAnimTimer = nullptr;
     int             gameOverAnimFrame = 0;
     int             gameOverAnimType  = 0;
@@ -127,17 +130,24 @@ private:
     QGraphicsPixmapItem* playerToken = nullptr;
     QGraphicsPixmapItem* enemyToken  = nullptr;
 
+    // Spell rune graphics: key = (row, col)
+    QMap<QPair<int,int>, QGraphicsItem*> runeItems;
+
     // ── logic ───────────────────────────────────────────────
     GameManager* gameManager;
     Character*   selectedCharacter;
-    int          selectedType  = -1;   // 0=Warrior 1=Mage 2=Archer
-    int          enemyType     = -1;
+    int          selectedType    = -1;  // 0=Warrior 1=Mage 2=Archer
+    int          enemyType       = -1;
     int          specialCooldown = 0;
+    int          healCooldown    = 0;
+    int          slowCooldown    = 0;
+    bool         enemySlowed     = false;
     bool         hardMode        = false;
-    int          playerFacing    = 0;    // 0=down/front, 1=up/back, 2=left, 3=right
+    int          playerFacing    = 0;
     int          enemyFacing     = 1;
     int          playerWalkFrame = 0;
     int          enemyWalkFrame  = 0;
+    int          score           = 0;
 
     // ── helpers ─────────────────────────────────────────────
     void buildMenuPage();
@@ -147,35 +157,33 @@ private:
     void buildGameOverPage();
     void startBattle();
 
-    // ── audio (no-op when Qt6 Multimedia is not available) ──
     void initAudio();
     void playClickSound();
     void playVictorySound();
     void playGameOverSound();
 
     QWidget* buildHUDPanel(bool isPlayer);
-
-    void applyGlobalStyle();
+    void     applyGlobalStyle();
 
     void drawGrid();
+    void drawRunes();
+    void removeRune(int row, int col);
+    void checkSpellCell(int row, int col, bool isPlayer);
     void updateTokenPositions();
     void updateHUD();
     void showGameOver(bool playerWon);
 
-    // Flash a token/portrait to attack or special pose then restore idle
-    // pose: 1 = attack, 2 = special
     void flashAttackPose(bool isPlayer, int pose);
-
     void addCombatMessage(const QString& msg);
     void updateBottomBar();
 
-    // grid drawing constants
+    void castHeal();
+    void castSlowness();
+    void playSpellAnimation(bool isHeal, int row, int col);
+
     static constexpr int CELL  = 100;
     static constexpr int GCOLS = 8;
     static constexpr int GROWS = 8;
-
-    int score = 0;
-
 };
 
 #endif // MAINWINDOW_H

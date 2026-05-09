@@ -25,7 +25,10 @@ public:
     void startGame(Character* playerCharacter, Character* enemyCharacter);
     void checkWinCondition();
     void restartGame();
-    void setHardMode(bool hard);   // ← added
+    void setHardMode(bool hard);
+    void applySlowness();
+    void applyPlayerSlow();
+    bool isPlayerSlowed() const;
 
     Character*  getPlayer() const;
     Character*  getEnemy()  const;
@@ -46,10 +49,14 @@ private:
     Character* enemy;
     GameState  state;
     int        score;
-    bool       hardMode;           // ← added
+    bool       hardMode;
+    bool       playerSlowed     = false;
+    int        slownessTicksLeft = 0;
     QTimer*    timer;
     BattleGrid battleGrid;
 
+    void tickSlowness();
+
     static const int TIMER_INTERVAL_MS      = 800;
-    static const int TIMER_INTERVAL_HARD_MS = 400;  // 2× faster for Hard mode
+    static const int TIMER_INTERVAL_HARD_MS = 400;
 };
