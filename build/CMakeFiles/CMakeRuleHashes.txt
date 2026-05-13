@@ -1,0 +1,4 @@
+# Hashes of file build rules.
+16056f56423d63db81154bdebe7ce093 CMakeFiles/game_autogen
+16056f56423d63db81154bdebe7ce093 CMakeFiles/game_autogen_timestamp_deps
+615abb2f966b37c23d861aece3855a77 game_autogen/timestamp

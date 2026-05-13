@@ -80,6 +80,10 @@ private:
     QProgressBar*   barEnemyHP;
     QLabel*         lblEnemyHPVal;
     QLabel*         lblEnemyDanger = nullptr;
+    QWidget*        enemyPanel  = nullptr; // for border flash
+    QLabel*         lblStreak   = nullptr;
+    int             winStreak   = 0;
+    int             bestStreak  = 0;
 
     QLabel*         lblTurnInfo;
     QLabel*         lblScore;

@@ -2471,7 +2471,10 @@ void MainWindow::buildDifficultyPage() {
         }
         QPushButton:hover { background: #25253d; color: #ffffff; border: 2px solid #7c5cbf; }
     )");
-    connect(btnBack, &QPushButton::clicked, this, [=]() {
+QWidget*        enemyPanel  = nullptr; // for border flash
+    QLabel*         lblStreak   = nullptr;
+    int             winStreak   = 0;
+    int             bestStreak  = 0;    connect(btnBack, &QPushButton::clicked, this, [=]() {
         stack->setCurrentWidget(characterPage);
     });
 
@@ -2679,6 +2682,9 @@ QWidget* MainWindow::buildHUDPanel(bool isPlayer) {
         lay->addWidget(hint);
     }
 
+// save enemy panel so updateHUD() can flash its border
+    if (!isPlayer) enemyPanel = panel;
+
     return panel;
 }
 
@@ -2725,7 +2731,17 @@ void MainWindow::buildGamePage() {
         "background: rgba(10,10,24,200); border: 1px solid #d4a017; "
         "border-radius: 6px; padding: 6px 16px;"
     );
+
+    lblStreak = new QLabel("STREAK  ·  0");
+    lblStreak->setStyleSheet(
+        "font-size: 18px; color: #a8f0a8; letter-spacing: 4px; font-weight: bold; "
+        "font-family: 'Courier New', monospace; "
+        "background: rgba(10,10,24,200); border: 1px solid #3dba6e; "
+        "border-radius: 6px; padding: 6px 16px;"
+    );
     topBar->addStretch();
+    topBar->addWidget(lblStreak);
+    topBar->addSpacing(12);
     topBar->addWidget(lblScore);
 
     QPushButton* pauseBtn = new QPushButton("SAVE  ·  PAUSE", this);
@@ -3127,8 +3143,30 @@ void MainWindow::updateHUD() {
             "  background: qlineargradient(x1:0,y1:0,x2:1,y2:0, stop:0 %1, stop:1 %2); }"
         ).arg(color1, color2);
     };
+
+    // Enemy bar uses sharper red when critically low
+    auto enemyBarStyle = [](double pct) -> QString {
+        QString color1, color2;
+        if (pct > 0.3)       { color1 = "#d4a017"; color2 = "#e8b830"; } // amber
+        else if (pct > 0.15) { color1 = "#d94f4f"; color2 = "#ff6b6b"; } // red
+        else                 { color1 = "#cc0000"; color2 = "#ff2020"; } // critical red
+        return QString(
+            "QProgressBar { border: 1px solid #2a2a4a; border-radius: 6px; background: #0a0a18; }"
+            "QProgressBar::chunk { border-radius: 5px; "
+            "  background: qlineargradient(x1:0,y1:0,x2:1,y2:0, stop:0 %1, stop:1 %2); }"
+        ).arg(color1, color2);
+    };
+
     barPlayerHP->setStyleSheet(hpBarStyle((double)pHP / pMax));
-    barEnemyHP->setStyleSheet(hpBarStyle((double)eHP / e->getMaxHealth()));
+    barEnemyHP->setStyleSheet(enemyBarStyle((double)eHP / e->getMaxHealth()));
+
+    // Flash enemy panel border red when critically low, reset when recovered
+    if (enemyPanel) {
+        if (eHP < 0.15 * e->getMaxHealth())
+            enemyPanel->setStyleSheet("background: rgba(18,18,42,220); border-radius: 12px; border: 2px solid #ff2020;");
+        else
+            enemyPanel->setStyleSheet("background: rgba(18,18,42,220); border-radius: 12px; border: 1px solid #2a2a4a;");
+    }
 
     // DANGER labels
     if (lblPlayerDanger) lblPlayerDanger->setVisible(pHP < 0.25 * pMax);
@@ -3173,6 +3211,17 @@ void MainWindow::showGameOver(bool playerWon) {
     if (lblGOScore) {
         lblGOScore->setText(QString("SCORE  ·  %1").arg(gameManager->getScore()));
     }
+
+    // updating win streak
+    if (playerWon) {
+        winStreak++;
+        bestStreak = std::max(bestStreak, winStreak);
+    } else {
+        winStreak = 0;
+    }
+    if (lblStreak)
+        lblStreak->setText("STREAK  ·  " + QString::number(winStreak));
+
     if (lblGOSprite) {
         // On defeat, show the player's dead animation (not the enemy).
         gameOverAnimType = selectedType;
