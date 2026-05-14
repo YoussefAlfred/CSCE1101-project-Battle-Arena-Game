@@ -1350,6 +1350,11 @@ static QPixmap makeBattleSprite(int type, int size, int pose,
 
 namespace BattleAudio {
 #ifdef BATTLE_HAS_AUDIO
+    static bool sAudioEnabled         = false;
+    static constexpr float kMusicMenuVolume   = 0.34f;
+    static constexpr float kMusicBattleVolume = 0.18f;
+    static QMediaPlayer* sMusicPlayer    = nullptr;
+    static QAudioOutput* sMusicOut       = nullptr;
     static QMediaPlayer* sClickPlayer    = nullptr;
     static QAudioOutput* sClickOut       = nullptr;
     static QMediaPlayer* sVictoryPlayer  = nullptr;
@@ -1369,18 +1374,72 @@ namespace BattleAudio {
         *outSlot = o;
         return p;
     }
+
+    static void restartPlayer(QMediaPlayer* player) {
+        if (!player) return;
+        const QUrl source = player->source();
+        player->stop();
+        player->setSource(QUrl());
+        player->setSource(source);
+        player->play();
+    }
+
+    static void setMusicBattleMode(bool inBattle) {
+        if (!sAudioEnabled || !sMusicOut) return;
+        sMusicOut->setVolume(inBattle ? kMusicBattleVolume : kMusicMenuVolume);
+    }
+
+    static void stopMusic() {
+        if (!sAudioEnabled || !sMusicPlayer) return;
+        sMusicPlayer->stop();
+    }
+
+    static void startMusic(bool inBattle) {
+        if (!sAudioEnabled || !sMusicPlayer) return;
+        setMusicBattleMode(inBattle);
+        sMusicPlayer->play();
+    }
+
+    static bool shouldEnableAudio() {
+#ifdef Q_OS_LINUX
+        const QByteArray audioOptIn = qgetenv("BATTLE_ENABLE_AUDIO");
+        if (audioOptIn == "1" || audioOptIn.compare("true", Qt::CaseInsensitive) == 0)
+            return true;
+
+        qDebug() << "Audio disabled on Linux by default to avoid multimedia backend freezes."
+                 << "Set BATTLE_ENABLE_AUDIO=1 to re-enable it.";
+        return false;
+#else
+        const QByteArray audioDisable = qgetenv("BATTLE_DISABLE_AUDIO");
+        if (audioDisable == "1" || audioDisable.compare("true", Qt::CaseInsensitive) == 0) {
+            qDebug() << "Audio disabled by BATTLE_DISABLE_AUDIO.";
+            return false;
+        }
+        return true;
+#endif
+    }
 #endif
 }
 
 void MainWindow::initAudio() {
 #ifdef BATTLE_HAS_AUDIO
+    if (!BattleAudio::shouldEnableAudio()) {
+        BattleAudio::sAudioEnabled = false;
+        return;
+    }
+
     // Skip audio entirely if no output device is available.
     // This prevents GStreamer from blocking for 10+ seconds per player
     // on systems without a sound card (WSL, headless, etc.).
     if (QMediaDevices::audioOutputs().isEmpty()) {
         qDebug() << "No audio output device found — audio disabled.";
+        BattleAudio::sAudioEnabled = false;
         return;
     }
+
+    BattleAudio::sMusicPlayer = BattleAudio::makePlayer(
+        this, "mondamusic-retro-arcade-game-music-512837.mp3",
+        &BattleAudio::sMusicOut, BattleAudio::kMusicMenuVolume);
 
     BattleAudio::sClickPlayer = BattleAudio::makePlayer(
         this, "soundreality-sound-of-mouse-click-4-478760.mp3",
@@ -1393,11 +1452,27 @@ void MainWindow::initAudio() {
     BattleAudio::sGameOverPlayer = BattleAudio::makePlayer(
         this, "tuomas_data-game-over-31-179699.mp3",
         &BattleAudio::sGameOverOut, 0.85f);
+
+    BattleAudio::sAudioEnabled = true;
+
+    if (BattleAudio::sMusicPlayer) {
+        QObject::connect(
+            BattleAudio::sMusicPlayer, &QMediaPlayer::mediaStatusChanged,
+            BattleAudio::sMusicPlayer,
+            [](QMediaPlayer::MediaStatus status) {
+                if (status == QMediaPlayer::EndOfMedia && BattleAudio::sMusicPlayer) {
+                    BattleAudio::sMusicPlayer->setPosition(0);
+                    BattleAudio::sMusicPlayer->play();
+                }
+            });
+        BattleAudio::startMusic(false);
+    }
 #endif
 }
 
 void MainWindow::playClickSound() {
 #ifdef BATTLE_HAS_AUDIO
+    if (!BattleAudio::sAudioEnabled) return;
     if (!BattleAudio::sClickPlayer) return;
     // Restart from the beginning so rapid clicks always trigger.
     BattleAudio::sClickPlayer->stop();
@@ -1408,21 +1483,21 @@ void MainWindow::playClickSound() {
 
 void MainWindow::playVictorySound() {
 #ifdef BATTLE_HAS_AUDIO
+    if (!BattleAudio::sAudioEnabled) return;
     if (!BattleAudio::sVictoryPlayer) return;
+    BattleAudio::stopMusic();
     if (BattleAudio::sGameOverPlayer) BattleAudio::sGameOverPlayer->stop();
-    BattleAudio::sVictoryPlayer->stop();
-    BattleAudio::sVictoryPlayer->setPosition(0);
-    BattleAudio::sVictoryPlayer->play();
+    BattleAudio::restartPlayer(BattleAudio::sVictoryPlayer);
 #endif
 }
 
 void MainWindow::playGameOverSound() {
 #ifdef BATTLE_HAS_AUDIO
+    if (!BattleAudio::sAudioEnabled) return;
     if (!BattleAudio::sGameOverPlayer) return;
+    BattleAudio::stopMusic();
     if (BattleAudio::sVictoryPlayer) BattleAudio::sVictoryPlayer->stop();
-    BattleAudio::sGameOverPlayer->stop();
-    BattleAudio::sGameOverPlayer->setPosition(0);
-    BattleAudio::sGameOverPlayer->play();
+    BattleAudio::restartPlayer(BattleAudio::sGameOverPlayer);
 #endif
 }
 
@@ -2835,6 +2910,9 @@ void MainWindow::startBattle()
     updateTokenPositions();
     updateHUD();
     updateBottomBar();
+#ifdef BATTLE_HAS_AUDIO
+    BattleAudio::startMusic(true);
+#endif
     stack->setCurrentWidget(gamePage);
     gamePage->setFocus();
 }
@@ -3032,14 +3110,6 @@ void MainWindow::buildGamePage() {
 
     // ── Top bar ──────────────────────────────────────────────
     QHBoxLayout* topBar = new QHBoxLayout();
-    lblScore = new QLabel("SCORE  ·  0");
-    lblScore->setStyleSheet(
-        "font-size: 18px; color: #ffd85a; letter-spacing: 4px; font-weight: bold; "
-        "font-family: 'Courier New', monospace; "
-        "background: rgba(10,10,24,200); border: 1px solid #d4a017; "
-        "border-radius: 6px; padding: 6px 16px;"
-    );
-
     lblStreak = new QLabel("STREAK  ·  0");
     lblStreak->setStyleSheet(
         "font-size: 18px; color: #a8f0a8; letter-spacing: 4px; font-weight: bold; "
@@ -3049,8 +3119,6 @@ void MainWindow::buildGamePage() {
     );
     topBar->addStretch();
     topBar->addWidget(lblStreak);
-    topBar->addSpacing(12);
-    topBar->addWidget(lblScore);
 
     QPushButton* pauseBtn = new QPushButton("SAVE  ·  PAUSE", this);
     pauseBtn->setFixedSize(220, 44);
@@ -3467,8 +3535,6 @@ void MainWindow::updateHUD() {
     // DANGER labels
     if (lblPlayerDanger) lblPlayerDanger->setVisible(pHP < 0.25 * pMax);
     if (lblEnemyDanger)  lblEnemyDanger->setVisible(eHP < 0.25 * e->getMaxHealth());
-
-    lblScore->setText("SCORE  ·  " + QString::number(gameManager->getScore()));
 }
 
 void MainWindow::onGameStateChanged(GameState state) {
@@ -3683,6 +3749,9 @@ void MainWindow::buildGameOverPage() {
     connect(btnRestart, &QPushButton::clicked, this, [this]() {
         if (gameOverAnimTimer) gameOverAnimTimer->stop();
         gameManager->restartGame();
+#ifdef BATTLE_HAS_AUDIO
+        BattleAudio::startMusic(false);
+#endif
         stack->setCurrentWidget(characterPage);
 
         const QList<RosterEntry>& list = rosterEntries();
@@ -3722,6 +3791,9 @@ void MainWindow::buildGameOverPage() {
     connect(btnMenu, &QPushButton::clicked, this, [this]() {
         if (gameOverAnimTimer) gameOverAnimTimer->stop();
         gameManager->restartGame();
+#ifdef BATTLE_HAS_AUDIO
+        BattleAudio::startMusic(false);
+#endif
         stack->setCurrentWidget(menuPage);
     });
 
