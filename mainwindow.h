@@ -114,7 +114,6 @@ private:
     // ── Game over overlay ───────────────────────────────────
     QLabel*         lblGOTitle   = nullptr;
     QLabel*         lblGOMessage = nullptr;
-    QLabel*         lblGOScore   = nullptr;
     QLabel*         lblGOSprite  = nullptr;
 
     // ── Turn counting ───────────────────────────────────────

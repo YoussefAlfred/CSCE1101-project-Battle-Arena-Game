@@ -3570,10 +3570,6 @@ void MainWindow::showGameOver(bool playerWon) {
             ? "You vanquished your foe in glorious combat."
             : "You were slain in battle. The arena claims another...");
     }
-    if (lblGOScore) {
-        lblGOScore->setText(QString("SCORE  ·  %1").arg(gameManager->getScore()));
-    }
-
     // updating win streak
     if (playerWon) {
         winStreak++;
@@ -3704,15 +3700,6 @@ void MainWindow::buildGameOverPage() {
         "font-size: 18px; color: #b0a0d0; letter-spacing: 3px; font-style: italic;"
     );
 
-    lblGOScore = new QLabel("SCORE  ·  0");
-    lblGOScore->setAlignment(Qt::AlignCenter);
-    lblGOScore->setStyleSheet(
-        "font-size: 44px; font-weight: 900; color: #ffd85a; letter-spacing: 8px; "
-        "font-family: 'Impact', 'Arial Black', sans-serif; "
-        "background: rgba(10,10,24,200); border: 2px solid #d4a017; "
-        "border-radius: 10px; padding: 10px 28px;"
-    );
-
     QLabel* divider = new QLabel("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━");
     divider->setAlignment(Qt::AlignCenter);
     divider->setStyleSheet("font-size: 12px; color: #2a2a4a; letter-spacing: 1px;");
@@ -3804,7 +3791,6 @@ void MainWindow::buildGameOverPage() {
     lay->addWidget(lblGOTitle, 0, Qt::AlignCenter);
     lay->addWidget(spriteStage, 0, Qt::AlignCenter);
     lay->addWidget(lblGOMessage, 0, Qt::AlignCenter);
-    lay->addWidget(lblGOScore, 0, Qt::AlignCenter);
     lay->addWidget(divider, 0, Qt::AlignCenter);
     lay->addWidget(turnSummary, 0, Qt::AlignCenter);
     lay->addSpacing(20);
@@ -4162,22 +4148,48 @@ void MainWindow::onLoadClicked() {
 
     specialCooldown = 0;
     gameManager->startGame(selectedCharacter, enemy);
-    gameManager->getPlayer()->SetPosition(pR, pC);
-    gameManager->getEnemy()->SetPosition(eR, eC);
+    BattleGrid* grid = gameManager->getGrid();
+    if (!grid) return;
+
+    if ((pR != 0 || pC != 0) &&
+        !grid->moveCharacter(gameManager->getPlayer(), pR, pC)) {
+        return;
+    }
+    if ((eR != 7 || eC != 7) &&
+        !grid->moveCharacter(gameManager->getEnemy(), eR, eC)) {
+        return;
+    }
+
     gameManager->getPlayer()->takeDamage(gameManager->getPlayer()->getMaxHealth() - pHP);
     gameManager->getEnemy()->takeDamage(gameManager->getEnemy()->getMaxHealth() - eHP);
     drawGrid();
     runeItems.clear();
     drawRunes();
-    QPixmap testPm(CELL - 6, CELL - 6);
-    testPm.fill(Qt::red);
-    playerToken = scene->addPixmap(testPm);
-    playerToken->setZValue(999);
+
+    if (playerToken) {
+        scene->removeItem(playerToken);
+        delete playerToken;
+        playerToken = nullptr;
+    }
+    if (enemyToken) {
+        scene->removeItem(enemyToken);
+        delete enemyToken;
+        enemyToken = nullptr;
+    }
+
+    playerFacing = 0;
+    enemyFacing = 1;
+    playerWalkFrame = 0;
+    enemyWalkFrame = 0;
+
+    QPixmap playerPixmap = makeBattleSprite(selectedType, CELL - 6, 0, playerFacing, playerWalkFrame, false);
+    playerToken = scene->addPixmap(playerPixmap);
+    playerToken->setZValue(2);
+
     QPixmap enemyPixmap = makeBattleSprite(enemyType, CELL - 6, 0, enemyFacing, enemyWalkFrame, true);
     enemyToken = scene->addPixmap(enemyPixmap);
-    enemyToken->setZValue(999);
-    playerToken->setPos(pC * CELL + 4, pR * CELL + 4);
-    enemyToken->setPos(eC * CELL + 4, eR * CELL + 4);
+    enemyToken->setZValue(2);
+
     gridView->viewport()->update();
     gridView->update();
     scene->update();
@@ -4185,10 +4197,10 @@ void MainWindow::onLoadClicked() {
     updateTokenPositions();
     updateHUD();
     updateBottomBar();
+    if (btnResume) btnResume->setVisible(false);
+    if (lblTurnInfo) lblTurnInfo->setText("Your turn — move or attack");
     stack->setCurrentWidget(gamePage);
     gamePage->setFocus();
-
-
 }
 void MainWindow::appendChatMessage(const QString& role, const QString& text) {
     if (!chatDisplay) return;
