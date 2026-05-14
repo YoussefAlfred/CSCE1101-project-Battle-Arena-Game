@@ -13,6 +13,10 @@
 #include <QTimer>
 #include <QMap>
 #include <QPair>
+#include <QLineEdit>
+#include <QTextEdit>
+#include <QNetworkAccessManager>
+#include <QNetworkReply>
 
 #include "GameManager.h"
 #include "Warrior.h"
@@ -37,6 +41,10 @@ private slots:
     void onEnemyTurn();
     void onPauseClicked();
     void onLoadClicked();
+
+    // ── AI Chatbot ──────────────────────────────────────────
+    void onChatSendClicked();
+    void onChatReplyFinished(QNetworkReply* reply);
 
 private:
     // ── pages ───────────────────────────────────────────────
@@ -152,6 +160,17 @@ private:
     int          playerWalkFrame = 0;
     int          enemyWalkFrame  = 0;
     int          score           = 0;
+
+    // ── AI Chatbot ──────────────────────────────────────────
+    QNetworkAccessManager* chatNetworkManager  = nullptr;
+    QTextEdit*             chatDisplay         = nullptr;
+    QLineEdit*             chatInput           = nullptr;
+    QString                loadedApiKey;  // read from api_key.txt at startup
+    QPushButton*           chatSendBtn         = nullptr;
+    // conversation history for multi-turn: alternating user/assistant
+    QList<QPair<QString,QString>> chatHistory; // role -> content
+
+    void appendChatMessage(const QString& role, const QString& text);
 
     // ── helpers ─────────────────────────────────────────────
     void buildMenuPage();

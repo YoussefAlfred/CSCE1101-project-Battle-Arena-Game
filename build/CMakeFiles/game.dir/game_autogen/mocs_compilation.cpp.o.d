@@ -1,7 +1,7 @@
 CMakeFiles/game.dir/game_autogen/mocs_compilation.cpp.o: \
- /home/ahmed7/CSCE1101-project-Battle-Arena-Game/build/game_autogen/mocs_compilation.cpp \
+ /home/youssef_alfred/teamproject2026/war/CSCE1101-project-Battle-Arena-Game/build/game_autogen/mocs_compilation.cpp \
  /usr/include/stdc-predef.h \
- /home/ahmed7/CSCE1101-project-Battle-Arena-Game/build/game_autogen/EWIEGA46WW/moc_GameManager.cpp \
+ /home/youssef_alfred/teamproject2026/war/CSCE1101-project-Battle-Arena-Game/build/game_autogen/EWIEGA46WW/moc_GameManager.cpp \
  /usr/include/c++/13/memory /usr/include/c++/13/bits/memoryfwd.h \
  /usr/include/x86_64-linux-gnu/c++/13/bits/c++config.h \
  /usr/include/x86_64-linux-gnu/c++/13/bits/os_defines.h \
@@ -116,9 +116,9 @@ CMakeFiles/game.dir/game_autogen/mocs_compilation.cpp.o: \
  /usr/include/c++/13/backward/auto_ptr.h \
  /usr/include/c++/13/pstl/glue_memory_defs.h \
  /usr/include/c++/13/pstl/execution_defs.h \
- /home/ahmed7/CSCE1101-project-Battle-Arena-Game/build/game_autogen/EWIEGA46WW/../../../GameManager.h \
- /home/ahmed7/CSCE1101-project-Battle-Arena-Game/build/game_autogen/EWIEGA46WW/../../../BattleGrid.h \
- /home/ahmed7/CSCE1101-project-Battle-Arena-Game/build/game_autogen/EWIEGA46WW/../../../Cell.h \
+ /home/youssef_alfred/teamproject2026/war/CSCE1101-project-Battle-Arena-Game/build/game_autogen/EWIEGA46WW/../../../GameManager.h \
+ /home/youssef_alfred/teamproject2026/war/CSCE1101-project-Battle-Arena-Game/build/game_autogen/EWIEGA46WW/../../../BattleGrid.h \
+ /home/youssef_alfred/teamproject2026/war/CSCE1101-project-Battle-Arena-Game/build/game_autogen/EWIEGA46WW/../../../Cell.h \
  /usr/include/x86_64-linux-gnu/qt6/QtCore/QObject \
  /usr/include/x86_64-linux-gnu/qt6/QtCore/qobject.h \
  /usr/include/x86_64-linux-gnu/qt6/QtCore/qobjectdefs.h \
@@ -291,8 +291,8 @@ CMakeFiles/game.dir/game_autogen/mocs_compilation.cpp.o: \
  /usr/include/x86_64-linux-gnu/qt6/QtCore/qtimer.h \
  /usr/include/x86_64-linux-gnu/qt6/QtCore/qbasictimer.h \
  /usr/include/x86_64-linux-gnu/qt6/QtCore/qobject.h \
- /home/ahmed7/CSCE1101-project-Battle-Arena-Game/build/game_autogen/EWIEGA46WW/moc_mainwindow.cpp \
- /home/ahmed7/CSCE1101-project-Battle-Arena-Game/build/game_autogen/EWIEGA46WW/../../../mainwindow.h \
+ /home/youssef_alfred/teamproject2026/war/CSCE1101-project-Battle-Arena-Game/build/game_autogen/EWIEGA46WW/moc_mainwindow.cpp \
+ /home/youssef_alfred/teamproject2026/war/CSCE1101-project-Battle-Arena-Game/build/game_autogen/EWIEGA46WW/../../../mainwindow.h \
  /usr/include/x86_64-linux-gnu/qt6/QtWidgets/QMainWindow \
  /usr/include/x86_64-linux-gnu/qt6/QtWidgets/qmainwindow.h \
  /usr/include/x86_64-linux-gnu/qt6/QtWidgets/qtwidgetsglobal.h \
@@ -403,9 +403,55 @@ CMakeFiles/game.dir/game_autogen/mocs_compilation.cpp.o: \
  /usr/include/x86_64-linux-gnu/qt6/QtCore/qmap.h \
  /usr/include/x86_64-linux-gnu/qt6/QtCore/QPair \
  /usr/include/x86_64-linux-gnu/qt6/QtCore/qpair.h \
- /home/ahmed7/CSCE1101-project-Battle-Arena-Game/build/game_autogen/EWIEGA46WW/../../../Warrior.h \
- /home/ahmed7/CSCE1101-project-Battle-Arena-Game/build/game_autogen/EWIEGA46WW/../../../Character.h \
- /home/ahmed7/CSCE1101-project-Battle-Arena-Game/build/game_autogen/EWIEGA46WW/../../../Mage.h \
- /home/ahmed7/CSCE1101-project-Battle-Arena-Game/build/game_autogen/EWIEGA46WW/../../../Archer.h \
+ /usr/include/x86_64-linux-gnu/qt6/QtWidgets/QLineEdit \
+ /usr/include/x86_64-linux-gnu/qt6/QtWidgets/qlineedit.h \
  /usr/include/x86_64-linux-gnu/qt6/QtGui/qtextcursor.h \
- /usr/include/x86_64-linux-gnu/qt6/QtGui/qtextformat.h
+ /usr/include/x86_64-linux-gnu/qt6/QtGui/qtextformat.h \
+ /usr/include/x86_64-linux-gnu/qt6/QtWidgets/QTextEdit \
+ /usr/include/x86_64-linux-gnu/qt6/QtWidgets/qtextedit.h \
+ /usr/include/x86_64-linux-gnu/qt6/QtNetwork/QNetworkAccessManager \
+ /usr/include/x86_64-linux-gnu/qt6/QtNetwork/qnetworkaccessmanager.h \
+ /usr/include/x86_64-linux-gnu/qt6/QtNetwork/qtnetworkglobal.h \
+ /usr/include/x86_64-linux-gnu/qt6/QtNetwork/qtnetwork-config.h \
+ /usr/include/x86_64-linux-gnu/qt6/QtNetwork/qtnetworkexports.h \
+ /usr/include/x86_64-linux-gnu/qt6/QtNetwork/qnetworkrequest.h \
+ /usr/include/x86_64-linux-gnu/qt6/QtCore/QSharedDataPointer \
+ /usr/include/x86_64-linux-gnu/qt6/QtCore/qshareddata.h \
+ /usr/include/x86_64-linux-gnu/qt6/QtCore/QString \
+ /usr/include/x86_64-linux-gnu/qt6/QtCore/qstring.h \
+ /usr/include/x86_64-linux-gnu/qt6/QtCore/QUrl \
+ /usr/include/x86_64-linux-gnu/qt6/QtCore/qurl.h \
+ /usr/include/x86_64-linux-gnu/qt6/QtCore/QVariant \
+ /usr/include/x86_64-linux-gnu/qt6/QtCore/qvariant.h \
+ /usr/include/x86_64-linux-gnu/qt6/QtNetwork/QSslConfiguration \
+ /usr/include/x86_64-linux-gnu/qt6/QtNetwork/qsslconfiguration.h \
+ /usr/include/x86_64-linux-gnu/qt6/QtNetwork/qsslsocket.h \
+ /usr/include/x86_64-linux-gnu/qt6/QtNetwork/qtcpsocket.h \
+ /usr/include/x86_64-linux-gnu/qt6/QtNetwork/qabstractsocket.h \
+ /usr/include/x86_64-linux-gnu/qt6/QtNetwork/qhostaddress.h \
+ /usr/include/x86_64-linux-gnu/qt6/QtNetwork/qsslerror.h \
+ /usr/include/x86_64-linux-gnu/qt6/QtNetwork/qsslcertificate.h \
+ /usr/include/x86_64-linux-gnu/qt6/QtCore/qcryptographichash.h \
+ /usr/include/x86_64-linux-gnu/qt6/QtCore/qdatetime.h \
+ /usr/include/x86_64-linux-gnu/qt6/QtCore/qcalendar.h \
+ /usr/include/x86_64-linux-gnu/qt6/QtCore/qlocale.h \
+ /usr/include/x86_64-linux-gnu/qt6/QtNetwork/qssl.h \
+ /usr/include/x86_64-linux-gnu/qt6/QtCore/QFlags \
+ /usr/include/x86_64-linux-gnu/qt6/QtCore/qflags.h \
+ /usr/include/x86_64-linux-gnu/qt6/QtNetwork/QSslPreSharedKeyAuthenticator \
+ /usr/include/x86_64-linux-gnu/qt6/QtNetwork/qsslpresharedkeyauthenticator.h \
+ /usr/include/x86_64-linux-gnu/qt6/QtCore/QMetaType \
+ /usr/include/x86_64-linux-gnu/qt6/QtCore/qmetatype.h \
+ /usr/include/x86_64-linux-gnu/qt6/QtNetwork/QNetworkReply \
+ /usr/include/x86_64-linux-gnu/qt6/QtNetwork/qnetworkreply.h \
+ /usr/include/x86_64-linux-gnu/qt6/QtCore/QIODevice \
+ /usr/include/x86_64-linux-gnu/qt6/QtCore/qiodevice.h \
+ /usr/include/x86_64-linux-gnu/qt6/QtNetwork/QNetworkRequest \
+ /usr/include/x86_64-linux-gnu/qt6/QtNetwork/qnetworkrequest.h \
+ /usr/include/x86_64-linux-gnu/qt6/QtNetwork/QNetworkAccessManager \
+ /home/youssef_alfred/teamproject2026/war/CSCE1101-project-Battle-Arena-Game/build/game_autogen/EWIEGA46WW/../../../Warrior.h \
+ /home/youssef_alfred/teamproject2026/war/CSCE1101-project-Battle-Arena-Game/build/game_autogen/EWIEGA46WW/../../../Character.h \
+ /home/youssef_alfred/teamproject2026/war/CSCE1101-project-Battle-Arena-Game/build/game_autogen/EWIEGA46WW/../../../Mage.h \
+ /home/youssef_alfred/teamproject2026/war/CSCE1101-project-Battle-Arena-Game/build/game_autogen/EWIEGA46WW/../../../Archer.h \
+ /usr/include/x86_64-linux-gnu/qt6/QtNetwork/QSslError \
+ /usr/include/x86_64-linux-gnu/qt6/QtNetwork/qsslerror.h

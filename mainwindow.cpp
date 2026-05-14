@@ -31,10 +31,21 @@
 #include <QMouseEvent>
 #include <QUrl>
 #include <ctime>
-
+#include <QMediaPlayer>
+#include <QAudioOutput>
+//for API integration stuff :D
+#include <QNetworkAccessManager>
+#include <QNetworkRequest>
+#include <QNetworkReply>
+#include <QJsonDocument>
+#include <QJsonObject>
+#include <QJsonArray>
+#include <QTextEdit>
+#include <QLineEdit>
+#include <QScrollBar>
+ 
 #ifdef BATTLE_HAS_AUDIO
-#  include <QMediaPlayer>
-#  include <QAudioOutput>
+
 #endif
 
 // ═══════════════════════════════════════════════════════════════
@@ -147,35 +158,110 @@ static void drawSpriteStage(QPainter& p, int type, int pose, int G) {
 static void drawObstacle(QGraphicsScene* scene, int c, int r, int cell) {
     const int x = c * cell;
     const int y = r * cell;
+    const int margin = cell / 7;  // ~14px on a 100px cell
 
-    auto* shadow = scene->addEllipse(x + 12, y + 39, 32, 8, Qt::NoPen, QBrush(QColor(0, 0, 0, 120)));
+    // ── Ambient ground glow ────────────────────────────────────
+    QPixmap glowPx(cell, cell);
+    glowPx.fill(Qt::transparent);
+    {
+        QPainter gp(&glowPx);
+        gp.setRenderHint(QPainter::Antialiasing);
+        QRadialGradient rg(cell / 2, cell * 0.7, cell * 0.45);
+        rg.setColorAt(0.0, QColor(125, 246, 255, 50));
+        rg.setColorAt(0.55, QColor(80, 140, 220, 20));
+        rg.setColorAt(1.0, QColor(0, 0, 0, 0));
+        gp.fillRect(0, 0, cell, cell, rg);
+    }
+    auto* glowItem = scene->addPixmap(glowPx);
+    glowItem->setPos(x, y);
+    glowItem->setZValue(1.2);
+
+    // ── Shadow beneath the pillar ─────────────────────────────
+    const int sw = cell * 0.55;
+    const int sh = cell * 0.10;
+    auto* shadow = scene->addEllipse(x + (cell - sw) / 2, y + cell - margin - sh / 2,
+                                     sw, sh, Qt::NoPen, QBrush(QColor(0, 0, 0, 110)));
     shadow->setZValue(1.3);
 
-    QPolygon crystal;
-    crystal << QPoint(x + 28, y + 7)
-            << QPoint(x + 42, y + 25)
-            << QPoint(x + 36, y + 43)
-            << QPoint(x + 21, y + 45)
-            << QPoint(x + 14, y + 26);
+    // ── Stone pillar body ─────────────────────────────────────
+    QPixmap pillarPx(cell, cell);
+    pillarPx.fill(Qt::transparent);
+    {
+        QPainter pp(&pillarPx);
+        pp.setRenderHint(QPainter::Antialiasing);
+        pp.setPen(Qt::NoPen);
 
-    auto* body = scene->addPolygon(crystal, QPen(QColor("#7df6ff"), 1.2), QBrush(QColor("#21446f")));
-    body->setZValue(1.5);
+        const int pw = cell * 0.50;   // pillar width
+        const int ph = cell * 0.65;   // pillar height
+        const int px0 = (cell - pw) / 2;
+        const int py0 = (cell - ph) / 2 - 2;
 
-    QPolygon shine;
-    shine << QPoint(x + 28, y + 8)
-          << QPoint(x + 35, y + 25)
-          << QPoint(x + 28, y + 42)
-          << QPoint(x + 22, y + 25);
-    auto* inner = scene->addPolygon(shine, Qt::NoPen, QBrush(QColor(125, 246, 255, 95)));
-    inner->setZValue(1.6);
+        // Main stone body gradient
+        QLinearGradient stoneGrad(px0, py0, px0 + pw, py0 + ph);
+        stoneGrad.setColorAt(0.0,  QColor("#2a2a48"));
+        stoneGrad.setColorAt(0.35, QColor("#1a1a30"));
+        stoneGrad.setColorAt(0.7,  QColor("#111122"));
+        stoneGrad.setColorAt(1.0,  QColor("#0d0d1a"));
+        pp.setBrush(stoneGrad);
+        pp.drawRoundedRect(px0, py0, pw, ph, 6, 6);
 
-    auto* core = scene->addRect(x + 26, y + 22, 5, 12, Qt::NoPen, QBrush(QColor(255, 240, 120, 170)));
-    core->setZValue(1.7);
+        // Highlight edge on the left
+        pp.setBrush(QColor(200, 200, 240, 25));
+        pp.drawRoundedRect(px0, py0, pw / 4, ph, 4, 4);
 
-    auto* spark1 = scene->addRect(x + 15, y + 13, 4, 4, Qt::NoPen, QBrush(QColor(255, 240, 120, 150)));
-    spark1->setZValue(1.7);
-    auto* spark2 = scene->addRect(x + 40, y + 14, 3, 3, Qt::NoPen, QBrush(QColor(125, 246, 255, 150)));
-    spark2->setZValue(1.7);
+        // ── Cracks ────────────────────────────────────────────
+        pp.setPen(QPen(QColor(8, 8, 16, 180), 1.2));
+        pp.drawLine(px0 + pw * 0.3, py0 + 4, px0 + pw * 0.5, py0 + ph * 0.35);
+        pp.drawLine(px0 + pw * 0.5, py0 + ph * 0.35, px0 + pw * 0.35, py0 + ph * 0.6);
+        pp.drawLine(px0 + pw * 0.6, py0 + ph * 0.5, px0 + pw * 0.75, py0 + ph - 4);
+
+        // Lighter crack highlight next to dark cracks
+        pp.setPen(QPen(QColor(60, 60, 100, 50), 0.8));
+        pp.drawLine(px0 + pw * 0.3 + 2, py0 + 5, px0 + pw * 0.5 + 2, py0 + ph * 0.35 + 1);
+        pp.drawLine(px0 + pw * 0.6 + 2, py0 + ph * 0.5 + 1, px0 + pw * 0.75 + 1, py0 + ph - 3);
+
+        // ── Arcane rune glow (center) ─────────────────────────
+        const int cx = cell / 2;
+        const int cy = cell / 2 - 2;
+        const int runeR = cell * 0.12;
+
+        QRadialGradient runeGlow(cx, cy, runeR * 2.5);
+        runeGlow.setColorAt(0.0, QColor(125, 246, 255, 100));
+        runeGlow.setColorAt(0.4, QColor(125, 246, 255, 40));
+        runeGlow.setColorAt(1.0, QColor(0, 0, 0, 0));
+        pp.setPen(Qt::NoPen);
+        pp.setBrush(runeGlow);
+        pp.drawEllipse(QPointF(cx, cy), runeR * 2.5, runeR * 2.5);
+
+        // Cross / star rune shape
+        pp.setPen(QPen(QColor(125, 246, 255, 210), 2.0, Qt::SolidLine, Qt::RoundCap));
+        pp.drawLine(cx - runeR, cy, cx + runeR, cy);
+        pp.drawLine(cx, cy - runeR, cx, cy + runeR);
+        // Diagonal arms (smaller)
+        const int dR = runeR * 0.65;
+        pp.setPen(QPen(QColor(160, 220, 255, 140), 1.4, Qt::SolidLine, Qt::RoundCap));
+        pp.drawLine(cx - dR, cy - dR, cx + dR, cy + dR);
+        pp.drawLine(cx + dR, cy - dR, cx - dR, cy + dR);
+
+        // Bright core dot
+        pp.setPen(Qt::NoPen);
+        pp.setBrush(QColor(220, 250, 255, 200));
+        pp.drawEllipse(QPointF(cx, cy), 3, 3);
+
+        // ── Top cap ───────────────────────────────────────────
+        QLinearGradient capGrad(px0, py0 - 2, px0 + pw, py0 + 6);
+        capGrad.setColorAt(0.0, QColor("#3a3a5a"));
+        capGrad.setColorAt(1.0, QColor("#1e1e38"));
+        pp.setBrush(capGrad);
+        pp.drawRoundedRect(px0 - 3, py0 - 3, pw + 6, 8, 3, 3);
+
+        // ── Bottom base ───────────────────────────────────────
+        pp.setBrush(QColor("#1a1a2e"));
+        pp.drawRoundedRect(px0 - 2, py0 + ph - 4, pw + 4, 8, 3, 3);
+    }
+    auto* pillarItem = scene->addPixmap(pillarPx);
+    pillarItem->setPos(x, y);
+    pillarItem->setZValue(1.5);
 }
 
 static void moveTokenSmoothly(QGraphicsPixmapItem* token, const QPointF& target, bool animated) {
@@ -1363,6 +1449,24 @@ MainWindow::MainWindow(QWidget* parent)
 
     applyGlobalStyle();
 
+    // ── Load API key from file ──────────────────────────────
+    {
+        const QStringList keyPaths = {
+            QStringLiteral("api_key.txt"),
+            QDir(QCoreApplication::applicationDirPath()).filePath("api_key.txt"),
+            QDir(QCoreApplication::applicationDirPath()).filePath("../api_key.txt"),
+            QDir(QCoreApplication::applicationDirPath()).filePath("../../api_key.txt")
+        };
+        for (const QString& kp : keyPaths) {
+            QFile f(kp);
+            if (f.open(QIODevice::ReadOnly | QIODevice::Text)) {
+                loadedApiKey = QString::fromUtf8(f.readAll()).trimmed();
+                f.close();
+                if (!loadedApiKey.isEmpty()) break;
+            }
+        }
+    }
+
     // ── Menu animation: cycle character poses ──────────────
     menuAnimTimer = new QTimer(this);
     connect(menuAnimTimer, &QTimer::timeout, this, [this]() {
@@ -1797,7 +1901,7 @@ void MainWindow::buildCharacterPage() {
         const RosterEntry& re = roster[i];
         QWidget* card = new QWidget();
         card->setObjectName(QString("rosterCard%1").arg(i));
-        card->setMinimumHeight(118);
+        card->setMinimumHeight(100);
         card->setCursor(Qt::PointingHandCursor);
         card->setStyleSheet(QString(R"(
             QWidget#rosterCard%1 {
@@ -1816,21 +1920,17 @@ void MainWindow::buildCharacterPage() {
         row->setSpacing(14);
 
         // Class emblem (left): a colored square with the class glyph.
-        QLabel* emblem = new QLabel(re.emblem);
-        emblem->setFixedSize(64, 64);
-        emblem->setAlignment(Qt::AlignCenter);
-        emblem->setStyleSheet(QString(R"(
-            background: qlineargradient(x1:0,y1:0,x2:1,y2:1,
-                stop:0 rgba(20,20,48,255),
-                stop:1 rgba(40,30,80,255));
-            border: 2px solid %1;
-            border-radius: 8px;
-            color: %1;
-            font-size: 30px;
-            font-weight: 900;
-            font-family: 'Impact', 'Arial Black', sans-serif;
-            letter-spacing: 1px;
-        )").arg(re.accent));
+        QLabel* emblem = new QLabel();
+emblem->setFixedSize(60, 60);
+emblem->setPixmap(makeArcadeSprite(re.type, 56, 0, 0, 0));
+emblem->setAlignment(Qt::AlignCenter);
+emblem->setStyleSheet(QString(R"(
+    background: qlineargradient(x1:0,y1:0,x2:1,y2:1,
+        stop:0 rgba(20,20,48,255),
+        stop:1 rgba(40,30,80,255));
+    border: 2px solid %1;
+    border-radius: 8px;
+)").arg(re.accent));
 
         // Right column: name + stat bars + special tagline
         QVBoxLayout* col = new QVBoxLayout();
@@ -1839,13 +1939,13 @@ void MainWindow::buildCharacterPage() {
 
         QLabel* nameL = new QLabel(re.name);
         nameL->setStyleSheet(QString(
-            "font-size: 22px; font-weight: 900; color: %1; "
+            "font-size: 17px; font-weight: 900; color: %1; "
             "letter-spacing: 4px; font-family: 'Impact', 'Arial Black', sans-serif;"
         ).arg(re.accent));
 
         QLabel* tagL = new QLabel(re.subtitle);
         tagL->setStyleSheet(
-            "font-size: 10px; color: #7a7a99; letter-spacing: 3px; "
+            "font-size: 9px; color: #7a7a99; letter-spacing: 3px; "
             "font-family: 'Courier New', monospace;"
         );
 
@@ -1862,7 +1962,7 @@ void MainWindow::buildCharacterPage() {
         hpBar->setRange(0, 200);
         hpBar->setValue(re.hpVal);
         hpBar->setTextVisible(false);
-        hpBar->setFixedHeight(10);
+        hpBar->setFixedHeight(7);
         hpBar->setStyleSheet(R"(
             QProgressBar { border: 1px solid #2a2a4a; border-radius: 4px; background: #0a0a18; }
             QProgressBar::chunk {
@@ -1893,7 +1993,7 @@ void MainWindow::buildCharacterPage() {
         atkBar->setRange(0, 30);
         atkBar->setValue(re.atkVal);
         atkBar->setTextVisible(false);
-        atkBar->setFixedHeight(10);
+        atkBar->setFixedHeight(7);
         atkBar->setStyleSheet(R"(
             QProgressBar { border: 1px solid #2a2a4a; border-radius: 4px; background: #0a0a18; }
             QProgressBar::chunk {
@@ -1913,7 +2013,7 @@ void MainWindow::buildCharacterPage() {
 
         QLabel* specL = new QLabel(QString("★  %1").arg(re.special));
         specL->setStyleSheet(QString(
-            "font-size: 10px; color: %1; letter-spacing: 1px; font-style: italic;"
+            "font-size: 9px; color: %1; letter-spacing: 1px; font-style: italic;"
         ).arg(re.accent));
 
         col->addWidget(nameL);
@@ -1939,7 +2039,179 @@ void MainWindow::buildCharacterPage() {
     }
 
     leftLay->addStretch(1);
-
+///////////////////////////////////////////////////////
+    {
+        QFrame* chatFrame = new QFrame();
+        chatFrame->setObjectName("chatFrame");
+        chatFrame->setStyleSheet(R"(
+            QFrame#chatFrame {
+                background: rgba(10, 10, 28, 230);
+                border: 2px solid #3a2a6a;
+                border-radius: 14px;
+            }
+        )");
+        chatFrame->setMaximumHeight(360);
+ 
+        QVBoxLayout* chatLay = new QVBoxLayout(chatFrame);
+        chatLay->setContentsMargins(14, 12, 14, 12);
+        chatLay->setSpacing(8);
+ 
+        // ── Header ───────────────────────────────────────────
+        QHBoxLayout* chatHeaderRow = new QHBoxLayout();
+        chatHeaderRow->setSpacing(8);
+ 
+        // Paint a robot-face icon (no emoji font dependency)
+        QPixmap iconPx(28, 28);
+        iconPx.fill(Qt::transparent);
+        {
+            QPainter ip(&iconPx);
+            ip.setRenderHint(QPainter::Antialiasing);
+            ip.setPen(Qt::NoPen);
+            // Head
+            ip.setBrush(QColor("#7c5cbf"));
+            ip.drawRoundedRect(4, 6, 20, 16, 4, 4);
+            // Eyes
+            ip.setBrush(QColor("#7df6ff"));
+            ip.drawEllipse(8, 10, 5, 5);
+            ip.drawEllipse(16, 10, 5, 5);
+            // Mouth
+            ip.setBrush(QColor("#c8a8ff"));
+            ip.drawRect(10, 17, 8, 2);
+            // Antenna
+            ip.setPen(QPen(QColor("#c8a8ff"), 2));
+            ip.drawLine(14, 6, 14, 1);
+            ip.setBrush(QColor("#7df6ff"));
+            ip.setPen(Qt::NoPen);
+            ip.drawEllipse(12, 0, 5, 5);
+        }
+        QLabel* chatIcon = new QLabel();
+        chatIcon->setPixmap(iconPx);
+        chatIcon->setFixedSize(28, 28);
+        chatIcon->setStyleSheet("background: transparent;");
+ 
+        QLabel* chatTitle = new QLabel("AI ADVISOR");
+        chatTitle->setStyleSheet(
+            "font-size: 13px; color: #c8a8ff; letter-spacing: 5px; "
+            "font-weight: 900; font-family: 'Courier New', monospace; "
+            "background: transparent;"
+        );
+ 
+        QLabel* chatSubtitle = new QLabel("ask me which fighter to pick");
+        chatSubtitle->setStyleSheet(
+            "font-size: 10px; color: #555580; letter-spacing: 2px; "
+            "font-family: 'Courier New', monospace; background: transparent;"
+        );
+ 
+        chatHeaderRow->addWidget(chatIcon);
+        chatHeaderRow->addWidget(chatTitle);
+        chatHeaderRow->addWidget(chatSubtitle, 1, Qt::AlignRight | Qt::AlignVCenter);
+        chatLay->addLayout(chatHeaderRow);
+ 
+        // Thin divider
+        QFrame* chatSep = new QFrame();
+        chatSep->setFrameShape(QFrame::HLine);
+        chatSep->setStyleSheet("border: none; background: #2a1a50; max-height: 1px;");
+        chatLay->addWidget(chatSep);
+ 
+        // ── Chat display (scrollable) ─────────────────────────
+        chatDisplay = new QTextEdit();
+        chatDisplay->setReadOnly(true);
+        chatDisplay->setMaximumHeight(180);
+        chatDisplay->setMinimumHeight(180);
+        chatDisplay->setStyleSheet(R"(
+            QTextEdit {
+                background: rgba(8, 8, 20, 200);
+                color: #c8c0e0;
+                border: 1px solid #2a1a50;
+                border-radius: 8px;
+                font-size: 11px;
+                font-family: 'Segoe UI', Arial, sans-serif;
+                padding: 6px 8px;
+            }
+            QScrollBar:vertical {
+                background: #0a0a18;
+                width: 6px;
+                border-radius: 3px;
+            }
+            QScrollBar::handle:vertical {
+                background: #3a2a6a;
+                border-radius: 3px;
+            }
+        )");
+        chatDisplay->setPlaceholderText("Chat history appears here...");
+        chatLay->addWidget(chatDisplay);
+ 
+        // (API key is loaded from api_key.txt — no UI field needed)
+ 
+        // ── Input + Send row ──────────────────────────────────
+        QHBoxLayout* inputRow = new QHBoxLayout();
+        inputRow->setSpacing(8);
+ 
+        chatInput = new QLineEdit();
+        chatInput->setPlaceholderText("e.g. Which fighter is best for beginners?");
+        chatInput->setStyleSheet(R"(
+            QLineEdit {
+                background: rgba(14, 12, 30, 210);
+                color: #e0d8f8;
+                border: 1px solid #3a2a6a;
+                border-radius: 8px;
+                font-size: 12px;
+                font-family: 'Segoe UI', Arial, sans-serif;
+                padding: 6px 10px;
+            }
+            QLineEdit:focus { border: 1px solid #7c5cbf; }
+            QLineEdit:disabled { color: #444466; background: rgba(10,10,20,180); }
+        )");
+ 
+        chatSendBtn = new QPushButton("SEND");
+        chatSendBtn->setFixedSize(70, 34);
+        chatSendBtn->setCursor(Qt::PointingHandCursor);
+        chatSendBtn->setStyleSheet(R"(
+            QPushButton {
+                background: qlineargradient(x1:0,y1:0,x2:1,y2:0,
+                    stop:0 #4a2a90, stop:1 #7c5cbf);
+                color: #fff;
+                font-size: 11px;
+                font-weight: 900;
+                letter-spacing: 2px;
+                border: 1px solid #9b7ce0;
+                border-radius: 8px;
+                font-family: 'Courier New', monospace;
+            }
+            QPushButton:hover {
+                background: qlineargradient(x1:0,y1:0,x2:1,y2:0,
+                    stop:0 #5a38a8, stop:1 #9370d4);
+                border: 1px solid #b090ff;
+            }
+            QPushButton:pressed { background: #3a2080; }
+            QPushButton:disabled {
+                background: #1e1e38; color: #444466; border: 1px solid #2a2a4a;
+            }
+        )");
+ 
+        inputRow->addWidget(chatInput, 1);
+        inputRow->addWidget(chatSendBtn);
+        chatLay->addLayout(inputRow);
+ 
+        leftLay->addWidget(chatFrame);
+ 
+        // ── Network manager (single instance) ─────────────────
+        chatNetworkManager = new QNetworkAccessManager(this);
+        connect(chatNetworkManager, &QNetworkAccessManager::finished,
+                this, &MainWindow::onChatReplyFinished);
+ 
+        // ── Wire send button + Enter key ───────────────────────
+        connect(chatSendBtn, &QPushButton::clicked,
+                this, &MainWindow::onChatSendClicked);
+        connect(chatInput, &QLineEdit::returnPressed,
+                this, &MainWindow::onChatSendClicked);
+ 
+        // ── Welcome message ────────────────────────────────────
+        appendChatMessage("assistant",
+            "Hello! I'm your Battle Arena AI advisor. "
+            "Ask me anything — which fighter to pick, strategy tips, or how abilities work!");
+    }
+    /////////////////////////////////////////////////////////////////////////////////
     selectionLabel = new QLabel("No fighter selected");
     selectionLabel->setAlignment(Qt::AlignCenter);
     selectionLabel->setTextFormat(Qt::RichText);
@@ -2666,6 +2938,30 @@ QWidget* MainWindow::buildHUDPanel(bool isPlayer) {
 
     lay->addStretch();
 
+    // ── Combat log (inside enemy panel) ────────────────────
+    if (!isPlayer) {
+        QLabel* logTitle = new QLabel("COMBAT LOG");
+        logTitle->setAlignment(Qt::AlignCenter);
+        logTitle->setStyleSheet(
+            "font-size: 11px; color: #7a7a99; letter-spacing: 4px; font-weight: bold; "
+            "font-family: 'Courier New', monospace; background: transparent;"
+        );
+        lay->addWidget(logTitle);
+
+        lblCombatLog = new QLabel("<span style='color:#7a7a99;'>◆  Battle begins!</span>");
+        lblCombatLog->setTextFormat(Qt::RichText);
+        lblCombatLog->setWordWrap(true);
+        lblCombatLog->setAlignment(Qt::AlignLeft | Qt::AlignTop);
+        lblCombatLog->setMinimumHeight(70);
+        lblCombatLog->setMaximumHeight(120);
+        lblCombatLog->setStyleSheet(
+            "font-size: 11px; color: #b0a0d0; line-height: 1.5; "
+            "background: rgba(8,8,20,180); border: 1px solid #2a2a4a; "
+            "border-radius: 6px; padding: 8px 10px;"
+        );
+        lay->addWidget(lblCombatLog);
+    }
+
     if (isPlayer) {
         QLabel* hint = new QLabel();
         hint->setTextFormat(Qt::RichText);
@@ -2699,7 +2995,7 @@ void MainWindow::buildGamePage() {
 
     QLabel* arenaTitle = new QLabel("◆  BATTLE  ARENA  ◆");
     arenaTitle->setAlignment(Qt::AlignCenter);
-    arenaTitle->setFixedHeight(80);
+    arenaTitle->setFixedHeight(50);
     arenaTitle->setStyleSheet(R"(
         font-size: 50px;
         font-weight: 900;
@@ -2799,17 +3095,17 @@ void MainWindow::buildGamePage() {
     actionRow->setAlignment(Qt::AlignCenter);
 
     lblTurnInfo = new QLabel("◆  Your turn — move or attack");
-    lblTurnInfo->setFixedHeight(56);
-    lblTurnInfo->setMinimumWidth(420);
+    lblTurnInfo->setFixedHeight(40);
+    lblTurnInfo->setMinimumWidth(360);
     lblTurnInfo->setAlignment(Qt::AlignVCenter | Qt::AlignLeft);
     lblTurnInfo->setStyleSheet(
-        "font-size: 16px; color: #bda8ee; font-weight: bold; letter-spacing: 2px; "
+        "font-size: 14px; color: #bda8ee; font-weight: bold; letter-spacing: 2px; "
         "background: rgba(90,62,160,70); border: 1px solid #7c5cbf; "
-        "border-radius: 8px; padding: 0 18px;"
+        "border-radius: 8px; padding: 0 14px;"
     );
 
     btnActionAttack = new QPushButton("⚔  ATTACK   [Space]");
-    btnActionAttack->setFixedSize(240, 56);
+    btnActionAttack->setFixedSize(220, 40);
     btnActionAttack->setCursor(Qt::PointingHandCursor);
     btnActionAttack->setStyleSheet(R"(
         QPushButton {
@@ -2828,7 +3124,7 @@ void MainWindow::buildGamePage() {
     });
 
     btnActionSpecial = new QPushButton("★  SPECIAL   [Q]");
-    btnActionSpecial->setFixedSize(240, 56);
+    btnActionSpecial->setFixedSize(220, 40);
     btnActionSpecial->setCursor(Qt::PointingHandCursor);
     btnActionSpecial->setStyleSheet(R"(
         QPushButton {
@@ -2850,18 +3146,7 @@ void MainWindow::buildGamePage() {
     actionRow->addWidget(btnActionAttack);
     actionRow->addWidget(btnActionSpecial);
 
-    // ── Combat log ───────────────────────────────────────────
-    lblCombatLog = new QLabel("<span style='color:#7a7a99;'>◆  Battle begins!</span>");
-    lblCombatLog->setTextFormat(Qt::RichText);
-    lblCombatLog->setWordWrap(true);
-    lblCombatLog->setAlignment(Qt::AlignLeft | Qt::AlignTop);
-    lblCombatLog->setMinimumHeight(96);
-    lblCombatLog->setMaximumHeight(110);
-    lblCombatLog->setStyleSheet(
-        "font-size: 13px; color: #b0a0d0; line-height: 1.6; "
-        "background: rgba(10,10,24,200); border: 1px solid #2a2a4a; "
-        "border-radius: 8px; padding: 12px 18px;"
-    );
+    // (Combat log is now inside the enemy HUD panel — see buildHUDPanel)
 
     // ── Bottom status bar ────────────────────────────────────
     QHBoxLayout* botBar = new QHBoxLayout();
@@ -2901,13 +3186,12 @@ void MainWindow::buildGamePage() {
     botBar->addWidget(lblDiffBadge);
 
     // ── Assemble ─────────────────────────────────────────────
-    root->setSpacing(14);
-    root->setContentsMargins(28, 18, 28, 22);
+    root->setSpacing(10);
+    root->setContentsMargins(20, 10, 20, 14);
     root->addWidget(arenaTitle);
     root->addLayout(topBar);
     root->addLayout(midRow);
     root->addLayout(actionRow);
-    root->addWidget(lblCombatLog);
     root->addLayout(botBar);
 
     stack->addWidget(gamePage);
@@ -3821,4 +4105,152 @@ void MainWindow::onLoadClicked() {
     gamePage->setFocus();
 
 
+}
+void MainWindow::appendChatMessage(const QString& role, const QString& text) {
+    if (!chatDisplay) return;
+ 
+    // Color scheme: user = purple, assistant = teal/white
+    QString color  = (role == "user") ? "#c8a8ff" : "#7df7d0";
+    QString prefix = (role == "user") ? "YOU" : "AI";
+    QString bgColor = (role == "user") ? "rgba(80,40,160,60)" : "rgba(20,80,80,60)";
+ 
+    chatDisplay->append(
+        QString("<div style='margin:3px 0; padding:4px 6px; "
+                "background:%3; border-radius:5px;'>"
+                "<span style='color:%1; font-weight:bold; "
+                "font-size:10px; letter-spacing:2px;'>%2 ▸ </span>"
+                "<span style='color:#d8d0f0;'>%4</span></div>")
+        .arg(color, prefix, bgColor, text.toHtmlEscaped())
+    );
+ 
+    // Auto-scroll to bottom
+    QScrollBar* sb = chatDisplay->verticalScrollBar();
+    if (sb) sb->setValue(sb->maximum());
+}
+ 
+// ── Send button / Enter key handler ──────────────────────────
+void MainWindow::onChatSendClicked() {
+    if (!chatInput || !chatSendBtn) return;
+ 
+    QString userText = chatInput->text().trimmed();
+    if (userText.isEmpty()) return;
+ 
+    QString apiKey = loadedApiKey;
+    if (apiKey.isEmpty()) {
+        appendChatMessage("assistant",
+            "⚠ API key not found. Please add your key to api_key.txt in the project directory.");
+        return;
+    }
+ 
+    // Display user message immediately
+    appendChatMessage("user", userText);
+    chatHistory.append({"user", userText});
+    chatInput->clear();
+    chatInput->setEnabled(false);
+    chatSendBtn->setEnabled(false);
+    chatSendBtn->setText("...");
+ 
+    // Build messages array from history
+    QString systemPrompt =
+    "You are an AI advisor embedded inside Battle Arena, a 2D grid-based "
+    "combat game built with C++ and Qt6. Three playable fighters exist:\n"
+    "  WARRIOR: 200 HP, 20 ATK, special = Power Strike (1.5x ATK). Tough frontliner.\n"
+    "  MAGE:    100 HP, 20 ATK, special = Arcane Storm (3x ATK). Fragile but devastating.\n"
+    "  GORGON:  150 HP, 15 ATK, special = Stone Burst (2x ATK). Aggressive mid-range.\n"
+    "The 8x8 grid has obstacles and spell runes (heal/slow). "
+    "Easy = normal speed, Hard = 2x faster enemy turns. "
+    "Specials have a 3-turn cooldown. Be concise, max 3 sentences.";
+
+QJsonArray messages;
+
+QJsonObject sysMsg;
+sysMsg["role"]    = "system";
+sysMsg["content"] = systemPrompt;
+messages.append(sysMsg);
+
+for (const auto& turn : chatHistory) {
+    QJsonObject msg;
+    msg["role"]    = turn.first;
+    msg["content"] = turn.second;
+    messages.append(msg);
+}
+ 
+    
+ 
+    // Assemble request body
+    QJsonObject body;
+    body["model"]      = "anthropic/claude-haiku-4-5";
+    body["max_tokens"] = 300;
+    body["messages"]   = messages;
+ 
+    QJsonDocument doc(body);
+ 
+    // Build HTTP request
+    QNetworkRequest req(QUrl("https://openrouter.ai/api/v1/chat/completions"));
+    req.setHeader(QNetworkRequest::ContentTypeHeader, "application/json");
+req.setRawHeader("Authorization", QString("Bearer %1").arg(apiKey).toUtf8());
+req.setRawHeader("HTTP-Referer",  "https://battlearena.game");
+req.setRawHeader("X-Title",       "Battle Arena");
+ 
+    chatNetworkManager->post(req, doc.toJson(QJsonDocument::Compact));
+}
+ 
+// ── Handle API response ───────────────────────────────────────
+void MainWindow::onChatReplyFinished(QNetworkReply* reply) {
+    if (!chatInput || !chatSendBtn) { reply->deleteLater(); return; }
+ 
+    // Re-enable input regardless of outcome
+    chatInput->setEnabled(true);
+    chatSendBtn->setEnabled(true);
+    chatSendBtn->setText("SEND");
+    chatInput->setFocus();
+ 
+    if (reply->error() != QNetworkReply::NoError) {
+        // Show a friendly error
+        QString errMsg = reply->errorString();
+        // Try to parse error body from Anthropic
+        QByteArray raw = reply->readAll();
+        if (!raw.isEmpty()) {
+            QJsonDocument errDoc = QJsonDocument::fromJson(raw);
+            if (!errDoc.isNull() && errDoc.object().contains("error")) {
+                QJsonObject errObj = errDoc.object()["error"].toObject();
+                errMsg = errObj["message"].toString();
+            }
+        }
+        appendChatMessage("assistant",
+            "⚠ Error: " + (errMsg.isEmpty() ? "Network request failed." : errMsg));
+        reply->deleteLater();
+        return;
+    }
+ 
+    QByteArray raw = reply->readAll();
+    QJsonDocument doc = QJsonDocument::fromJson(raw);
+ 
+    if (doc.isNull() || !doc.isObject()) {
+        appendChatMessage("assistant", "⚠ Could not parse the server response.");
+        reply->deleteLater();
+        return;
+    }
+ 
+    QJsonObject root = doc.object();
+ 
+    // Anthropic v1/messages returns: {"content": [{"type":"text","text":"..."}], ...}
+    QJsonArray choices = doc.object()["choices"].toArray();
+if (choices.isEmpty()) {
+    appendChatMessage("assistant", "Received an empty response.");
+    reply->deleteLater();
+    return;
+}
+QString assistantText =
+    choices[0].toObject()["message"].toObject()["content"].toString().trimmed();
+ 
+    if (assistantText.isEmpty()) {
+        appendChatMessage("assistant", "⚠ Received an empty response.");
+    } else {
+        // Add to history and display
+        chatHistory.append({"assistant", assistantText});
+        appendChatMessage("assistant", assistantText);
+    }
+ 
+    reply->deleteLater();
 }

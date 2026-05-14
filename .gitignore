@@ -1,0 +1,25 @@
+# Build artifacts
+build/
+*.o
+*.obj
+*.exe
+moc_*
+qrc_*
+ui_*
+Makefile
+CMakeFiles/
+CMakeCache.txt
+cmake_install.cmake
+
+# IDE
+.qtcreator/
+.vscode/
+*.pro.user
+
+# OS junk
+.DS_Store
+__MACOSX/
+Thumbs.db
+
+# API key — NEVER commit this
+api_key.txt

@@ -1,7 +1,7 @@
-/home/ahmed7/CSCE1101-project-Battle-Arena-Game/build/game_autogen/EWIEGA46WW/moc_GameManager.cpp: /home/ahmed7/CSCE1101-project-Battle-Arena-Game/GameManager.h \
-  /home/ahmed7/CSCE1101-project-Battle-Arena-Game/build/game_autogen/moc_predefs.h \
-  /home/ahmed7/CSCE1101-project-Battle-Arena-Game/BattleGrid.h \
-  /home/ahmed7/CSCE1101-project-Battle-Arena-Game/Cell.h \
+/home/youssef_alfred/teamproject2026/war/CSCE1101-project-Battle-Arena-Game/build/game_autogen/EWIEGA46WW/moc_GameManager.cpp: /home/youssef_alfred/teamproject2026/war/CSCE1101-project-Battle-Arena-Game/GameManager.h \
+  /home/youssef_alfred/teamproject2026/war/CSCE1101-project-Battle-Arena-Game/build/game_autogen/moc_predefs.h \
+  /home/youssef_alfred/teamproject2026/war/CSCE1101-project-Battle-Arena-Game/BattleGrid.h \
+  /home/youssef_alfred/teamproject2026/war/CSCE1101-project-Battle-Arena-Game/Cell.h \
   /usr/include/alloca.h \
   /usr/include/asm-generic/errno-base.h \
   /usr/include/asm-generic/errno.h \
