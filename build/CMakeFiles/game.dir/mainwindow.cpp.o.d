@@ -544,6 +544,11 @@ CMakeFiles/game.dir/mainwindow.cpp.o: \
  /usr/include/x86_64-linux-gnu/qt6/QtMultimedia/qaudio.h \
  /usr/include/x86_64-linux-gnu/qt6/QtMultimedia/QAudioOutput \
  /usr/include/x86_64-linux-gnu/qt6/QtMultimedia/qaudiooutput.h \
+ /usr/include/x86_64-linux-gnu/qt6/QtMultimedia/QAudioDevice \
+ /usr/include/x86_64-linux-gnu/qt6/QtMultimedia/qaudiodevice.h \
+ /usr/include/x86_64-linux-gnu/qt6/QtMultimedia/qaudioformat.h \
+ /usr/include/x86_64-linux-gnu/qt6/QtMultimedia/QMediaDevices \
+ /usr/include/x86_64-linux-gnu/qt6/QtMultimedia/qmediadevices.h \
  /usr/include/x86_64-linux-gnu/qt6/QtNetwork/QNetworkRequest \
  /usr/include/x86_64-linux-gnu/qt6/QtCore/QJsonDocument \
  /usr/include/x86_64-linux-gnu/qt6/QtCore/qjsondocument.h \

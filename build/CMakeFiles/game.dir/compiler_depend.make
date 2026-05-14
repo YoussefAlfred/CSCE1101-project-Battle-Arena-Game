@@ -3390,10 +3390,15 @@ CMakeFiles/game.dir/mainwindow.cpp.o: /home/youssef_alfred/teamproject2026/war/C
   /usr/include/x86_64-linux-gnu/qt6/QtGui/qvector2d.h \
   /usr/include/x86_64-linux-gnu/qt6/QtGui/qvectornd.h \
   /usr/include/x86_64-linux-gnu/qt6/QtGui/qwindowdefs.h \
+  /usr/include/x86_64-linux-gnu/qt6/QtMultimedia/QAudioDevice \
   /usr/include/x86_64-linux-gnu/qt6/QtMultimedia/QAudioOutput \
+  /usr/include/x86_64-linux-gnu/qt6/QtMultimedia/QMediaDevices \
   /usr/include/x86_64-linux-gnu/qt6/QtMultimedia/QMediaPlayer \
   /usr/include/x86_64-linux-gnu/qt6/QtMultimedia/qaudio.h \
+  /usr/include/x86_64-linux-gnu/qt6/QtMultimedia/qaudiodevice.h \
+  /usr/include/x86_64-linux-gnu/qt6/QtMultimedia/qaudioformat.h \
   /usr/include/x86_64-linux-gnu/qt6/QtMultimedia/qaudiooutput.h \
+  /usr/include/x86_64-linux-gnu/qt6/QtMultimedia/qmediadevices.h \
   /usr/include/x86_64-linux-gnu/qt6/QtMultimedia/qmediaenumdebug.h \
   /usr/include/x86_64-linux-gnu/qt6/QtMultimedia/qmediaplayer.h \
   /usr/include/x86_64-linux-gnu/qt6/QtMultimedia/qtmultimedia-config.h \
@@ -3518,9 +3523,15 @@ CMakeFiles/game.dir/mainwindow.cpp.o: /home/youssef_alfred/teamproject2026/war/C
 
 /usr/include/x86_64-linux-gnu/qt6/QtMultimedia/qmediaenumdebug.h:
 
+/usr/include/x86_64-linux-gnu/qt6/QtMultimedia/qmediadevices.h:
+
+/usr/include/x86_64-linux-gnu/qt6/QtMultimedia/qaudiodevice.h:
+
 /usr/include/x86_64-linux-gnu/qt6/QtMultimedia/qaudio.h:
 
 /usr/include/x86_64-linux-gnu/qt6/QtMultimedia/QMediaPlayer:
+
+/usr/include/x86_64-linux-gnu/qt6/QtMultimedia/QMediaDevices:
 
 /usr/include/x86_64-linux-gnu/qt6/QtMultimedia/QAudioOutput:
 
@@ -3587,6 +3598,8 @@ CMakeFiles/game.dir/mainwindow.cpp.o: /home/youssef_alfred/teamproject2026/war/C
 /usr/include/c++/13/bits/fs_dir.h:
 
 /usr/include/c++/13/bits/codecvt.h:
+
+/usr/include/x86_64-linux-gnu/qt6/QtMultimedia/qaudioformat.h:
 
 /usr/include/x86_64-linux-gnu/qt6/QtWidgets/QApplication:
 
@@ -4589,6 +4602,8 @@ CMakeFiles/3.28.3/CMakeCXXCompiler.cmake:
 /usr/include/c++/13/bits/charconv.h:
 
 /usr/include/x86_64-linux-gnu/c++/13/bits/atomic_word.h:
+
+/usr/include/x86_64-linux-gnu/qt6/QtMultimedia/QAudioDevice:
 
 /usr/lib/x86_64-linux-gnu/cmake/Qt6Multimedia/Qt6MultimediaTargets.cmake:
 

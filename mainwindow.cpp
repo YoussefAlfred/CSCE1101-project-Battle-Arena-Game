@@ -33,6 +33,8 @@
 #include <ctime>
 #include <QMediaPlayer>
 #include <QAudioOutput>
+#include <QAudioDevice>
+#include <QMediaDevices>
 //for API integration stuff :D
 #include <QNetworkAccessManager>
 #include <QNetworkRequest>
@@ -1372,6 +1374,14 @@ namespace BattleAudio {
 
 void MainWindow::initAudio() {
 #ifdef BATTLE_HAS_AUDIO
+    // Skip audio entirely if no output device is available.
+    // This prevents GStreamer from blocking for 10+ seconds per player
+    // on systems without a sound card (WSL, headless, etc.).
+    if (QMediaDevices::audioOutputs().isEmpty()) {
+        qDebug() << "No audio output device found — audio disabled.";
+        return;
+    }
+
     BattleAudio::sClickPlayer = BattleAudio::makePlayer(
         this, "soundreality-sound-of-mouse-click-4-478760.mp3",
         &BattleAudio::sClickOut, 0.55f);
@@ -1430,7 +1440,9 @@ MainWindow::MainWindow(QWidget* parent)
     resize(1700, 1050);
     setMinimumSize(1500, 950);
 
-    initAudio();
+    // Defer audio init so the window appears instantly.
+    // If no audio device exists, initAudio() will skip gracefully.
+    QTimer::singleShot(0, this, &MainWindow::initAudio);
     // App-wide event filter so every QPushButton release plays the click sound.
     if (qApp) qApp->installEventFilter(this);
 

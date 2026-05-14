@@ -3401,10 +3401,15 @@ CMakeFiles/game.dir/mainwindow.cpp.o
  /usr/include/x86_64-linux-gnu/qt6/QtGui/qvector2d.h
  /usr/include/x86_64-linux-gnu/qt6/QtGui/qvectornd.h
  /usr/include/x86_64-linux-gnu/qt6/QtGui/qwindowdefs.h
+ /usr/include/x86_64-linux-gnu/qt6/QtMultimedia/QAudioDevice
  /usr/include/x86_64-linux-gnu/qt6/QtMultimedia/QAudioOutput
+ /usr/include/x86_64-linux-gnu/qt6/QtMultimedia/QMediaDevices
  /usr/include/x86_64-linux-gnu/qt6/QtMultimedia/QMediaPlayer
  /usr/include/x86_64-linux-gnu/qt6/QtMultimedia/qaudio.h
+ /usr/include/x86_64-linux-gnu/qt6/QtMultimedia/qaudiodevice.h
+ /usr/include/x86_64-linux-gnu/qt6/QtMultimedia/qaudioformat.h
  /usr/include/x86_64-linux-gnu/qt6/QtMultimedia/qaudiooutput.h
+ /usr/include/x86_64-linux-gnu/qt6/QtMultimedia/qmediadevices.h
  /usr/include/x86_64-linux-gnu/qt6/QtMultimedia/qmediaenumdebug.h
  /usr/include/x86_64-linux-gnu/qt6/QtMultimedia/qmediaplayer.h
  /usr/include/x86_64-linux-gnu/qt6/QtMultimedia/qtmultimedia-config.h
